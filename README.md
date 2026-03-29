@@ -7,7 +7,7 @@ A minimal but production-quality implementation of an Anthropic SDK agent that l
 ## Architecture
 
 ```
-skill-agent/
+skilled-agent/
 ├── agent.py                  ← agent loop + core tool handlers
 └── skills/
     ├── python-coder/
