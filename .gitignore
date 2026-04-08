@@ -18,3 +18,4 @@ commit-with-dates.sh
 mp
 wandb/
 .tmp/
+*.egg-info/
