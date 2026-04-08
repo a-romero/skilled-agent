@@ -19,6 +19,8 @@ import anthropic
 from pathlib import Path
 from typing import Any
 
+from knowledge import KNOWLEDGE_TOOLS, handle_knowledge_tool, build_source_registry, KNOWLEDGE_ROOT
+
 # ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
@@ -187,7 +189,7 @@ CORE_TOOLS = [
             "required": ["skill_name"],
         },
     },
-]
+] + KNOWLEDGE_TOOLS
 
 
 # ---------------------------------------------------------------------------
@@ -200,12 +202,22 @@ def run_agent(task: str, verbose: bool = True) -> str:
     Returns the agent's final text response.
     """
     registry = build_skill_registry(SKILLS_ROOT)
+    source_registry = build_source_registry(KNOWLEDGE_ROOT / "README.md")
+
+    knowledge_summary_path = KNOWLEDGE_ROOT / "SUMMARY.MD"
+    if not knowledge_summary_path.exists():
+        raise FileNotFoundError(
+            f"{knowledge_summary_path} not found. "
+            "Run: uv run python enrich_knowledge.py"
+        )
+    knowledge_index = knowledge_summary_path.read_text()
+
     active_skill_tools: list[dict] = []   # tools unlocked after read_skill calls
     loaded_skills: set[str] = set()
 
     messages: list[dict] = [{"role": "user", "content": task}]
 
-    system_prompt = f"""You are a capable AI agent with access to a skill library.
+    system_prompt = f"""You are a capable AI agent with access to a skill library and a knowledge base.
 
 Skills are organised as markdown files in a filesystem. You must:
 1. Call `list_skills` to discover available skills.
@@ -213,8 +225,22 @@ Skills are organised as markdown files in a filesystem. You must:
 3. Follow the instructions in the skill file precisely.
 4. Only read a skill if it's actually needed for the task.
 
+You also have access to a knowledge base about Aviva's products and services.
+Navigate it using read_knowledge with SUMMARY.MD files to explore sections,
+then read the specific index.md page once identified.
+
+When answering a customer query, always end your response with a "Sources"
+section listing the title and URL of every index.md file you read:
+
+## Sources
+- [Page Title](https://url)
+
 Current working directory: {Path.cwd()}
 Available skills root: {SKILLS_ROOT.resolve()}
+
+<knowledge_index>
+{knowledge_index}
+</knowledge_index>
 """
 
     for iteration in range(MAX_ITERATIONS):
@@ -279,6 +305,9 @@ Available skills root: {SKILLS_ROOT.resolve()}
                         if verbose:
                             print(f"Unlocked tools from '{skill_name}': "
                                   f"{[t['name'] for t in new_tools]}")
+
+            elif tool_name == "read_knowledge":
+                result = handle_knowledge_tool(tool_name, tool_input, source_registry)
 
             elif tool_name in SKILL_TOOL_HANDLERS:
                 try:
