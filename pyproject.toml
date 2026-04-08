@@ -1,0 +1,20 @@
+[project]
+name = "skilled-agent"
+version = "0.1.0"
+description = "A skilled agent for knowledge RAG"
+requires-python = ">=3.8"
+dependencies = [
+    "pyyaml",
+]
+
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = []
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3.5",
+]
