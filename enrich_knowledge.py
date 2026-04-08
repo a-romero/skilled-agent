@@ -1,5 +1,6 @@
 """Enrich knowledge base frontmatter and generate SUMMARY.MD navigation files."""
 
+import anthropic
 import yaml
 from pathlib import Path
 
@@ -94,3 +95,88 @@ def generate_all_summaries(knowledge_root: Path, dry_run: bool = False) -> None:
         else:
             target.write_text(content)
             print(f"Generated {target}")
+
+
+def _should_skip(path: Path) -> bool:
+    """Return True for files that should not be enriched."""
+    if path.name in _SKIP_NAMES:
+        return True
+    return any(pattern in path.name for pattern in _SKIP_PATTERNS)
+
+
+def _needs_enrichment(fm: dict) -> bool:
+    """Return True if any of the three enrichment fields are missing."""
+    return not all(k in fm for k in ("summary", "topics", "keywords"))
+
+
+def enrich_file(
+    path: Path, client: anthropic.Anthropic, dry_run: bool = False
+) -> bool:
+    """Enrich a file's frontmatter with summary/topics/keywords. Returns True if modified."""
+    text = path.read_text()
+    fm, body = parse_frontmatter(text)
+
+    if not _needs_enrichment(fm):
+        return False
+
+    words = body.split()
+    truncated = " ".join(words[:3000])
+    title = fm.get("title", path.stem)
+
+    prompt = (
+        f"Given this web page content, generate structured metadata.\n\n"
+        f"Page title: {title}\n"
+        f"Content:\n{truncated}\n\n"
+        "Respond with YAML only — no explanation, no markdown fences:\n"
+        'summary: "1-2 sentences describing what this page covers"\n'
+        "topics:\n"
+        '  - "topic 1"\n'
+        "keywords:\n"
+        '  - "keyword 1"\n'
+    )
+
+    response = client.messages.create(
+        model="claude-haiku-4-5-20251001",
+        max_tokens=512,
+        messages=[{"role": "user", "content": prompt}],
+    )
+
+    try:
+        result = yaml.safe_load(response.content[0].text) or {}
+    except yaml.YAMLError:
+        print(f"  Warning: could not parse Claude response for {path}")
+        return False
+
+    fm["summary"] = result.get("summary", "")
+    fm["topics"] = result.get("topics", [])
+    fm["keywords"] = result.get("keywords", [])
+
+    if dry_run:
+        print(f"[dry-run] Would enrich {path}")
+        return True
+
+    path.write_text(write_frontmatter(fm, body))
+    return True
+
+
+def run_phase1(knowledge_root: Path, dry_run: bool = False) -> None:
+    """Enrich all unenriched knowledge files."""
+    client = anthropic.Anthropic()
+    files = sorted(
+        p for p in knowledge_root.rglob("*.md") if not _should_skip(p)
+    )
+    failed: list[Path] = []
+
+    for path in files:
+        try:
+            modified = enrich_file(path, client, dry_run)
+            status = "enriched" if modified else "skipped"
+            print(f"  {status}: {path.relative_to(knowledge_root)}")
+        except Exception as exc:
+            print(f"  Error: {path} — {exc}")
+            failed.append(path)
+
+    if failed:
+        print(f"\nFailed ({len(failed)}):")
+        for p in failed:
+            print(f"  {p}")
