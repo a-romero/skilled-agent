@@ -115,3 +115,36 @@ def test_read_knowledge_prevents_traversal(
         {"path": "../../etc/passwd"}, registry_for_root, knowledge_root
     )
     assert result.startswith("Error:")
+
+
+from knowledge import handle_knowledge_tool, KNOWLEDGE_TOOLS
+
+
+def test_handle_knowledge_tool_dispatches(
+    knowledge_root: Path, registry_for_root: dict
+) -> None:
+    result = handle_knowledge_tool(
+        "read_knowledge",
+        {"path": "business/index.md"},
+        registry_for_root,
+        knowledge_root,
+    )
+    assert "Page content." in result
+
+
+def test_handle_knowledge_tool_unknown_returns_error(
+    knowledge_root: Path, registry_for_root: dict
+) -> None:
+    result = handle_knowledge_tool("no_such_tool", {}, registry_for_root, knowledge_root)
+    assert result.startswith("Error:")
+
+
+def test_knowledge_tools_has_read_knowledge() -> None:
+    names = [t["name"] for t in KNOWLEDGE_TOOLS]
+    assert "read_knowledge" in names
+
+
+def test_knowledge_tools_schema_has_path_param() -> None:
+    tool = next(t for t in KNOWLEDGE_TOOLS if t["name"] == "read_knowledge")
+    assert "path" in tool["input_schema"]["properties"]
+    assert "path" in tool["input_schema"]["required"]

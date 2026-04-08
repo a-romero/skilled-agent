@@ -44,3 +44,42 @@ def read_knowledge(
         source = source_registry[rel_path]
         content = f"[Source: {source['title']} — {source['url']}]\n\n{content}"
     return content
+
+
+def handle_knowledge_tool(
+    name: str,
+    inp: dict,
+    source_registry: dict,
+    knowledge_root: Path = KNOWLEDGE_ROOT,
+) -> str:
+    """Dispatch knowledge tool calls."""
+    if name == "read_knowledge":
+        return read_knowledge(inp, source_registry, knowledge_root)
+    return f"Error: unknown knowledge tool '{name}'"
+
+
+KNOWLEDGE_TOOLS: list[dict] = [
+    {
+        "name": "read_knowledge",
+        "description": (
+            "Read a file from the knowledge base. "
+            "Navigate using SUMMARY.MD files at each directory level "
+            "(e.g. 'business/SUMMARY.MD'). "
+            "Read a page's index.md for full content once identified."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "path": {
+                    "type": "string",
+                    "description": (
+                        "Relative path from knowledge root. "
+                        "Examples: 'business/SUMMARY.MD', "
+                        "'business/group-protection/group-life-insurance/index.md'"
+                    ),
+                }
+            },
+            "required": ["path"],
+        },
+    }
+]
