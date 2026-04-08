@@ -21,7 +21,7 @@ def readme(tmp_path: Path) -> Path:
 
 
 @pytest.fixture
-def source_registry(readme: Path) -> dict:
+def source_registry(readme: Path) -> dict[str, dict]:
     return build_source_registry(readme)
 
 
@@ -40,3 +40,9 @@ def test_build_source_registry_strips_aviva_prefix(source_registry: dict) -> Non
 
 def test_build_source_registry_skips_header_row(source_registry: dict) -> None:
     assert "URL" not in source_registry
+
+
+def test_build_source_registry_returns_empty_for_no_data_rows(tmp_path: Path) -> None:
+    readme = tmp_path / "README.md"
+    readme.write_text("| URL | Title | File |\n|-----|-------|------|\n")
+    assert build_source_registry(readme) == {}

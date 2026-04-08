@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-KNOWLEDGE_ROOT = Path("./knowledge")
+KNOWLEDGE_ROOT = Path(__file__).parent / "knowledge"
 
 
 def build_source_registry(readme: Path) -> dict[str, dict]:
