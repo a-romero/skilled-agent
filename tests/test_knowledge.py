@@ -46,3 +46,72 @@ def test_build_source_registry_returns_empty_for_no_data_rows(tmp_path: Path) ->
     readme = tmp_path / "README.md"
     readme.write_text("| URL | Title | File |\n|-----|-------|------|\n")
     assert build_source_registry(readme) == {}
+
+
+from knowledge import read_knowledge
+
+
+@pytest.fixture
+def knowledge_root(tmp_path: Path) -> Path:
+    root = tmp_path / "knowledge"
+    root.mkdir()
+    biz = root / "business"
+    biz.mkdir()
+    (biz / "index.md").write_text(
+        '---\nurl: https://www.aviva.co.uk/business/\ntitle: "Business - Aviva"\n---\n\nPage content.'
+    )
+    (root / "SUMMARY.MD").write_text("# Knowledge Base\n\nRoot summary.\n")
+    return root
+
+
+@pytest.fixture
+def registry_for_root() -> dict:
+    return {
+        "business/index.md": {
+            "url": "https://www.aviva.co.uk/business/",
+            "title": "Business - Aviva",
+        }
+    }
+
+
+def test_read_knowledge_returns_content(
+    knowledge_root: Path, registry_for_root: dict
+) -> None:
+    result = read_knowledge(
+        {"path": "business/index.md"}, registry_for_root, knowledge_root
+    )
+    assert "Page content." in result
+
+
+def test_read_knowledge_prepends_source_header(
+    knowledge_root: Path, registry_for_root: dict
+) -> None:
+    result = read_knowledge(
+        {"path": "business/index.md"}, registry_for_root, knowledge_root
+    )
+    assert "[Source: Business - Aviva — https://www.aviva.co.uk/business/]" in result
+
+
+def test_read_knowledge_no_header_for_summary_md(
+    knowledge_root: Path, registry_for_root: dict
+) -> None:
+    result = read_knowledge({"path": "SUMMARY.MD"}, registry_for_root, knowledge_root)
+    assert "[Source:" not in result
+
+
+def test_read_knowledge_error_on_missing_file(
+    knowledge_root: Path, registry_for_root: dict
+) -> None:
+    result = read_knowledge(
+        {"path": "nonexistent/index.md"}, registry_for_root, knowledge_root
+    )
+    assert result.startswith("Error:")
+
+
+def test_read_knowledge_prevents_traversal(
+    knowledge_root: Path, registry_for_root: dict
+) -> None:
+    result = read_knowledge(
+        {"path": "../../etc/passwd"}, registry_for_root, knowledge_root
+    )
+    assert result.startswith("Error:")

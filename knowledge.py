@@ -24,3 +24,23 @@ def build_source_registry(readme: Path) -> dict[str, dict]:
         if url and title and file_path:
             registry[file_path] = {"url": url, "title": title}
     return registry
+
+
+def read_knowledge(
+    inp: dict,
+    source_registry: dict,
+    knowledge_root: Path = KNOWLEDGE_ROOT,
+) -> str:
+    """Read a knowledge file; prepend source header for index.md content pages."""
+    rel_path = inp.get("path", "").strip()
+    resolved_root = knowledge_root.resolve()
+    target = (knowledge_root / rel_path).resolve()
+    if not str(target).startswith(str(resolved_root)):
+        return f"Error: path '{rel_path}' is outside the knowledge root"
+    if not target.exists():
+        return f"Error: '{rel_path}' not found in knowledge base"
+    content = target.read_text()
+    if rel_path.endswith("index.md") and rel_path in source_registry:
+        source = source_registry[rel_path]
+        content = f"[Source: {source['title']} — {source['url']}]\n\n{content}"
+    return content
