@@ -99,15 +99,25 @@ One-time preprocessing script. Run with `uv run python enrich_knowledge.py`. Saf
 
 ### 2. `knowledge.py`
 
-Thin module exposing a single tool and its handler. No registry needed at runtime — the agent navigates via `SUMMARY.MD` files.
+Thin module exposing a single tool, its handler, and a source registry used for citations.
+
+**Source registry** — built once at startup by parsing `knowledge/README.md`. The README contains a markdown table with columns `URL`, `Title`, and `File`. File paths in the table carry an `aviva/` prefix (e.g. `aviva/business/group-protection/group-life-insurance/index.md`) which is stripped when building the registry key (e.g. `business/group-protection/group-life-insurance/index.md`).
 
 ```python
 KNOWLEDGE_ROOT = Path("./knowledge")
 
-def read_knowledge(inp: dict) -> str:
-    """Validate path is within KNOWLEDGE_ROOT, return file content."""
+def build_source_registry(readme: Path) -> dict[str, dict]:
+    """Parse README.md table → {relative_path: {url, title}}."""
 
-def handle_knowledge_tool(name: str, inp: dict) -> str:
+def read_knowledge(inp: dict, source_registry: dict) -> str:
+    """
+    Validate path is within KNOWLEDGE_ROOT, return file content.
+    For index.md files, prepend a source header:
+      [Source: <title> — <url>]
+    so the agent always has attribution context alongside the content.
+    """
+
+def handle_knowledge_tool(name: str, inp: dict, source_registry: dict) -> str:
     """Dispatcher — currently only handles read_knowledge."""
 
 KNOWLEDGE_TOOLS = [
@@ -139,18 +149,28 @@ KNOWLEDGE_TOOLS = [
 
 Path validation must confirm the resolved absolute path starts with the resolved `KNOWLEDGE_ROOT` to prevent directory traversal.
 
+The source header prepended to `index.md` responses looks like:
+
+```
+[Source: Group life insurance - Aviva — https://www.aviva.co.uk/business/group-protection/group-life-insurance/]
+```
+
+This ensures the agent always knows the title and URL of every page it reads, without needing a separate lookup tool call.
+
 ---
 
 ### 3. `agent.py` changes
 
 Minimal diff:
 
-1. Import `KNOWLEDGE_TOOLS` and `handle_knowledge_tool` from `knowledge.py`
-2. Add `KNOWLEDGE_TOOLS` to `CORE_TOOLS`
-3. Add `read_knowledge` routing in the tool dispatch block
-4. Read `knowledge/SUMMARY.MD` at startup and inject into the system prompt:
+1. Import `KNOWLEDGE_TOOLS`, `handle_knowledge_tool`, and `build_source_registry` from `knowledge.py`
+2. At startup: build `source_registry` from `knowledge/README.md`
+3. Add `KNOWLEDGE_TOOLS` to `CORE_TOOLS`
+4. Add `read_knowledge` routing in the tool dispatch block (passing `source_registry`)
+5. Read `knowledge/SUMMARY.MD` at startup and inject into the system prompt, with a citation instruction:
 
 ```python
+source_registry = build_source_registry(KNOWLEDGE_ROOT / "README.md")
 knowledge_index = (KNOWLEDGE_ROOT / "SUMMARY.MD").read_text()
 
 system_prompt = f"""...(existing prompt)...
@@ -158,6 +178,12 @@ system_prompt = f"""...(existing prompt)...
 You also have access to a knowledge base about Aviva's products and services.
 Navigate it using read_knowledge with SUMMARY.MD files to explore sections,
 then read the specific index.md page once identified.
+
+When answering a customer query, always end your response with a "Sources" 
+section listing the title and URL of every index.md file you read, formatted as:
+
+## Sources
+- [Page Title](https://url)
 
 <knowledge_index>
 {knowledge_index}
