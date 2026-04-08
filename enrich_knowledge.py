@@ -1,5 +1,8 @@
 """Enrich knowledge base frontmatter and generate SUMMARY.MD navigation files."""
 
+import argparse
+import sys
+
 import anthropic
 import yaml
 from pathlib import Path
@@ -180,3 +183,49 @@ def run_phase1(knowledge_root: Path, dry_run: bool = False) -> None:
         print(f"\nFailed ({len(failed)}):")
         for p in failed:
             print(f"  {p}")
+
+
+def main() -> None:
+    """CLI entry point for knowledge base enrichment."""
+    parser = argparse.ArgumentParser(
+        description="Enrich knowledge base frontmatter and generate SUMMARY.MD files."
+    )
+    parser.add_argument(
+        "--dry-run", action="store_true", help="Preview without writing any files"
+    )
+    parser.add_argument(
+        "--phase1-only", action="store_true", help="Run frontmatter enrichment only"
+    )
+    parser.add_argument(
+        "--phase2-only", action="store_true", help="Run SUMMARY.MD generation only"
+    )
+    args = parser.parse_args()
+
+    if args.phase1_only and args.phase2_only:
+        print(
+            "Error: --phase1-only and --phase2-only are mutually exclusive",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+    knowledge_root = Path("./knowledge")
+    if not knowledge_root.exists():
+        print(f"Error: knowledge root '{knowledge_root}' not found", file=sys.stderr)
+        sys.exit(1)
+
+    run_phase1_flag = not args.phase2_only
+    run_phase2_flag = not args.phase1_only
+
+    if run_phase1_flag:
+        print("Phase 1: Enriching frontmatter...")
+        run_phase1(knowledge_root, dry_run=args.dry_run)
+
+    if run_phase2_flag:
+        print("\nPhase 2: Generating SUMMARY.MD files...")
+        generate_all_summaries(knowledge_root, dry_run=args.dry_run)
+
+    print("\nDone.")
+
+
+if __name__ == "__main__":
+    main()
