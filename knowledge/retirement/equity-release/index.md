@@ -1,6 +1,31 @@
 ---
 url: https://www.aviva.co.uk/retirement/equity-release/
-title: "Equity release | What is it and is it right for you? - Aviva"
+title: Equity release | What is it and is it right for you? - Aviva
+summary: This page explains Aviva's lifetime mortgage equity release product, which
+  allows UK homeowners aged 55+ to borrow money against their home's value without
+  selling. It covers eligibility requirements, how the product works, pros and cons,
+  the application process, and frequently asked questions.
+topics:
+- Equity Release
+- Lifetime Mortgages
+- Retirement Planning
+- Home Equity
+- Financial Services
+- Older Adults Finance
+keywords:
+- equity release
+- lifetime mortgage
+- home equity
+- retirement
+- UK homeowners
+- aged 55 or over
+- no monthly repayments
+- inheritance guarantee
+- early repayment charges
+- voluntary partial repayments
+- Equity Release Council
+- financial advice
+- home reversion plan
 ---
 
 Close menu

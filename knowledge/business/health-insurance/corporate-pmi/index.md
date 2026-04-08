@@ -1,6 +1,33 @@
 ---
 url: https://www.aviva.co.uk/business/health-insurance/corporate-pmi/
-title: "Corporate private medical insurance - Aviva"
+title: Corporate private medical insurance - Aviva
+summary: This page describes Aviva's Optimum corporate private medical insurance for
+  businesses with 250+ employees, detailing customizable coverage options, wellbeing
+  support services, and additional healthcare products available to support employee
+  health and productivity.
+topics:
+- Corporate Private Medical Insurance
+- Employee Health Benefits
+- Workplace Wellbeing
+- Group Health Insurance
+- Business Insurance
+- Healthcare Coverage
+keywords:
+- corporate PMI
+- Optimum
+- private medical insurance
+- employee health insurance
+- cancer cover
+- mental health pathway
+- BacktoBetter
+- musculoskeletal cover
+- group health insurance
+- wellbeing services
+- healthcare trust
+- business health insurance
+- 250+ employees
+- Aviva
+- Defaqto 5 Star
 ---
 
 Close menu

@@ -1,6 +1,36 @@
 ---
 url: https://www.aviva.co.uk/business/
-title: "Insurance, Pensions & Protection for employers - Aviva"
+title: Insurance, Pensions & Protection for employers - Aviva
+summary: Aviva's business homepage showcasing comprehensive insurance, pensions, and
+  employee protection solutions for UK employers. The page highlights their suite
+  of workplace pension and group insurance products, employee wellbeing services,
+  and commitment to sustainability and social responsibility.
+topics:
+- Workplace Pensions
+- Group Protection Insurance
+- Business Health Insurance
+- Business Insurance
+- Bulk Purchase Annuities
+- Employee Wellbeing
+- Corporate Sustainability
+- Financial Strength and Ratings
+keywords:
+- workplace pensions
+- group protection
+- business insurance
+- employer benefits
+- life insurance
+- critical illness cover
+- income protection
+- private medical insurance
+- employee benefits
+- UK businesses
+- financial adviser
+- defined benefit scheme
+- Aviva business
+- Net Zero 2040
+- sustainability
+- employee protection
 ---
 
 Close menu

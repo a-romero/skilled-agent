@@ -1,6 +1,28 @@
 ---
 url: https://www.aviva.co.uk/business/workplace-pensions/workplace-savings-investments/
-title: "Savings and investment options for workplace pensions - Aviva"
+title: Savings and investment options for workplace pensions - Aviva
+summary: This page outlines Aviva's savings and investment options available alongside
+  workplace pension schemes, including Cash ISAs, Stocks and Shares ISAs, and General
+  Investment Accounts. It explains how employers can offer these products to employees
+  and provides guidance on features, benefits, and implementation.
+topics:
+- Workplace pensions
+- Employee savings accounts
+- Investment options
+- ISA products
+- Employer benefits
+- Financial planning
+keywords:
+- Cash ISA
+- Stocks and Shares ISA
+- General Investment Account
+- workplace pension
+- tax-efficient savings
+- investment funds
+- employee benefits
+- payroll integration
+- ISA allowance
+- financial services
 ---
 
 ![](https://static.aviva.io/content/dam/aviva-business/gb/Images/business/workplace-pension/workplace-savings-investments/workplace-savings-investments-hero-colleagues-walking-in-office-2880x1620px.$16x9-mobile-lg-4cols$.jpg?$16x9-mobile-lg-4cols$)

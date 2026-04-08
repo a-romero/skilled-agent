@@ -1,6 +1,35 @@
 ---
 url: https://www.aviva.co.uk/business/group-protection/group-life-insurance/
-title: "Group life insurance - Aviva"
+title: Group life insurance - Aviva
+summary: This page provides comprehensive information about Aviva's Group Life Insurance,
+  a financial protection product for employees' families in case of death in service.
+  It covers benefits, features, Master Trust options, wellbeing services, claims process,
+  and how to apply.
+topics:
+- Group Life Insurance
+- Employee Benefits
+- Business Protection
+- Inheritance Tax Planning
+- Wellbeing Services
+- Master Trust
+- Group Protection
+- Claims Process
+keywords:
+- group life insurance
+- death in service
+- lump sum benefit
+- inheritance tax free
+- flexible cover
+- master trust
+- wellbeing services
+- employee protection
+- business expense
+- employee benefits package
+- group protection
+- claims payment
+- Aviva Flex-pertise
+- financial support
+- dependants
 ---
 
 ![](https://static.aviva.io/content/dam/aviva-business/gb/Images/business/group-protection-insurance/group-life-insurance/group-life-insurance-hero-couple-cooking_2880x1620px.$16x9-mobile-lg-4cols$.jpg?$16x9-mobile-lg-4cols$)

@@ -1,6 +1,36 @@
 ---
 url: https://www.aviva.co.uk/business/insurance/
-title: "Business Insurance | Commercial Insurance Quotes - Aviva"
+title: Business Insurance | Commercial Insurance Quotes - Aviva
+summary: This page provides information about Aviva's business insurance offerings,
+  including direct products for business vehicles and landlord insurance, and details
+  about their partnership with PIB Insurance Brokers for other small business insurance
+  needs. It outlines various types of business insurance available and explains Aviva's
+  updated approach to serving small business customers.
+topics:
+- Business Insurance
+- Commercial Insurance
+- Vehicle Insurance
+- Landlord Insurance
+- Insurance Brokers
+- Small Business Protection
+- Public Liability Insurance
+- Professional Indemnity Insurance
+- Employers' Liability Insurance
+- Business Equipment Insurance
+keywords:
+- business insurance quotes
+- commercial insurance
+- vehicle insurance
+- van insurance
+- landlord insurance
+- PIB Insurance Brokers
+- public liability
+- professional indemnity
+- employers liability
+- business equipment insurance
+- buildings and contents insurance
+- business income insurance
+- small business protection
 ---
 
 Close menu

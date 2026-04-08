@@ -1,6 +1,28 @@
 ---
 url: https://www.aviva.co.uk/business/defined-benefit-solutions/aviva-clarity/
-title: "Aviva Clarity - Aviva"
+title: Aviva Clarity - Aviva
+summary: Aviva Clarity is a streamlined bulk purchase annuity (BPA) solution designed
+  for defined benefit pension schemes with liabilities up to £100m, offering standardized
+  benefit structures, efficient transaction processes, and access to expert guidance.
+topics:
+- Bulk Purchase Annuities
+- Defined Benefit Pension Schemes
+- De-risking Solutions
+- Pension Scheme De-risking
+- Annuity Solutions
+keywords:
+- Aviva Clarity
+- bulk purchase annuity
+- BPA
+- defined benefit
+- pension schemes
+- de-risking
+- liabilities
+- streamlined process
+- trustees
+- buy-out
+- financial strength
+- annuity benefits
 ---
 
 ![](https://static.aviva.io/content/dam/aviva-business/gb/Images/workplace-pensions/corporate/defined-benefit-solutions/spyglasses-trees-buildings.2880x1620px-flipped.$16x9-mobile-lg-4cols$.jpg?$16x9-mobile-lg-4cols$)

@@ -1,6 +1,37 @@
 ---
 url: https://www.aviva.co.uk/retirement/transfer-your-pension/knowledge-centre/how-long-do-pension-transfers-take/
-title: "How long does a pension transfer take? - Aviva"
+title: How long does a pension transfer take? - Aviva
+summary: This page explains the timeline for pension transfers, covering factors that
+  affect duration such as pension type, provider responsiveness, and transfer methods.
+  It provides guidance on electronic, manual, and overseas transfers, along with tips
+  for ensuring a smooth pension transfer process.
+topics:
+- Pension Transfers
+- Defined Benefit Pensions
+- Defined Contribution Pensions
+- Financial Advice and Regulations
+- Electronic Transfers
+- Manual Transfers
+- Overseas Pension Transfers
+- MoneyHelper Safeguarding
+- QROPS (Qualifying Recognised Overseas Pension Schemes)
+keywords:
+- pension transfer timeline
+- how long does pension transfer take
+- defined benefit transfer
+- defined contribution pension
+- electronic transfer
+- manual transfer
+- overseas pension transfer
+- QROPS
+- MoneyHelper
+- pension scheme
+- financial advice
+- Occupational Pension Schemes
+- Pension Schemes Act 2015
+- FCA regulations
+- Origo system
+- HMRC
 ---
 
 Close menu

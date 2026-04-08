@@ -1,6 +1,34 @@
 ---
 url: https://www.aviva.co.uk/insurance/home-products/landlord-insurance/
-title: "Landlord insurance | Home - Aviva"
+title: Landlord insurance | Home - Aviva
+summary: This page describes Aviva's Signature landlord insurance for UK property
+  owners who rent out their properties. It covers buildings and contents protection,
+  alternative accommodation, and outlines the benefits, coverage details, and claims
+  process.
+topics:
+- Landlord Insurance
+- Home Insurance
+- Property Protection
+- Rental Property Coverage
+- Insurance Claims
+- Buildings and Contents Insurance
+keywords:
+- landlord insurance
+- let property insurance
+- rental property insurance
+- buildings insurance
+- contents insurance
+- Aviva Signature
+- damage coverage
+- theft protection
+- fire insurance
+- flooding insurance
+- alternative accommodation cover
+- loss of rental income
+- defaqto 5 star
+- replacement locks cover
+- matching items cover
+- UK landlord
 ---
 
 Close menu

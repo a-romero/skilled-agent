@@ -1,6 +1,34 @@
 ---
 url: https://www.aviva.co.uk/retirement/transfer-your-pension/knowledge-centre/do-i-need-financial-advice-to-transfer-my-pension/
-title: "Do I Need Financial Advice to Transfer My Pension? - Aviva"
+title: Do I Need Financial Advice to Transfer My Pension? - Aviva
+summary: This page explains when financial advice is required for pension transfers,
+  including mandatory requirements for defined benefit pensions and safeguarded benefits
+  over £30,000. It outlines the benefits of seeking advice, how to find qualified
+  advisers, and when you can transfer without professional guidance.
+topics:
+- Pension Transfers
+- Financial Advice
+- Defined Benefit Pensions
+- Defined Contribution Pensions
+- Pension Consolidation
+- Regulatory Requirements
+- Pension Protection
+- Retirement Planning
+keywords:
+- pension transfer
+- financial advice
+- defined benefit
+- defined contribution
+- SIPP
+- safeguarded benefits
+- FCA adviser
+- pension transfer analysis
+- QROPS
+- exit charges
+- pension consolidation
+- retirement income
+- risk assessment
+- pension scams
 ---
 
 # Do I need financial advice to transfer my pension?

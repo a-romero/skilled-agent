@@ -1,6 +1,35 @@
 ---
 url: https://www.aviva.co.uk/business/employee-financial-advice/
-title: "Financial advice for employees - Aviva"
+title: Financial advice for employees - Aviva
+summary: This page describes Aviva's financial advice service for employees, which
+  helps them plan for retirement and manage their finances. It outlines the benefits,
+  types of advice available, costs, and how employers can offer this service as part
+  of their employee benefits package.
+topics:
+- Employee Financial Advice
+- Retirement Planning
+- Pension Advice
+- Investment Planning
+- Employee Benefits
+- Financial Wellbeing
+- Equity Release
+- Protection Planning
+keywords:
+- financial advice for employees
+- retirement planning
+- pension advice
+- workplace benefits
+- defined contribution pensions
+- income drawdown
+- annuities
+- ISAs
+- equity release
+- life insurance
+- critical illness cover
+- income protection
+- financial education
+- tax exemption
+- Aviva
 ---
 
 Close menu

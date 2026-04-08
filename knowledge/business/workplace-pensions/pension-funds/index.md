@@ -1,6 +1,43 @@
 ---
 url: https://www.aviva.co.uk/business/workplace-pensions/pension-funds/#main
-title: "Pension Funds for Aviva workplace pensions - Aviva"
+title: Pension Funds for Aviva workplace pensions - Aviva
+summary: This page describes Aviva's pension fund options for workplace pensions,
+  including default strategies like My Future Focus and My Future, as well as self-select
+  funds covering various asset classes and ethical investment options. It highlights
+  Aviva's approach to expert fund management, governance, sustainability, and member
+  choice across over 200 funds.
+topics:
+- Workplace Pensions
+- Pension Fund Options
+- Investment Strategies
+- Default Funds
+- Sustainable Investing
+- Ethical Investments
+- Shariah-compliant Investing
+- Fund Management
+- Retirement Planning
+- Auto-enrolment
+keywords:
+- My Future Focus
+- My Future
+- My Future Vision
+- Stewardship funds
+- self-select funds
+- pension funds
+- workplace pensions
+- default pension fund
+- Aviva Investors
+- ESG funds
+- Shariah-compliant
+- Group Personal Pension
+- Aviva Master Trust
+- Group Self-invested Personal Pension
+- fund managers
+- investment options
+- retirement income
+- glidepath
+- private markets
+- sustainability
 ---
 
 Close menu

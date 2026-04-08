@@ -1,6 +1,34 @@
 ---
 url: https://www.aviva.co.uk/business/workplace-pensions/group-personal-pension/advisers/
-title: "Group Personal Pension – information for advisers - Aviva"
+title: Group Personal Pension – information for advisers - Aviva
+summary: This page provides information for financial advisers about Aviva's Group
+  Personal Pension (GPP), a workplace pension solution for small to medium-sized businesses.
+  It covers how the scheme works, features, costs, investment options, and the application
+  process.
+topics:
+- Workplace Pensions
+- Group Personal Pensions
+- Pension Administration
+- Investment Options
+- Auto Enrolment Compliance
+- Payroll Integration
+- Pension Providers
+keywords:
+- Group Personal Pension
+- workplace pension
+- pension adviser
+- auto enrolment
+- My Future Focus
+- pension funds
+- MyAvivaBusiness
+- pension charges
+- pension contributions
+- SME pension
+- defined contribution
+- ESG funds
+- Shariah-compliant
+- payroll integration
+- pension scheme setup
 ---
 
 Close menu

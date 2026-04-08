@@ -1,6 +1,44 @@
 ---
 url: https://www.aviva.co.uk/business/health-insurance/business-pmi/claims/
-title: "Solutions PMI claims - Aviva"
+title: Solutions PMI claims - Aviva
+summary: This page explains how employees can make claims on Aviva Solutions Private
+  Medical Insurance (PMI), covering the step-by-step process from GP referral through
+  to bill settlement. It details various claim pathways including Expert Select, Networks,
+  BacktoBetter, Mental Health Pathway, and Cancer Care services.
+topics:
+- PMI Claims Process
+- Employee Health Insurance Claims
+- GP Referrals
+- Specialist Treatment Access
+- Claim Registration and Approval
+- Hospital and Specialist Selection
+- BacktoBetter Musculoskeletal Services
+- Mental Health Support
+- Cancer Care Claims
+- Bill Settlement and Payment
+- MyAviva Portal
+- Customer Support and Guidance
+keywords:
+- PMI claims
+- health insurance claim
+- GP referral
+- specialist treatment
+- open referral
+- named referral
+- Expert Select
+- Networks
+- BacktoBetter
+- Mental Health Pathway
+- Cancer Care
+- MyAviva
+- claim approval
+- hospital list
+- procedure code
+- bill settlement
+- musculoskeletal
+- physiotherapy
+- cognitive behavioural therapy
+- oncology claims
 ---
 
 # Solutions Private Medical Insurance (PMI) claims

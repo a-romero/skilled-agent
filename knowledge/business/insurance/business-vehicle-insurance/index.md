@@ -1,6 +1,34 @@
 ---
 url: https://www.aviva.co.uk/business/insurance/business-vehicle-insurance/
-title: "Business Car, Van & Commercial Vehicle Insurance - Aviva"
+title: Business Car, Van & Commercial Vehicle Insurance - Aviva
+summary: This page describes Aviva's business vehicle and van insurance offerings
+  for sole traders and companies, detailing coverage options, benefits, and policy
+  features.
+topics:
+- Business Vehicle Insurance
+- Van Insurance
+- Commercial Vehicle Insurance
+- Comprehensive Insurance
+- Third Party Fire and Theft
+- Insurance Coverage
+- Claims Process
+- Optional Extras
+keywords:
+- business vehicle insurance
+- van insurance
+- commercial vehicle insurance
+- Aviva Signature
+- sole trader insurance
+- company vehicle insurance
+- comprehensive cover
+- third party fire theft
+- no claim discount
+- breakdown cover
+- motor legal cover
+- tool cover
+- uninsured driver promise
+- business insurance
+- vehicle coverage
 ---
 
 Close menu

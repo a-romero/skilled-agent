@@ -1,6 +1,29 @@
 ---
 url: https://www.aviva.co.uk/business/group-protection/aviva-flexpertise/
-title: "Aviva Flex-pertise™ Employee Benefits - Aviva"
+title: Aviva Flex-pertise™ Employee Benefits - Aviva
+summary: Aviva Flex-pertise is a flexible employee benefits solution for larger employers
+  that allows employees to choose from a comprehensive range of group protection insurance
+  products including life insurance, critical illness cover, and income protection,
+  with access to wellbeing services.
+topics:
+- Employee Benefits
+- Group Protection Insurance
+- Life Insurance
+- Critical Illness Cover
+- Income Protection
+- Workplace Wellbeing
+- Benefits Administration
+keywords:
+- Aviva Flex-pertise
+- group protection insurance
+- employee benefits
+- group life insurance
+- critical illness insurance
+- group income protection
+- flexible benefits
+- employee wellbeing
+- workplace insurance
+- benefits package
 ---
 
 Close menu

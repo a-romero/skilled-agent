@@ -1,6 +1,37 @@
 ---
 url: https://www.aviva.co.uk/business/workplace-pensions/own-rules-trust/
-title: "Own Rules Trust services - Aviva"
+title: Own Rules Trust services - Aviva
+summary: This page describes Aviva's Own Rules Trust services, a workplace pension
+  solution that allows companies to retain their own board of trustees while outsourcing
+  scheme management and administration to Aviva. It covers the benefits, features,
+  investment options, and support provided for setting up and managing trust-based
+  pension schemes.
+topics:
+- Workplace Pensions
+- Own Rules Trust Schemes
+- Pension Administration
+- Employee Benefits
+- Investment Solutions
+- Pension Implementation
+- Trust-Based Pensions
+- Member Engagement
+- Pension Governance
+keywords:
+- Own Rules Trust
+- workplace pension
+- trust-based scheme
+- pension provider
+- scheme administration
+- member engagement
+- pension investment
+- My Future Focus
+- auto-enrolment
+- pension contributions
+- financial wellbeing
+- pension transfer
+- scheme implementation
+- trustee board
+- ESG funds
 ---
 
 ![](https://static.aviva.io/content/dam/aviva-business/gb/Images/business/workplace-pension/bespoke-workplace-pensions/workplace-pensions-group-personal-pension-bespoke-workplace-pod-1620x910px.$16x9-mobile-lg-4cols$.jpg?$16x9-mobile-lg-4cols$)

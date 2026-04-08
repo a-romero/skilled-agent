@@ -1,6 +1,39 @@
 ---
 url: https://www.aviva.co.uk/business/workplace-wellbeing/
-title: "Workplace Wellbeing | Business - Aviva"
+title: Workplace Wellbeing | Business - Aviva
+summary: This page outlines Aviva's comprehensive workplace wellbeing solutions for
+  employers and employees, covering physical, mental, and financial wellbeing services,
+  tools, and resources. It emphasizes how investing in employee wellbeing improves
+  workforce resilience, engagement, and organizational performance.
+topics:
+- Employee Wellbeing Programs
+- Mental Health Support
+- Physical Health Services
+- Financial Wellbeing
+- Workplace Health Insurance
+- Group Protection
+- Employee Benefits
+- Workplace Resilience
+- Burnout Prevention
+- Pension and Retirement Planning
+keywords:
+- workplace wellbeing
+- employee health
+- mental wellbeing
+- physical health
+- financial wellbeing
+- digital GP
+- fitness discounts
+- Aviva Wellbeing app
+- workforce resilience
+- employer benefits
+- group protection
+- employee engagement
+- burnout
+- neurodiversity
+- menopause
+- pension calculator
+- financial advice
 ---
 
 Close menu

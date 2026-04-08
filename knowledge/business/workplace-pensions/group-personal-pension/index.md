@@ -1,6 +1,31 @@
 ---
 url: https://www.aviva.co.uk/business/workplace-pensions/group-personal-pension/#main
-title: "Group Personal Pension - Aviva"
+title: Group Personal Pension - Aviva
+summary: This page describes Aviva's Group Personal Pension (GPP), a workplace pension
+  scheme designed for small to medium-sized businesses with at least 10 employees
+  that can be set up and managed online in minutes. It outlines the key features,
+  benefits, investment options, costs, and how to get a quote or apply.
+topics:
+- Workplace pensions
+- Group Personal Pension (GPP)
+- Auto-enrolment compliance
+- Pension administration
+- Investment funds
+- Employer pension schemes
+- Defined contribution pensions
+keywords:
+- Group Personal Pension
+- workplace pension
+- auto-enrolment
+- pension contributions
+- My Future Focus
+- MyAvivaBusiness
+- employer pension
+- defined contribution
+- pension funds
+- SME pensions
+- pension provider
+- retirement planning
 ---
 
 Close menu

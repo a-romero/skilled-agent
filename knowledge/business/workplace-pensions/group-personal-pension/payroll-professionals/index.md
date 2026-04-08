@@ -1,6 +1,40 @@
 ---
 url: https://www.aviva.co.uk/business/workplace-pensions/group-personal-pension/payroll-professionals/
-title: "Group Personal Pension – information for payroll professionals - Aviva"
+title: Group Personal Pension – information for payroll professionals - Aviva
+summary: This page provides comprehensive information for payroll professionals about
+  Aviva's Group Personal Pension (GPP) scheme, including features, setup process,
+  costs, investment options, and FAQs. It details how to apply, manage the scheme
+  through payroll integration, and outlines employee enrollment and pension management
+  procedures.
+topics:
+- Workplace Pension Schemes
+- Group Personal Pension (GPP)
+- Payroll Integration
+- Auto Enrolment Compliance
+- Pension Administration
+- Investment Options
+- Employee Benefits
+- Pension Transfers
+- Financial Services
+keywords:
+- Group Personal Pension
+- workplace pension
+- payroll integration
+- auto enrolment
+- pension administration
+- defined contribution pension
+- pension scheme setup
+- MyAvivaBusiness
+- My Future Focus
+- pension funds
+- employer pension contributions
+- pension compliance
+- ESG investing
+- Shariah-compliant investing
+- pension provider
+- employee pension
+- pension charges
+- pension transfers
 ---
 
 Close menu

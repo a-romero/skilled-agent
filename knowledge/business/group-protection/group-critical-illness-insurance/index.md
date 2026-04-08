@@ -1,6 +1,31 @@
 ---
 url: https://www.aviva.co.uk/business/group-protection/group-critical-illness-insurance/
-title: "Group critical illness cover - Aviva"
+title: Group critical illness cover - Aviva
+summary: This page describes Aviva's Group Critical Illness Cover, an employee protection
+  insurance product that provides tax-free lump sum payments when employees, their
+  families, or children are diagnosed with critical illnesses. It outlines coverage
+  options, benefits, exclusions, and includes customer testimonials.
+topics:
+- Group Protection Insurance
+- Critical Illness Cover
+- Employee Benefits
+- Financial Protection
+- Health Insurance
+- Workplace Wellbeing
+keywords:
+- Group critical illness cover
+- Critical illness insurance
+- Employee protection
+- Tax-free lump sum
+- Standard cover
+- Extended cover
+- Child cover
+- Cancer cover
+- Partner cover
+- Total permanent disability
+- Group protection claims
+- Wellbeing services
+- Aviva insurance
 ---
 
 ![](https://static.aviva.io/content/dam/aviva-business/gb/Images/business/group-protection-insurance/group-critical-illness-cover/group-critical-illness-hero-woman-hugging-daughter_2880x1620px.$16x9-mobile-lg-4cols$.jpg?$16x9-mobile-lg-4cols$)

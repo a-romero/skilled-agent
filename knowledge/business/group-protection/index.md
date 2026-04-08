@@ -1,6 +1,32 @@
 ---
 url: https://www.aviva.co.uk/business/group-protection/
-title: "Group protection - Aviva"
+title: Group protection - Aviva
+summary: Aviva's group protection insurance solutions for employers, covering life
+  insurance, critical illness, and income protection policies. The page details flexible
+  benefits packages, the Aviva Flex-pertise offering, and wellbeing services available
+  to support employees.
+topics:
+- Group Life Insurance
+- Group Critical Illness Insurance
+- Group Income Protection
+- Employee Benefits
+- Aviva Flex-pertise
+- Workplace Protection
+- Financial Security
+keywords:
+- group protection
+- group life insurance
+- critical illness cover
+- income protection
+- employee benefits
+- life insurance
+- financial protection
+- wellbeing services
+- flexible benefits package
+- employer insurance
+- Aviva Flex-pertise
+- Master Trust
+- group protection claims
 ---
 
 Close menu

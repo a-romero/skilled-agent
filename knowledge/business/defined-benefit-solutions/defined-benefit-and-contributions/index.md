@@ -1,6 +1,30 @@
 ---
 url: https://www.aviva.co.uk/business/defined-benefit-solutions/defined-benefit-and-contributions/
-title: "Aviva Defined Benefit and Contribution Solutions - Aviva"
+title: Aviva Defined Benefit and Contribution Solutions - Aviva
+summary: 'This page describes Aviva''s Defined Benefit and Contribution (DB&C) solutions
+  for pension scheme Trustees, offering flexible options to secure members'' benefits
+  that combine both DB and DC elements. It outlines three main solutions: Aviva Master
+  Trust, External DC provider, and Protected benefits options.'
+topics:
+- Pension scheme solutions
+- Defined Benefit and Contribution (DB&C)
+- Trustee governance
+- Retirement planning
+- Pension de-risking
+- Master Trust solutions
+- Employee benefits
+keywords:
+- DB&C solutions
+- Defined Benefit
+- Defined Contribution
+- Aviva Master Trust
+- Pension Commencement Lump Sum
+- PCLS
+- Protected pension ages
+- Scheme Trustees
+- Workplace pensions
+- DC platform
+- Pension governance
 ---
 
 ![](https://static.aviva.io/content/dam/aviva-business/gb/Images/workplace-pensions/workplace-savings/aviva-master-trust/hero-defined-benefit-and-contributions-vigilent-monitoring_2880x1620px.$16x9-mobile-lg-4cols$.jpg?$16x9-mobile-lg-4cols$)

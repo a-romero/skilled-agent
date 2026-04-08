@@ -1,6 +1,32 @@
 ---
 url: https://www.aviva.co.uk/business/contact-us/business-insurance/
-title: "Contact us about business insurance - Aviva"
+title: Contact us about business insurance - Aviva
+summary: This page provides contact information and phone numbers for various business
+  insurance products offered by Aviva, including claims reporting, general enquiries,
+  and payment assistance. It specifies which products are still available for direct
+  purchase and which have been discontinued.
+topics:
+- Business Insurance Contact Information
+- Claims Reporting
+- Customer Service
+- Business Insurance Products
+- Payment Support
+keywords:
+- business insurance
+- contact us
+- claims
+- phone number
+- Aviva
+- business vehicle insurance
+- public liability insurance
+- employers' liability insurance
+- professional indemnity insurance
+- buildings and contents insurance
+- tools and stock insurance
+- business income insurance
+- customer service
+- enquiries
+- payment assistance
 ---
 
 Close menu

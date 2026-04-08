@@ -1,6 +1,35 @@
 ---
 url: https://www.aviva.co.uk/business/health-insurance/corporate-pmi/claims/
-title: "Corporate PMI claims - Aviva"
+title: Corporate PMI claims - Aviva
+summary: This page explains how employees can make claims on Aviva's Corporate Private
+  Medical Insurance, including the step-by-step process from GP referral through to
+  bill settlement. It covers specialized claims pathways for BacktoBetter, Mental
+  Health, Cancer Care, and other conditions.
+topics:
+- Health Insurance Claims Process
+- Employee Medical Coverage
+- GP Referrals and Specialist Treatment
+- BacktoBetter Musculoskeletal Service
+- Mental Health Pathway Claims
+- Cancer Care Claims
+- Hospital Networks and Treatment Facilities
+- Claims Support and Customer Service
+keywords:
+- Corporate PMI claims
+- private medical insurance claims
+- GP referral
+- specialist treatment
+- health insurance claim process
+- Aviva health claims
+- BacktoBetter
+- Mental Health Pathway
+- Cancer Care
+- hospital treatment
+- claims team
+- MyAviva portal
+- procedure code
+- outpatient treatment
+- employee health insurance
 ---
 
 Close menu

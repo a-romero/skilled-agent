@@ -1,6 +1,26 @@
 ---
 url: https://www.aviva.co.uk/business/health-insurance/contact-us/
-title: "Business health insurance | Contact details for employers - Aviva"
+title: Business health insurance | Contact details for employers - Aviva
+summary: This page provides contact information and guidance for employers seeking
+  business health insurance quotes from Aviva, with separate contact methods for different
+  company sizes and instructions for making claims.
+topics:
+- Business Health Insurance
+- Employer Benefits
+- Insurance Claims
+- Customer Support
+- Corporate Health Coverage
+keywords:
+- business health insurance
+- employer contact
+- health insurance quote
+- employee benefits
+- private medical insurance
+- SME insurance
+- corporate PMI
+- insurance claims
+- Aviva business
+- health coverage
 ---
 
 ![](https://static.aviva.io/content/dam/aviva-business/gb/Images/contact-us/health/Business-health-contact-us-hero-2880x1620px.$16x9-mobile-lg-4cols$.jpg?$16x9-mobile-lg-4cols$)

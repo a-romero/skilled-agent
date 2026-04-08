@@ -1,6 +1,33 @@
 ---
 url: https://www.aviva.co.uk/business/group-protection/group-income-protection-insurance/
-title: "Group income protection insurance - Aviva"
+title: Group income protection insurance - Aviva
+summary: Aviva's Group Income Protection Insurance provides financial support covering
+  up to 80% of employee salary during illness or injury-related absences, with rehabilitation
+  services and flexible payout options to help employees return to work.
+topics:
+- Employee Benefits
+- Income Protection Insurance
+- Group Insurance
+- Rehabilitation Services
+- Employee Wellbeing
+- Business Insurance
+- Occupational Health
+keywords:
+- group income protection
+- salary protection
+- employee insurance
+- sick pay
+- rehabilitation support
+- case manager
+- deferred period
+- return to work
+- business protection
+- employee benefits
+- tax-efficient insurance
+- wellbeing services
+- critical illness
+- group life insurance
+- Aviva Flex-pertise
 ---
 
 ![](https://static.aviva.io/content/dam/aviva-business/gb/Images/business/group-protection-insurance/group-income-protection/group-income-protection-hero-man-and-child-on-phone_2880x1620px.$16x9-mobile-lg-4cols$.jpg?$16x9-mobile-lg-4cols$)

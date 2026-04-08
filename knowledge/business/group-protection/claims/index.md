@@ -1,6 +1,32 @@
 ---
 url: https://www.aviva.co.uk/business/group-protection/claims/
-title: "Group Protection claims - Aviva"
+title: Group Protection claims - Aviva
+summary: This page provides information about Group Protection insurance claims from
+  Aviva, including how to make claims for Group Life, Group Critical Illness, and
+  Group Income Protection, along with frequently asked questions and customer stories.
+topics:
+- Group Life Insurance Claims
+- Group Critical Illness Claims
+- Group Income Protection Claims
+- Claims Process and Support
+- Employee Wellbeing Support
+- Claims FAQ
+- Customer Testimonials
+keywords:
+- Group Protection claims
+- Group Life claim
+- Group Critical Illness
+- Group Income Protection
+- claims process
+- death claim
+- critical illness diagnosis
+- income protection
+- claims handlers
+- rehabilitation support
+- wellbeing services
+- case manager
+- claim assessment
+- employee support
 ---
 
 Close menu

@@ -1,6 +1,38 @@
 ---
 url: https://www.aviva.co.uk/business/workplace-pensions/
-title: "Workplace pension schemes - Aviva"
+title: Workplace pension schemes - Aviva
+summary: This page provides comprehensive information about Aviva's workplace pension
+  schemes, including different types of pension solutions for businesses of various
+  sizes, auto-enrolment requirements, and employer responsibilities. It covers scheme
+  options, costs, benefits, and additional support services available to employers
+  and employees.
+topics:
+- Workplace Pensions
+- Group Personal Pensions
+- Defined Contribution Schemes
+- Auto-Enrolment Requirements
+- Employer Pension Contributions
+- Pension Scheme Types
+- Employee Benefits
+- Financial Planning
+- UK Pensions Regulation
+- Group Protection Insurance
+keywords:
+- workplace pension
+- group personal pension
+- auto-enrolment
+- pension contributions
+- GSIPP
+- master trust
+- defined contribution
+- pension scheme
+- employer pension
+- qualifying earnings
+- pension provider
+- pension funds
+- employee benefits
+- pension governance
+- Aviva pensions
 ---
 
 Close menu

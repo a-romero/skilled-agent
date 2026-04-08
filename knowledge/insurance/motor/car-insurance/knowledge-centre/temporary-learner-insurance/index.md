@@ -1,6 +1,26 @@
 ---
 url: https://www.aviva.co.uk/insurance/motor/car-insurance/knowledge-centre/temporary-learner-insurance/
-title: "Temporary learner driver insurance - Aviva"
+title: Temporary learner driver insurance - Aviva
+summary: This page explains Aviva's temporary learner driver car insurance, covering
+  what it is, when you need it, eligibility requirements, and factors affecting cost.
+  It addresses common questions about supervision, adding learners to policies, building
+  No Claims Discount, and what happens when learners pass their driving test.
+topics:
+- Learner Driver Insurance
+- Short-term Car Insurance
+- Motor Insurance
+- Driving Test Preparation
+- Insurance for New Drivers
+keywords:
+- temporary learner driver insurance
+- short-term car insurance
+- learner driver
+- No Claims Discount
+- car insurance
+- learner supervision
+- insurance cost factors
+- 17 year old driver
+- Aviva insurance
 ---
 
 Close menu

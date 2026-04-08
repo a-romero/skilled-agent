@@ -1,6 +1,28 @@
 ---
 url: https://www.aviva.co.uk/services/about-our-business/about-us/aviva-company-details/
-title: "Aviva company details - Aviva"
+title: Aviva company details - Aviva
+summary: This page provides comprehensive registration details for Aviva plc and its
+  20+ UK subsidiary companies operating in insurance, pensions, investments, and financial
+  services. Each company listing includes registered office address, company registration
+  number, and relevant financial regulatory information.
+topics:
+- Company Registration Details
+- UK Financial Services Companies
+- Insurance and Pensions Providers
+- Financial Regulatory Information
+- Corporate Structure
+keywords:
+- Aviva plc
+- Company registration
+- Registered office
+- Financial Conduct Authority
+- Prudential Regulation Authority
+- Insurance companies
+- Pension providers
+- Investment services
+- UK financial services
+- Company number
+- Composite insurer
 ---
 
 Close menu

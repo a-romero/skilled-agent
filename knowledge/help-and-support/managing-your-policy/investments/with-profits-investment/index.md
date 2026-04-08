@@ -1,6 +1,30 @@
 ---
 url: https://www.aviva.co.uk/help-and-support/managing-your-policy/investments/with-profits-investment/
-title: "With-profits funds - Aviva"
+title: With-profits funds - Aviva
+summary: This page explains Aviva's with-profits investment funds, a medium to long-term
+  investment option that combines shares, bonds, property and money market investments
+  with regular and final bonuses. It details how smoothing works, market value reductions,
+  bonus reviews, and includes educational content about investment principles.
+topics:
+- Investment Products
+- With-Profits Funds
+- Bonus Systems
+- Risk Management
+- Investment Education
+- Financial Management Practices
+keywords:
+- with-profits
+- regular bonus
+- final bonus
+- market value reduction
+- smoothing
+- unitised policies
+- investment fund
+- capital growth
+- bonus rates
+- investment portfolio
+- medium to long term investment
+- MVR free guarantee
 ---
 
 Close menu

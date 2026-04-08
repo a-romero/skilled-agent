@@ -1,6 +1,35 @@
 ---
 url: https://www.aviva.co.uk/business/support/legal-protection/
-title: "Legal Protection - Aviva"
+title: Legal Protection - Aviva
+summary: This page explains Aviva's Legal Protection Insurance for businesses, which
+  covers legal costs, provides 24/7 specialist legal advice, and includes access to
+  Aviva Businesslaw - an online platform with legal documents, guides, and tools to
+  help manage workplace legal issues.
+topics:
+- Legal Protection Insurance
+- Business Legal Support
+- Employment Law
+- Legal Cost Coverage
+- Aviva Businesslaw
+- Legal Advice Services
+- Insurance Claims
+- Tax and Compliance
+keywords:
+- legal protection insurance
+- employment tribunals
+- legal costs cover
+- business legal advice
+- 24/7 legal helpline
+- Aviva Businesslaw
+- contract disputes
+- legal expenses
+- commercial insurance
+- employment law
+- tax helpline
+- counselling support
+- legal document templates
+- DAS insurance
+- workplace legal issues
 ---
 
 Close menu

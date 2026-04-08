@@ -1,6 +1,37 @@
 ---
 url: https://www.aviva.co.uk/help-and-support/
-title: "Help and support - Aviva"
+title: Help and support - Aviva
+summary: Help and support hub for Aviva customers covering insurance, investments,
+  pensions, and claims management. Provides account login, chatbot assistance, bereavement
+  support, accessibility services, and links to various product categories.
+topics:
+- Customer Support and Help
+- Account Management
+- Insurance Products
+- Investments and Retirement
+- Bereavement Services
+- Accessibility Services
+- Fraud Protection
+- MyAviva App and Services
+keywords:
+- help and support
+- login
+- insurance
+- claims
+- pensions
+- investments
+- chatbot
+- bereavement
+- accessibility
+- MyAviva
+- power of attorney
+- fraud protection
+- car insurance
+- home insurance
+- life insurance
+- health insurance
+- travel insurance
+- pet insurance
 ---
 
 Close menu

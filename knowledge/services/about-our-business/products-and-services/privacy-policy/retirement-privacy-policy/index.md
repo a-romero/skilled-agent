@@ -1,6 +1,44 @@
 ---
 url: https://www.aviva.co.uk/services/about-our-business/products-and-services/privacy-policy/retirement-privacy-policy/
-title: "Retirement Privacy Policy - Aviva"
+title: Retirement Privacy Policy - Aviva
+summary: This privacy policy explains how Aviva collects, uses, and protects personal
+  information related to retirement products and services in the United Kingdom. It
+  details the types of data collected, sources of information, lawful bases for processing,
+  and individuals' rights regarding their personal data.
+topics:
+- Data Collection and Sources
+- Personal Information Types
+- Data Usage and Purposes
+- Lawful Bases for Processing
+- Sensitive Personal Information
+- Data Security and Protection
+- Third Party Data Sharing
+- Customer Rights and Privacy
+- Fraud Prevention and Compliance
+- Marketing and Communications
+- Automated Decision Making
+- Children's Data
+keywords:
+- retirement privacy policy
+- personal information
+- data protection
+- GDPR compliance
+- sensitive data
+- data collection
+- lawful basis
+- data processing
+- privacy rights
+- data security
+- annuity
+- occupational pension
+- health information
+- financial data
+- fraud detection
+- data sharing
+- marketing preferences
+- cookies
+- profiling
+- beneficiaries
 ---
 
 Close menu

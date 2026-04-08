@@ -1,6 +1,30 @@
 ---
 url: https://www.aviva.co.uk/business/workplace-pensions/contact-us/
-title: "Workplace pensions – contact details for employers - Aviva"
+title: Workplace pensions – contact details for employers - Aviva
+summary: This page provides comprehensive contact details and information for employers
+  and scheme administrators managing workplace pensions with Aviva, organized by pension
+  plan types and query categories.
+topics:
+- Workplace pension contact information
+- New business enquiries
+- Group Personal Pension plans
+- Pension plan customer service
+- Scheme management and administration
+- MyAvivaBusiness platform support
+- Billing and contributions
+- Payroll integration
+- Employer pension queries
+keywords:
+- workplace pensions
+- employer contact
+- scheme administrator
+- pension plans
+- customer service
+- auto enrolment
+- MyAvivaBusiness
+- pension scheme management
+- Aviva pensions
+- employer support
 ---
 
 Close menu

@@ -1,6 +1,33 @@
 ---
 url: https://www.aviva.co.uk/business/defined-benefit-solutions/
-title: "Bulk purchase annuity - Aviva"
+title: Bulk purchase annuity - Aviva
+summary: This page describes Aviva's bulk purchase annuity (BPA) solutions for de-risking
+  defined benefit pension schemes. It outlines buy-in and buy-out options, Aviva's
+  experience and financial strength, and related pension solutions.
+topics:
+- Defined Benefit Pension Solutions
+- Bulk Purchase Annuities
+- Pension De-risking
+- Buy-in and Buy-out Solutions
+- Pension Scheme Management
+- Sustainable Investments
+- Pension Administration
+keywords:
+- bulk purchase annuity
+- BPA
+- buy-in
+- buy-out
+- defined benefit scheme
+- de-risk
+- pension liabilities
+- Aviva Clarity
+- pension insurance
+- longevity risk
+- investment risk
+- inflation risk
+- trustee
+- sponsoring employer
+- annuity benefits
 ---
 
 Close menu

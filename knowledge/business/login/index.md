@@ -1,6 +1,25 @@
 ---
 url: https://www.aviva.co.uk/business/login/
-title: "Access Aviva Business policies - Aviva"
+title: Access Aviva Business policies - Aviva
+summary: This page provides access points for Aviva Business customers to manage their
+  workplace pensions, business vehicle insurance, and other business policies through
+  MyAviva Business or the business insurance portal. It outlines login options and
+  support contact information for existing customers.
+topics:
+- Business Insurance Access
+- MyAviva Business Portal
+- Workplace Pensions Management
+- Business Vehicle Insurance
+- Customer Support
+keywords:
+- Aviva Business
+- MyAviva Business login
+- business insurance portal
+- workplace pension
+- business vehicle insurance
+- policy management
+- customer login
+- underwriting support
 ---
 
 Close menu

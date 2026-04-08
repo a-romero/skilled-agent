@@ -1,6 +1,31 @@
 ---
 url: https://www.aviva.co.uk/services/about-our-business/products-and-services/privacy-policy/
-title: "Privacy Policy - Aviva"
+title: Privacy Policy - Aviva
+summary: This page serves as a hub for Aviva's privacy policies, allowing customers
+  to access the relevant privacy policy based on their product type or relationship
+  with Aviva. It explains that personal information is collected and used according
+  to legal requirements, with separate policies for different insurance and financial
+  products.
+topics:
+- Privacy Policy
+- Data Protection
+- Customer Information
+- Insurance Products
+- Financial Services
+- Personal Data
+- GDPR Compliance
+keywords:
+- privacy policy
+- personal information
+- Aviva
+- motor insurance
+- home insurance
+- health insurance
+- life insurance
+- retirement
+- investments
+- data protection
+- customer rights
 ---
 
 Close menu

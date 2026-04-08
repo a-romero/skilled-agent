@@ -1,6 +1,35 @@
 ---
 url: https://www.aviva.co.uk/business/workplace-pensions/aviva-master-trust/
-title: "Aviva Master Trust - Aviva"
+title: Aviva Master Trust - Aviva
+summary: The Aviva Master Trust is an independently governed multi-employer pension
+  scheme offering comprehensive trustee oversight, expert administration, and tailored
+  support for employers of any size. The page details its features, investment options,
+  member support services, and how to apply.
+topics:
+- Workplace Pensions
+- Master Trust Schemes
+- Pension Administration
+- Employee Benefits
+- Investment Solutions
+- Retirement Planning
+- Auto-Enrolment
+- Trustee Governance
+keywords:
+- Aviva Master Trust
+- multi-employer pension scheme
+- workplace pension provider
+- independent trustee board
+- pension administration
+- default investment solution
+- My Future Focus
+- auto-enrolment
+- pension contributions
+- member engagement
+- retirement income
+- ESG investing
+- Shariah-compliant funds
+- pension consolidation
+- workplace pension regulations
 ---
 
 Close menu

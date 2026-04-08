@@ -1,6 +1,37 @@
 ---
 url: https://www.aviva.co.uk/business/workplace-pensions/other-pension-solutions/
-title: "Other pension solutions - Aviva"
+title: Other pension solutions - Aviva
+summary: This page outlines Aviva's other pension solutions, specifically Group Additional
+  Voluntary Contributions and Section 32 Buy-out schemes, designed to complement or
+  restructure existing workplace pension arrangements. It details investment options,
+  support services, and FAQs about workplace pension costs, tax relief, and scheme
+  transfers.
+topics:
+- Group Additional Voluntary Contributions (AVC)
+- Section 32 Buy-out Schemes
+- Workplace Pension Solutions
+- Pension Fund Investment Options
+- Scheme Transfer and Migration
+- Pension Administration and Support
+- Auto-enrolment Compliance
+- Retirement Planning Tools
+- Pension Governance and Regulation
+keywords:
+- workplace pension
+- Group AVC
+- Section 32
+- deferred annuity
+- pension scheme transfer
+- My Future Focus
+- My Future Vision
+- Stewardship funds
+- Shariah-compliant investing
+- pension contributions
+- tax relief
+- auto-enrolment
+- pension provider
+- Aviva Master Trust
+- Own Rules Trust
 ---
 
 Close menu

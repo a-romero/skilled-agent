@@ -1,6 +1,43 @@
 ---
 url: https://www.aviva.co.uk/
-title: "Insurance, Savings, Investments, Retirement and Health - Aviva"
+title: Insurance, Savings, Investments, Retirement and Health - Aviva
+summary: Aviva's UK homepage showcasing comprehensive insurance, savings, investments,
+  retirement and health products. The page highlights their 5-star rated insurance
+  offerings and provides access to quotes, claims, and financial planning tools.
+topics:
+- Insurance Products
+- Motor Insurance
+- Home Insurance
+- Life Insurance
+- Health Insurance
+- Travel Insurance
+- Pet Insurance
+- Pensions and Retirement
+- Investments and Savings
+- Financial Planning
+- Claims Management
+keywords:
+- car insurance
+- home insurance
+- life insurance
+- health insurance
+- travel insurance
+- pension
+- savings accounts
+- ISA
+- investment
+- breakdown cover
+- critical illness cover
+- income protection
+- equity release
+- Aviva Signature
+- Defaqto 5 Star
+- motor insurance
+- buildings insurance
+- contents insurance
+- landlord insurance
+- pet insurance
+- retirement planning
 ---
 
 Close menu

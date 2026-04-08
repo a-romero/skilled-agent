@@ -1,6 +1,37 @@
 ---
 url: https://www.aviva.co.uk/business/workplace-pensions/group-self-invested-personal-pension/
-title: "Group Self-Invested Personal Pension - Aviva"
+title: Group Self-Invested Personal Pension - Aviva
+summary: This page explains Aviva's Group Self-invested Personal Pension (GSIPP),
+  a contract-based workplace pension scheme that gives employees flexibility and control
+  over their pension investments with access to a wide range of funds including sustainable
+  and Shariah-compliant options.
+topics:
+- Workplace Pensions
+- Group Self-invested Personal Pension (GSIPP)
+- Pension Investment Options
+- Employee Benefits
+- Sustainable Investing
+- Pension Scheme Migration
+- Pension Administration
+- Financial Planning
+keywords:
+- GSIPP
+- Group Self-invested Personal Pension
+- workplace pension
+- pension investments
+- defined contribution pension
+- sustainable funds
+- Shariah-compliant funds
+- My Future default investment
+- pension tax relief
+- auto-enrolment
+- pension contributions
+- MyAviva
+- Fund Supermarket
+- ESG investing
+- pension provider
+- employee pensions
+- retirement planning
 ---
 
 Close menu

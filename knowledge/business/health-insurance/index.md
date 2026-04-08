@@ -1,6 +1,31 @@
 ---
 url: https://www.aviva.co.uk/business/health-insurance/
-title: "Business health insurance - Aviva"
+title: Business health insurance - Aviva
+summary: This page outlines Aviva's business health insurance solutions for UK companies,
+  offering flexible private medical insurance coverage for 1-249 employees (Solutions)
+  or 250+ employees (Optimum), along with integrated wellbeing services and support.
+topics:
+- Business Health Insurance
+- Private Medical Insurance (PMI)
+- Employee Benefits
+- Workplace Wellbeing
+- Group Health Coverage
+- Corporate Insurance Solutions
+keywords:
+- business health insurance
+- private medical insurance
+- employee health cover
+- group PMI
+- workplace benefits
+- health insurance for SMEs
+- corporate health insurance
+- employee wellbeing
+- Aviva business insurance
+- health insurance quotes
+- mental health support
+- physiotherapy cover
+- back-to-better service
+- Defaqto 5-Star rating
 ---
 
 Close menu
