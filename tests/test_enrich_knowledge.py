@@ -1,6 +1,12 @@
 import textwrap
 import pytest
-from enrich_knowledge import parse_frontmatter, write_frontmatter
+from pathlib import Path
+from enrich_knowledge import (
+    parse_frontmatter,
+    write_frontmatter,
+    generate_summary_for_dir,
+    generate_all_summaries,
+)
 
 ENRICHED_MD = textwrap.dedent("""\
     ---
@@ -63,3 +69,65 @@ def test_write_frontmatter_preserves_body() -> None:
     result = write_frontmatter(fm, body)
     assert "Page content here." in result
     assert "Added summary." in result
+
+
+@pytest.fixture
+def knowledge_tree(tmp_path: Path) -> Path:
+    root = tmp_path / "knowledge"
+    root.mkdir()
+    (root / "index.md").write_text(
+        "---\ntitle: Aviva\nsummary: Homepage.\n---\nContent."
+    )
+    biz = root / "business"
+    biz.mkdir()
+    (biz / "index.md").write_text(
+        "---\ntitle: Business\nsummary: Products for employers.\n---\nContent."
+    )
+    gp = biz / "group-protection"
+    gp.mkdir()
+    (gp / "index.md").write_text(
+        "---\ntitle: Group Protection\nsummary: Group protection products.\n---\nContent."
+    )
+    return root
+
+
+def test_generate_summary_for_dir_includes_page_title(knowledge_tree: Path) -> None:
+    gp = knowledge_tree / "business" / "group-protection"
+    content = generate_summary_for_dir(gp, knowledge_tree)
+    assert "Group Protection" in content
+
+
+def test_generate_summary_for_dir_includes_page_summary(knowledge_tree: Path) -> None:
+    gp = knowledge_tree / "business" / "group-protection"
+    content = generate_summary_for_dir(gp, knowledge_tree)
+    assert "Group protection products." in content
+
+
+def test_generate_summary_for_dir_links_subdir_summary(knowledge_tree: Path) -> None:
+    # First generate leaf SUMMARY.MD so parent can reference it
+    gp = knowledge_tree / "business" / "group-protection"
+    (gp / "SUMMARY.MD").write_text("# Group Protection\n\nGroup protection products.\n")
+    content = generate_summary_for_dir(knowledge_tree / "business", knowledge_tree)
+    assert "group-protection/SUMMARY.MD" in content
+
+
+def test_generate_all_summaries_creates_files(knowledge_tree: Path) -> None:
+    generate_all_summaries(knowledge_tree)
+    assert (knowledge_tree / "SUMMARY.MD").exists()
+    assert (knowledge_tree / "business" / "SUMMARY.MD").exists()
+    assert (knowledge_tree / "business" / "group-protection" / "SUMMARY.MD").exists()
+
+
+def test_generate_all_summaries_root_references_business(knowledge_tree: Path) -> None:
+    generate_all_summaries(knowledge_tree)
+    root_content = (knowledge_tree / "SUMMARY.MD").read_text()
+    assert "business/SUMMARY.MD" in root_content
+
+
+def test_generate_all_summaries_does_not_create_nested_summary_md(
+    knowledge_tree: Path,
+) -> None:
+    generate_all_summaries(knowledge_tree)
+    # SUMMARY.MD itself should not appear as a page entry
+    root_content = (knowledge_tree / "SUMMARY.MD").read_text()
+    assert "SUMMARY.MD](SUMMARY.MD)" not in root_content
