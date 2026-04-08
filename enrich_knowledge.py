@@ -157,8 +157,13 @@ def enrich_file(
         messages=[{"role": "user", "content": prompt}],
     )
 
+    raw = response.content[0].text.strip()
+    # Strip markdown code fences if Haiku wrapped the YAML
+    if raw.startswith("```"):
+        raw = raw.split("\n", 1)[-1]  # drop opening ```yaml line
+        raw = raw.rsplit("```", 1)[0].strip()  # drop closing ```
     try:
-        result = yaml.safe_load(response.content[0].text) or {}
+        result = yaml.safe_load(raw) or {}
     except yaml.YAMLError:
         print(f"  Warning: could not parse Claude response for {path}")
         return False

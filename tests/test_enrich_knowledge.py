@@ -202,6 +202,35 @@ def test_enrich_file_calls_claude_and_writes_fields(tmp_path: Path) -> None:
     assert "cover" in fm["keywords"]
 
 
+def test_enrich_file_strips_markdown_code_fences(tmp_path: Path) -> None:
+    p = tmp_path / "index.md"
+    p.write_text("---\ntitle: Test Page\n---\nSome content.")
+
+    mock_response = MagicMock()
+    mock_response.content = [
+        MagicMock(
+            text=textwrap.dedent("""\
+                ```yaml
+                summary: "A page about insurance."
+                topics:
+                  - insurance
+                keywords:
+                  - cover
+                ```
+            """)
+        )
+    ]
+    mock_client = MagicMock()
+    mock_client.messages.create.return_value = mock_response
+
+    result = enrich_file(p, mock_client)
+
+    assert result is True
+    fm, _ = parse_frontmatter(p.read_text())
+    assert fm["summary"] == "A page about insurance."
+    assert "insurance" in fm["topics"]
+
+
 def test_enrich_file_dry_run_does_not_write(tmp_path: Path) -> None:
     p = tmp_path / "index.md"
     original = "---\ntitle: Test\n---\nContent."
