@@ -2,7 +2,7 @@
 
 ## Sections
 
-- [Business Vehicle Insurance](business-vehicle-insurance/SUMMARY.MD) — - [Business Car, Van & Commercial Vehicle Insurance - Aviva](index.md) —
+- [Business Vehicle Insurance](business-vehicle-insurance/SUMMARY.MD) — 
 
 ## Pages
 

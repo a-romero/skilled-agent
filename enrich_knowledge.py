@@ -51,7 +51,16 @@ def generate_summary_for_dir(directory: Path, knowledge_root: Path) -> str:
             continue
         lines = sub_summary.read_text().splitlines()
         desc = next(
-            (l.strip() for l in lines if l.strip() and not l.startswith("#")), ""
+            (
+                l.strip()
+                for l in lines
+                if l.strip()
+                and not l.startswith("#")
+                and not l.startswith("-")
+                and not l.startswith("[")
+                and not l.startswith("##")
+            ),
+            "",
         )
         label = subdir.name.replace("-", " ").title()
         sections.append(f"- [{label}]({subdir.name}/SUMMARY.MD) — {desc}")
@@ -113,7 +122,7 @@ def _needs_enrichment(fm: dict) -> bool:
 
 
 def enrich_file(
-    path: Path, client: anthropic.Anthropic, dry_run: bool = False
+    path: Path, client: anthropic.Anthropic | None, dry_run: bool = False
 ) -> bool:
     """Enrich a file's frontmatter with summary/topics/keywords. Returns True if modified."""
     text = path.read_text()
@@ -138,6 +147,10 @@ def enrich_file(
         '  - "keyword 1"\n'
     )
 
+    if dry_run:
+        print(f"[dry-run] Would enrich {path}")
+        return True
+
     response = client.messages.create(
         model="claude-haiku-4-5-20251001",
         max_tokens=512,
@@ -154,17 +167,13 @@ def enrich_file(
     fm["topics"] = result.get("topics", [])
     fm["keywords"] = result.get("keywords", [])
 
-    if dry_run:
-        print(f"[dry-run] Would enrich {path}")
-        return True
-
     path.write_text(write_frontmatter(fm, body))
     return True
 
 
 def run_phase1(knowledge_root: Path, dry_run: bool = False) -> None:
     """Enrich all unenriched knowledge files."""
-    client = anthropic.Anthropic()
+    client = anthropic.Anthropic() if not dry_run else None
     files = sorted(
         p for p in knowledge_root.rglob("*.md") if not _should_skip(p)
     )

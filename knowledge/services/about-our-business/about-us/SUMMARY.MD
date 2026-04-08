@@ -2,4 +2,4 @@
 
 ## Sections
 
-- [Aviva Company Details](aviva-company-details/SUMMARY.MD) — - [Aviva company details - Aviva](index.md) —
+- [Aviva Company Details](aviva-company-details/SUMMARY.MD) — 

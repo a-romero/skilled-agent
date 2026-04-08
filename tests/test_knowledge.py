@@ -1,7 +1,12 @@
 import textwrap
 import pytest
 from pathlib import Path
-from knowledge import build_source_registry
+from knowledge import (
+    build_source_registry,
+    read_knowledge,
+    handle_knowledge_tool,
+    KNOWLEDGE_TOOLS,
+)
 
 README_MD = textwrap.dedent("""\
     # Aviva Website Crawl
@@ -46,9 +51,6 @@ def test_build_source_registry_returns_empty_for_no_data_rows(tmp_path: Path) ->
     readme = tmp_path / "README.md"
     readme.write_text("| URL | Title | File |\n|-----|-------|------|\n")
     assert build_source_registry(readme) == {}
-
-
-from knowledge import read_knowledge
 
 
 @pytest.fixture
@@ -117,7 +119,11 @@ def test_read_knowledge_prevents_traversal(
     assert result.startswith("Error:")
 
 
-from knowledge import handle_knowledge_tool, KNOWLEDGE_TOOLS
+def test_read_knowledge_error_on_directory_path(
+    knowledge_root: Path, registry_for_root: dict
+) -> None:
+    result = read_knowledge({"path": ""}, registry_for_root, knowledge_root)
+    assert result.startswith("Error:")
 
 
 def test_handle_knowledge_tool_dispatches(

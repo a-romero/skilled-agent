@@ -2,8 +2,8 @@
 
 ## Sections
 
-- [Aviva Clarity](aviva-clarity/SUMMARY.MD) — - [Aviva Clarity - Aviva](index.md) —
-- [Defined Benefit And Contributions](defined-benefit-and-contributions/SUMMARY.MD) — - [Aviva Defined Benefit and Contribution Solutions - Aviva](index.md) —
+- [Aviva Clarity](aviva-clarity/SUMMARY.MD) — 
+- [Defined Benefit And Contributions](defined-benefit-and-contributions/SUMMARY.MD) — 
 
 ## Pages
 

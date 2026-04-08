@@ -2,4 +2,4 @@
 
 ## Sections
 
-- [Legal Protection](legal-protection/SUMMARY.MD) — - [Legal Protection - Aviva](index.md) —
+- [Legal Protection](legal-protection/SUMMARY.MD) — 

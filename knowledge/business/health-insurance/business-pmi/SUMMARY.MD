@@ -2,4 +2,4 @@
 
 ## Sections
 
-- [Claims](claims/SUMMARY.MD) — - [Solutions PMI claims - Aviva](index.md) —
+- [Claims](claims/SUMMARY.MD) — 

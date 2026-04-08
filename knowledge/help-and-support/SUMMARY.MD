@@ -2,7 +2,7 @@
 
 ## Sections
 
-- [Managing Your Policy](managing-your-policy/SUMMARY.MD) — - [Investments](investments/SUMMARY.MD) — - [With Profits Investment](with-profits-investment/SUMMARY.MD) — - [With-profits funds - Aviva](index.md) —
+- [Managing Your Policy](managing-your-policy/SUMMARY.MD) — 
 
 ## Pages
 

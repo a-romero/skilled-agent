@@ -2,7 +2,7 @@
 
 ## Sections
 
-- [Claims](claims/SUMMARY.MD) — - [Corporate PMI claims - Aviva](index.md) —
+- [Claims](claims/SUMMARY.MD) — 
 
 ## Pages
 

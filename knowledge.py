@@ -39,6 +39,8 @@ def read_knowledge(
         return f"Error: path '{rel_path}' is outside the knowledge root"
     if not target.exists():
         return f"Error: '{rel_path}' not found in knowledge base"
+    if not target.is_file():
+        return f"Error: '{rel_path}' is not a readable file"
     content = target.read_text()
     if rel_path.endswith("index.md") and rel_path in source_registry:
         source = source_registry[rel_path]

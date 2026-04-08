@@ -2,9 +2,9 @@
 
 ## Sections
 
-- [Business Pmi](business-pmi/SUMMARY.MD) — - [Claims](claims/SUMMARY.MD) — - [Solutions PMI claims - Aviva](index.md) —
-- [Contact Us](contact-us/SUMMARY.MD) — - [Business health insurance | Contact details for employers - Aviva](index.md) —
-- [Corporate Pmi](corporate-pmi/SUMMARY.MD) — - [Claims](claims/SUMMARY.MD) — - [Corporate PMI claims - Aviva](index.md) —
+- [Business Pmi](business-pmi/SUMMARY.MD) — 
+- [Contact Us](contact-us/SUMMARY.MD) — 
+- [Corporate Pmi](corporate-pmi/SUMMARY.MD) — 
 
 ## Pages
 

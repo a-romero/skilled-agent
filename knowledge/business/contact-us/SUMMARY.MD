@@ -2,7 +2,7 @@
 
 ## Sections
 
-- [Business Insurance](business-insurance/SUMMARY.MD) — - [Contact us about business insurance - Aviva](index.md) —
+- [Business Insurance](business-insurance/SUMMARY.MD) — 
 
 ## Pages
 
