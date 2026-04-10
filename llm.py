@@ -40,7 +40,15 @@ class LLMResponse:
 
 def _convert_tools(tools: list[dict], provider: str) -> list[dict]:
     """Convert Anthropic-format tool definitions to OpenAI format for LiteLLM."""
-    raise NotImplementedError
+    if provider != "litellm":
+        return tools
+    result = []
+    for tool in tools:
+        fn = {k: v for k, v in tool.items() if k != "input_schema"}
+        if "input_schema" in tool:
+            fn["parameters"] = tool["input_schema"]
+        result.append({"type": "function", "function": fn})
+    return result
 
 
 def create_client(
