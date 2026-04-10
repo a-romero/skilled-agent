@@ -5,6 +5,8 @@ description = "A skilled agent for knowledge RAG"
 requires-python = ">=3.8"
 dependencies = [
     "pyyaml",
+    "anthropic",
+    "openai",
 ]
 
 [build-system]
