@@ -2,7 +2,7 @@
 name = "skilled-agent"
 version = "0.1.0"
 description = "A skilled agent for knowledge RAG"
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 dependencies = [
     "pyyaml",
     "anthropic",

@@ -355,3 +355,11 @@ def test_make_tool_result_messages_litellm() -> None:
     assert msgs[0]["role"] == "tool"
     assert msgs[0]["tool_call_id"] == "call_abc"
     assert msgs[0]["content"] == "the result"
+
+
+def test_create_client_raises_if_anthropic_api_key_missing(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("LLM_PROVIDER", "anthropic")
+    monkeypatch.setenv("LLM_MODEL", "claude-test")
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    with pytest.raises(ValueError, match="ANTHROPIC_API_KEY"):
+        create_client()

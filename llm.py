@@ -71,6 +71,10 @@ def create_client(
 
     if provider == "anthropic":
         key = api_key or os.environ.get("ANTHROPIC_API_KEY")
+        if not key:
+            raise ValueError(
+                "ANTHROPIC_API_KEY env var not set and no explicit api_key passed"
+            )
         raw: Any = anthropic.Anthropic(api_key=key)
     elif provider == "litellm":
         base_url = base_url or os.environ.get("LITELLM_BASE_URL")

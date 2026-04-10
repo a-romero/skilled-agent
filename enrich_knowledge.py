@@ -2,10 +2,10 @@
 
 import argparse
 import sys
+from pathlib import Path
 
 import yaml
 from llm import LLMClient, create_client, complete
-from pathlib import Path
 
 # Files to skip during enrichment and SUMMARY.MD generation
 _SKIP_NAMES: frozenset[str] = frozenset({"SUMMARY.MD", "README.md"})
