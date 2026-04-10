@@ -58,7 +58,30 @@ def create_client(
     api_key: str | None = None,
 ) -> LLMClient:
     """Construct the appropriate SDK client and return an LLMClient."""
-    raise NotImplementedError
+    provider = provider or os.environ.get("LLM_PROVIDER")
+    if not provider:
+        raise ValueError(
+            "LLM_PROVIDER env var not set and no explicit provider passed"
+        )
+    model = model or os.environ.get("LLM_MODEL")
+    if not model:
+        raise ValueError(
+            "LLM_MODEL env var not set and no explicit model passed"
+        )
+
+    if provider == "anthropic":
+        key = api_key or os.environ.get("ANTHROPIC_API_KEY")
+        raw: Any = anthropic.Anthropic(api_key=key)
+    elif provider == "litellm":
+        base_url = base_url or os.environ.get("LITELLM_BASE_URL")
+        key = api_key or os.environ.get("LITELLM_API_KEY")
+        raw = OpenAI(base_url=base_url, api_key=key or "placeholder")
+    else:
+        raise ValueError(
+            f"Unknown provider: {provider!r}. Must be 'anthropic' or 'litellm'"
+        )
+
+    return LLMClient(provider=provider, model=model, _raw=raw)
 
 
 def complete(
