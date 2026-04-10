@@ -15,21 +15,18 @@ Flow:
 
 import os
 import json
-import anthropic
 from pathlib import Path
 from typing import Any
 
 from knowledge import KNOWLEDGE_TOOLS, handle_knowledge_tool, build_source_registry, KNOWLEDGE_ROOT
+from llm import create_client, complete, make_assistant_message, make_tool_result_messages
 
 # ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
 
-MODEL = "claude-opus-4-5"          # use the latest Opus; swap to sonnet for speed
 SKILLS_ROOT = Path("./skills")     # root of the skills filesystem
 MAX_ITERATIONS = 20                # guard against infinite loops
-
-client = anthropic.Anthropic()     # reads ANTHROPIC_API_KEY from env
 
 
 # ---------------------------------------------------------------------------
@@ -212,6 +209,8 @@ def run_agent(task: str, verbose: bool = True) -> str:
         )
     knowledge_index = knowledge_summary_path.read_text()
 
+    client = create_client()
+
     active_skill_tools: list[dict] = []   # tools unlocked after read_skill calls
     loaded_skills: set[str] = set()
 
@@ -251,39 +250,26 @@ Available skills root: {SKILLS_ROOT.resolve()}
             print(f"Iteration {iteration + 1}")
             print(f"Active skill tools: {[t['name'] for t in active_skill_tools]}")
 
-        response = client.messages.create(
-            model=MODEL,
-            max_tokens=4096,
-            system=system_prompt,
-            tools=all_tools,
-            messages=messages,
-        )
+        response = complete(client, messages, system_prompt=system_prompt, tools=all_tools)
 
         if verbose:
-            print(f"Stop reason: {response.stop_reason}")
+            print(f"Stop reason: {'done' if response.is_done else 'tool_calls'}")
 
         # Append assistant turn
-        messages.append({"role": "assistant", "content": response.content})
+        messages.append(make_assistant_message(response))
 
         # If no tool calls → done
-        if response.stop_reason == "end_turn":
-            final = " ".join(
-                block.text for block in response.content
-                if hasattr(block, "text")
-            )
+        if response.is_done:
             if verbose:
-                print(f"\nFinal answer:\n{final}")
-            return final
+                print(f"\nFinal answer:\n{response.text}")
+            return response.text
 
         # Process tool calls
-        tool_results = []
-        for block in response.content:
-            if block.type != "tool_use":
-                continue
-
-            tool_name = block.name
-            tool_input = block.input
-            tool_use_id = block.id
+        tool_results: list[dict] = []
+        for tool_call in response.tool_calls:
+            tool_name = tool_call.name
+            tool_input = tool_call.input
+            tool_use_id = tool_call.id
 
             if verbose:
                 print(f"\nTool call: {tool_name}")
@@ -322,14 +308,10 @@ Available skills root: {SKILLS_ROOT.resolve()}
                 preview = str(result)[:300]
                 print(f"Result preview: {preview}{'...' if len(str(result)) > 300 else ''}")
 
-            tool_results.append({
-                "type": "tool_result",
-                "tool_use_id": tool_use_id,
-                "content": str(result),
-            })
+            tool_results.extend(make_tool_result_messages(client, tool_use_id, str(result)))
 
-        # Append user turn with all tool results
-        messages.append({"role": "user", "content": tool_results})
+        # Extend messages with all tool results
+        messages.extend(tool_results)
 
     return "Error: maximum iterations reached without a final answer."
 
