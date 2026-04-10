@@ -173,7 +173,7 @@ def test_complete_anthropic_passes_system_and_tools() -> None:
         tools=tools,
     )
 
-    call_kwargs = client._raw.messages.create.call_args[1]
+    call_kwargs = client._raw.messages.create.call_args.kwargs
     assert call_kwargs["system"] == "You are a bot"
     assert call_kwargs["tools"] == tools  # Anthropic format unchanged
 
@@ -187,7 +187,7 @@ def test_complete_anthropic_model_override() -> None:
 
     complete(client, [], model="claude-override")
 
-    call_kwargs = client._raw.messages.create.call_args[1]
+    call_kwargs = client._raw.messages.create.call_args.kwargs
     assert call_kwargs["model"] == "claude-override"
 
 

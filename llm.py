@@ -88,7 +88,7 @@ def complete(
     client: LLMClient,
     messages: list[dict],
     system_prompt: str = "",
-    tools: list[dict] = [],
+    tools: list[dict] | None = None,
     max_tokens: int = 4096,
     model: str | None = None,
 ) -> LLMResponse:
@@ -109,7 +109,7 @@ def complete(
         is_done = raw.stop_reason == "end_turn"
         text = (
             " ".join(
-                block.text for block in raw.content if hasattr(block, "text")
+                block.text for block in raw.content if block.type == "text"
             )
             if is_done
             else ""
@@ -136,6 +136,8 @@ def complete(
     raw = client._raw.chat.completions.create(**kwargs)
     choice = raw.choices[0]
     is_done = choice.finish_reason == "stop"
+    # finish_reason "length" (truncation) or other values → is_done=False, text=""
+    # SDK exceptions propagate unchanged per spec
     msg = choice.message
     text = (msg.content or "") if is_done else ""
     tool_calls = []
