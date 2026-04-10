@@ -274,3 +274,84 @@ def test_complete_litellm_prepends_system_prompt() -> None:
     messages = call_kwargs["messages"]
     assert messages[0] == {"role": "system", "content": "You are a bot"}
     assert messages[1] == {"role": "user", "content": "hi"}
+
+
+# ---------------------------------------------------------------------------
+# make_assistant_message
+# ---------------------------------------------------------------------------
+
+def test_make_assistant_message_anthropic() -> None:
+    mock_content = [MagicMock(type="text", text="hello")]
+    mock_raw = MagicMock(spec=anthropic.types.Message)
+    mock_raw.content = mock_content
+    response = LLMResponse(is_done=True, text="hello", tool_calls=[], _raw=mock_raw)
+
+    msg = make_assistant_message(response)
+
+    assert msg["role"] == "assistant"
+    assert msg["content"] is mock_content
+
+
+def test_make_assistant_message_litellm_no_tool_calls() -> None:
+    mock_message = MagicMock()
+    mock_message.content = "some answer"
+    mock_message.tool_calls = None
+    # Plain MagicMock is not isinstance(_, anthropic.types.Message) → takes OpenAI branch
+    mock_raw = MagicMock()
+    mock_raw.choices = [MagicMock(message=mock_message)]
+    response = LLMResponse(is_done=True, text="some answer", tool_calls=[], _raw=mock_raw)
+
+    msg = make_assistant_message(response)
+
+    assert msg["role"] == "assistant"
+    assert msg["content"] == "some answer"
+    assert "tool_calls" not in msg
+
+
+def test_make_assistant_message_litellm_with_tool_calls() -> None:
+    mock_tc = MagicMock()
+    mock_tc.id = "call_123"
+    mock_tc.function.name = "my_tool"
+    mock_tc.function.arguments = '{"x": 1}'
+    mock_message = MagicMock()
+    mock_message.content = None
+    mock_message.tool_calls = [mock_tc]
+    mock_raw = MagicMock()
+    mock_raw.choices = [MagicMock(message=mock_message)]
+    response = LLMResponse(is_done=False, text="", tool_calls=[], _raw=mock_raw)
+
+    msg = make_assistant_message(response)
+
+    assert msg["role"] == "assistant"
+    assert len(msg["tool_calls"]) == 1
+    assert msg["tool_calls"][0]["id"] == "call_123"
+    assert msg["tool_calls"][0]["type"] == "function"
+    assert msg["tool_calls"][0]["function"]["name"] == "my_tool"
+    assert msg["tool_calls"][0]["function"]["arguments"] == '{"x": 1}'
+
+
+# ---------------------------------------------------------------------------
+# make_tool_result_messages
+# ---------------------------------------------------------------------------
+
+def test_make_tool_result_messages_anthropic() -> None:
+    client = LLMClient(provider="anthropic", model="m", _raw=MagicMock())
+    msgs = make_tool_result_messages(client, "toolu_01", "42")
+
+    assert len(msgs) == 1
+    assert msgs[0]["role"] == "user"
+    assert len(msgs[0]["content"]) == 1
+    block = msgs[0]["content"][0]
+    assert block["type"] == "tool_result"
+    assert block["tool_use_id"] == "toolu_01"
+    assert block["content"] == "42"
+
+
+def test_make_tool_result_messages_litellm() -> None:
+    client = LLMClient(provider="litellm", model="m", _raw=MagicMock())
+    msgs = make_tool_result_messages(client, "call_abc", "the result")
+
+    assert len(msgs) == 1
+    assert msgs[0]["role"] == "tool"
+    assert msgs[0]["tool_call_id"] == "call_abc"
+    assert msgs[0]["content"] == "the result"

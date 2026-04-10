@@ -155,11 +155,48 @@ def complete(
 
 def make_assistant_message(response: LLMResponse) -> dict:
     """Build the assistant turn dict to append to the messages list."""
-    raise NotImplementedError
+    raw = response._raw
+    if isinstance(raw, anthropic.types.Message):
+        return {"role": "assistant", "content": raw.content}
+    # LiteLLM/OpenAI
+    msg = raw.choices[0].message
+    result: dict[str, Any] = {"role": "assistant", "content": msg.content}
+    if msg.tool_calls:
+        result["tool_calls"] = [
+            {
+                "id": tc.id,
+                "type": "function",
+                "function": {
+                    "name": tc.function.name,
+                    "arguments": tc.function.arguments,
+                },
+            }
+            for tc in msg.tool_calls
+        ]
+    return result
 
 
 def make_tool_result_messages(
     client: LLMClient, tool_call_id: str, result: str
 ) -> list[dict]:
     """Build tool result message(s) to extend onto the messages list."""
-    raise NotImplementedError
+    if client.provider == "anthropic":
+        return [
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "tool_result",
+                        "tool_use_id": tool_call_id,
+                        "content": result,
+                    }
+                ],
+            }
+        ]
+    return [
+        {
+            "role": "tool",
+            "tool_call_id": tool_call_id,
+            "content": result,
+        }
+    ]
