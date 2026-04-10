@@ -163,7 +163,8 @@ def test_should_not_skip_index_md() -> None:
     assert _should_skip(Path("knowledge/business/index.md")) is False
 
 
-def test_enrich_file_skips_already_enriched(tmp_path: Path) -> None:
+@patch("enrich_knowledge.complete")
+def test_enrich_file_skips_already_enriched(mock_complete: MagicMock, tmp_path: Path) -> None:
     p = tmp_path / "index.md"
     p.write_text(
         "---\ntitle: Test\nsummary: Already there.\ntopics:\n- t\nkeywords:\n- k\n---\nContent."
@@ -171,57 +172,52 @@ def test_enrich_file_skips_already_enriched(tmp_path: Path) -> None:
     mock_client = MagicMock()
     result = enrich_file(p, mock_client)
     assert result is False
-    mock_client.messages.create.assert_not_called()
+    mock_complete.assert_not_called()
 
 
-def test_enrich_file_calls_claude_and_writes_fields(tmp_path: Path) -> None:
+@patch("enrich_knowledge.complete")
+def test_enrich_file_calls_claude_and_writes_fields(mock_complete: MagicMock, tmp_path: Path) -> None:
     p = tmp_path / "index.md"
     p.write_text("---\ntitle: Test Page\n---\nSome content about insurance.")
 
-    mock_response = MagicMock()
-    mock_response.content = [
-        MagicMock(
-            text=textwrap.dedent("""\
-                summary: "A page about insurance."
-                topics:
-                  - insurance
-                keywords:
-                  - cover
-            """)
-        )
-    ]
+    mock_complete.return_value = MagicMock(
+        text=textwrap.dedent("""\
+            summary: "A page about insurance."
+            topics:
+              - insurance
+            keywords:
+              - cover
+        """)
+    )
     mock_client = MagicMock()
-    mock_client.messages.create.return_value = mock_response
 
     result = enrich_file(p, mock_client)
 
     assert result is True
+    mock_complete.assert_called_once()
     fm, _ = parse_frontmatter(p.read_text())
     assert fm["summary"] == "A page about insurance."
     assert "insurance" in fm["topics"]
     assert "cover" in fm["keywords"]
 
 
-def test_enrich_file_strips_markdown_code_fences(tmp_path: Path) -> None:
+@patch("enrich_knowledge.complete")
+def test_enrich_file_strips_markdown_code_fences(mock_complete: MagicMock, tmp_path: Path) -> None:
     p = tmp_path / "index.md"
     p.write_text("---\ntitle: Test Page\n---\nSome content.")
 
-    mock_response = MagicMock()
-    mock_response.content = [
-        MagicMock(
-            text=textwrap.dedent("""\
-                ```yaml
-                summary: "A page about insurance."
-                topics:
-                  - insurance
-                keywords:
-                  - cover
-                ```
-            """)
-        )
-    ]
+    mock_complete.return_value = MagicMock(
+        text=textwrap.dedent("""\
+            ```yaml
+            summary: "A page about insurance."
+            topics:
+              - insurance
+            keywords:
+              - cover
+            ```
+        """)
+    )
     mock_client = MagicMock()
-    mock_client.messages.create.return_value = mock_response
 
     result = enrich_file(p, mock_client)
 
@@ -231,17 +227,12 @@ def test_enrich_file_strips_markdown_code_fences(tmp_path: Path) -> None:
     assert "insurance" in fm["topics"]
 
 
-def test_enrich_file_dry_run_does_not_write(tmp_path: Path) -> None:
+@patch("enrich_knowledge.complete")
+def test_enrich_file_dry_run_does_not_write(mock_complete: MagicMock, tmp_path: Path) -> None:
     p = tmp_path / "index.md"
     original = "---\ntitle: Test\n---\nContent."
     p.write_text(original)
 
-    mock_response = MagicMock()
-    mock_response.content = [
-        MagicMock(text="summary: 'S'\ntopics:\n  - t\nkeywords:\n  - k\n")
-    ]
-    mock_client = MagicMock()
-    mock_client.messages.create.return_value = mock_response
-
-    enrich_file(p, mock_client, dry_run=True)
+    enrich_file(p, MagicMock(), dry_run=True)
     assert p.read_text() == original
+    mock_complete.assert_not_called()

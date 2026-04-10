@@ -3,8 +3,8 @@
 import argparse
 import sys
 
-import anthropic
 import yaml
+from llm import LLMClient, create_client, complete
 from pathlib import Path
 
 # Files to skip during enrichment and SUMMARY.MD generation
@@ -122,7 +122,7 @@ def _needs_enrichment(fm: dict) -> bool:
 
 
 def enrich_file(
-    path: Path, client: anthropic.Anthropic | None, dry_run: bool = False
+    path: Path, client: LLMClient | None, dry_run: bool = False
 ) -> bool:
     """Enrich a file's frontmatter with summary/topics/keywords. Returns True if modified."""
     text = path.read_text()
@@ -151,13 +151,14 @@ def enrich_file(
         print(f"[dry-run] Would enrich {path}")
         return True
 
-    response = client.messages.create(
-        model="claude-haiku-4-5-20251001",
-        max_tokens=512,
+    response = complete(
+        client,
         messages=[{"role": "user", "content": prompt}],
+        max_tokens=512,
+        model="claude-haiku-4-5-20251001",
     )
 
-    raw = response.content[0].text.strip()
+    raw = response.text.strip()
     # Strip markdown code fences if Haiku wrapped the YAML
     if raw.startswith("```"):
         raw = raw.split("\n", 1)[-1]  # drop opening ```yaml line
@@ -178,7 +179,7 @@ def enrich_file(
 
 def run_phase1(knowledge_root: Path, dry_run: bool = False) -> None:
     """Enrich all unenriched knowledge files."""
-    client = anthropic.Anthropic() if not dry_run else None
+    client = create_client() if not dry_run else None
     files = sorted(
         p for p in knowledge_root.rglob("*.md") if not _should_skip(p)
     )
