@@ -93,7 +93,62 @@ def complete(
     model: str | None = None,
 ) -> LLMResponse:
     """Unified completion call. Returns a provider-agnostic LLMResponse."""
-    raise NotImplementedError
+    effective_model = model or client.model
+
+    if client.provider == "anthropic":
+        kwargs: dict[str, Any] = {
+            "model": effective_model,
+            "max_tokens": max_tokens,
+            "messages": messages,
+        }
+        if system_prompt:
+            kwargs["system"] = system_prompt
+        if tools:
+            kwargs["tools"] = tools  # already in Anthropic format
+        raw = client._raw.messages.create(**kwargs)
+        is_done = raw.stop_reason == "end_turn"
+        text = (
+            " ".join(
+                block.text for block in raw.content if hasattr(block, "text")
+            )
+            if is_done
+            else ""
+        )
+        tool_calls = [
+            ToolCall(id=block.id, name=block.name, input=block.input)
+            for block in raw.content
+            if block.type == "tool_use"
+        ]
+        return LLMResponse(is_done=is_done, text=text, tool_calls=tool_calls, _raw=raw)
+
+    # litellm
+    all_messages: list[dict] = []
+    if system_prompt:
+        all_messages.append({"role": "system", "content": system_prompt})
+    all_messages.extend(messages)
+    kwargs = {
+        "model": effective_model,
+        "max_tokens": max_tokens,
+        "messages": all_messages,
+    }
+    if tools:
+        kwargs["tools"] = _convert_tools(tools, "litellm")
+    raw = client._raw.chat.completions.create(**kwargs)
+    choice = raw.choices[0]
+    is_done = choice.finish_reason == "stop"
+    msg = choice.message
+    text = (msg.content or "") if is_done else ""
+    tool_calls = []
+    if msg.tool_calls:
+        for tc in msg.tool_calls:
+            tool_calls.append(
+                ToolCall(
+                    id=tc.id,
+                    name=tc.function.name,
+                    input=json.loads(tc.function.arguments),
+                )
+            )
+    return LLMResponse(is_done=is_done, text=text, tool_calls=tool_calls, _raw=raw)
 
 
 def make_assistant_message(response: LLMResponse) -> dict:
