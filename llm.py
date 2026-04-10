@@ -7,7 +7,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 import anthropic
-from openai import OpenAI
+import litellm
 
 
 @dataclass
@@ -79,7 +79,7 @@ def create_client(
     elif provider == "litellm":
         base_url = base_url or os.environ.get("LITELLM_BASE_URL")
         key = api_key or os.environ.get("LITELLM_API_KEY")
-        raw = OpenAI(base_url=base_url, api_key=key or "placeholder")
+        raw = {"api_base": base_url, "api_key": key}
     else:
         raise ValueError(
             f"Unknown provider: {provider!r}. Must be 'anthropic' or 'litellm'"
@@ -137,7 +137,11 @@ def complete(
     }
     if tools:
         kwargs["tools"] = _convert_tools(tools, "litellm")
-    raw = client._raw.chat.completions.create(**kwargs)
+    if client._raw.get("api_base"):
+        kwargs["api_base"] = client._raw["api_base"]
+    if client._raw.get("api_key"):
+        kwargs["api_key"] = client._raw["api_key"]
+    raw = litellm.completion(**kwargs)
     choice = raw.choices[0]
     is_done = choice.finish_reason == "stop"
     # finish_reason "length" (truncation) or other values → is_done=False, text=""

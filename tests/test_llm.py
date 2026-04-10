@@ -103,7 +103,7 @@ def test_create_client_litellm(monkeypatch: pytest.MonkeyPatch) -> None:
     client = create_client()
     assert client.provider == "litellm"
     assert client.model == "gpt-4"
-    assert client._raw is not None
+    assert client._raw == {"api_base": "http://localhost:4000", "api_key": "test-key"}
 
 
 # ---------------------------------------------------------------------------
@@ -115,7 +115,7 @@ def _make_anthropic_client() -> LLMClient:
 
 
 def _make_litellm_client() -> LLMClient:
-    return LLMClient(provider="litellm", model="gpt-test", _raw=MagicMock())
+    return LLMClient(provider="litellm", model="gpt-test", _raw={"api_base": "http://localhost:4000", "api_key": "test-key"})
 
 
 def test_complete_anthropic_end_turn() -> None:
@@ -191,7 +191,8 @@ def test_complete_anthropic_model_override() -> None:
     assert call_kwargs["model"] == "claude-override"
 
 
-def test_complete_litellm_done() -> None:
+@patch("llm.litellm.completion")
+def test_complete_litellm_done(mock_completion: MagicMock) -> None:
     client = _make_litellm_client()
     mock_message = MagicMock()
     mock_message.content = "LiteLLM answer"
@@ -201,7 +202,7 @@ def test_complete_litellm_done() -> None:
     mock_choice.message = mock_message
     mock_raw = MagicMock()
     mock_raw.choices = [mock_choice]
-    client._raw.chat.completions.create.return_value = mock_raw
+    mock_completion.return_value = mock_raw
 
     response = complete(client, [{"role": "user", "content": "Hi"}])
 
@@ -210,7 +211,8 @@ def test_complete_litellm_done() -> None:
     assert response.tool_calls == []
 
 
-def test_complete_litellm_tool_call() -> None:
+@patch("llm.litellm.completion")
+def test_complete_litellm_tool_call(mock_completion: MagicMock) -> None:
     client = _make_litellm_client()
     mock_tc = MagicMock()
     mock_tc.id = "call_abc"
@@ -224,7 +226,7 @@ def test_complete_litellm_tool_call() -> None:
     mock_choice.message = mock_message
     mock_raw = MagicMock()
     mock_raw.choices = [mock_choice]
-    client._raw.chat.completions.create.return_value = mock_raw
+    mock_completion.return_value = mock_raw
 
     response = complete(client, [{"role": "user", "content": "Search"}])
 
@@ -235,7 +237,8 @@ def test_complete_litellm_tool_call() -> None:
     assert response.tool_calls[0].input == {"query": "hello"}
 
 
-def test_complete_litellm_converts_tools() -> None:
+@patch("llm.litellm.completion")
+def test_complete_litellm_converts_tools(mock_completion: MagicMock) -> None:
     client = _make_litellm_client()
     mock_message = MagicMock()
     mock_message.content = "ok"
@@ -245,18 +248,19 @@ def test_complete_litellm_converts_tools() -> None:
     mock_choice.message = mock_message
     mock_raw = MagicMock()
     mock_raw.choices = [mock_choice]
-    client._raw.chat.completions.create.return_value = mock_raw
+    mock_completion.return_value = mock_raw
 
     tools = [{"name": "t", "description": "d", "input_schema": {"type": "object"}}]
     complete(client, [], tools=tools)
 
-    call_kwargs = client._raw.chat.completions.create.call_args[1]
+    call_kwargs = mock_completion.call_args.kwargs
     assert call_kwargs["tools"][0]["type"] == "function"
     assert "parameters" in call_kwargs["tools"][0]["function"]
     assert "input_schema" not in call_kwargs["tools"][0]["function"]
 
 
-def test_complete_litellm_prepends_system_prompt() -> None:
+@patch("llm.litellm.completion")
+def test_complete_litellm_prepends_system_prompt(mock_completion: MagicMock) -> None:
     client = _make_litellm_client()
     mock_message = MagicMock()
     mock_message.content = "ok"
@@ -266,11 +270,11 @@ def test_complete_litellm_prepends_system_prompt() -> None:
     mock_choice.message = mock_message
     mock_raw = MagicMock()
     mock_raw.choices = [mock_choice]
-    client._raw.chat.completions.create.return_value = mock_raw
+    mock_completion.return_value = mock_raw
 
     complete(client, [{"role": "user", "content": "hi"}], system_prompt="You are a bot")
 
-    call_kwargs = client._raw.chat.completions.create.call_args[1]
+    call_kwargs = mock_completion.call_args.kwargs
     messages = call_kwargs["messages"]
     assert messages[0] == {"role": "system", "content": "You are a bot"}
     assert messages[1] == {"role": "user", "content": "hi"}

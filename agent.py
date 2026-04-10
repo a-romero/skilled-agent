@@ -20,6 +20,7 @@ from typing import Any
 
 from knowledge import KNOWLEDGE_TOOLS, handle_knowledge_tool, build_source_registry, KNOWLEDGE_ROOT
 from llm import create_client, complete, make_assistant_message, make_tool_result_messages
+from arize_tracing import setup_arize, instrument_litellm
 
 # ---------------------------------------------------------------------------
 # Configuration
@@ -210,6 +211,11 @@ def run_agent(task: str, verbose: bool = True) -> str:
     knowledge_index = knowledge_summary_path.read_text()
 
     client = create_client()
+    if client.provider == "litellm":
+        tracer_provider = setup_arize(
+            project_name=os.getenv("ARIZE_PROJECT_NAME", "skilled-agent")
+        )
+        instrument_litellm(tracer_provider)
 
     active_skill_tools: list[dict] = []   # tools unlocked after read_skill calls
     loaded_skills: set[str] = set()

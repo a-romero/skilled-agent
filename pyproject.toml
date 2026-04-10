@@ -6,7 +6,7 @@ requires-python = ">=3.10"
 dependencies = [
     "pyyaml",
     "anthropic",
-    "openai",
+    "litellm",
 ]
 
 [build-system]
