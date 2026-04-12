@@ -21,6 +21,7 @@ from typing import Any
 
 from knowledge import KNOWLEDGE_TOOLS, handle_knowledge_tool, build_source_registry, KNOWLEDGE_ROOT
 from llm import create_client, complete, make_assistant_message, make_tool_result_messages
+from opentelemetry.trace import Status, StatusCode
 from arize_tracing import setup_arize, instrument_litellm, instrument_anthropic, get_tracer
 
 # ---------------------------------------------------------------------------
@@ -283,6 +284,7 @@ Available skills root: {SKILLS_ROOT.resolve()}
                 if verbose:
                     print(f"\nFinal answer:\n{response.text}")
                 agent_span.set_attribute("output.value", response.text)
+                agent_span.set_status(Status(StatusCode.OK))
                 return response.text
 
             # Process tool calls
@@ -344,6 +346,7 @@ Available skills root: {SKILLS_ROOT.resolve()}
 
         final = "Error: maximum iterations reached without a final answer."
         agent_span.set_attribute("output.value", final)
+        agent_span.set_status(Status(StatusCode.ERROR, "Maximum iterations reached"))
         return final
 
 
