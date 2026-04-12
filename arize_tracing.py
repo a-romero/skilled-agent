@@ -33,6 +33,7 @@ _providers: Dict[str, Any] = {}
 _litellm_instrumented: bool = False
 _dspy_instrumented: bool = False
 _openai_agents_instrumented: bool = False
+_anthropic_instrumented: bool = False
 
 
 def setup_arize(project_name: str) -> Optional[Any]:
@@ -159,3 +160,38 @@ def instrument_openai_agents(tracer_provider: Optional[Any]) -> None:
             "openinference-instrumentation-openai-agents not available. "
             "Install with: pip install openinference-instrumentation-openai-agents"
         )
+
+
+def instrument_anthropic(tracer_provider: Optional[Any]) -> None:
+    """
+    Apply the Anthropic OpenInference instrumentor.
+
+    No-op after the first successful call or if the package is not installed.
+    """
+    global _anthropic_instrumented
+    if tracer_provider is None or _anthropic_instrumented:
+        return
+
+    try:
+        from openinference.instrumentation.anthropic import AnthropicInstrumentor
+        AnthropicInstrumentor().instrument(tracer_provider=tracer_provider)
+        logger.info("AnthropicInstrumentor applied")
+        _anthropic_instrumented = True
+    except ImportError:
+        logger.warning(
+            "openinference-instrumentation-anthropic not available. "
+            "Install with: pip install openinference-instrumentation-anthropic"
+        )
+
+
+def get_tracer(tracer_provider: Optional[Any], name: str = __name__) -> Any:
+    """
+    Return a tracer bound to *tracer_provider*.
+
+    Falls back to the global no-op tracer when tracing is disabled
+    (tracer_provider is None), so call sites need no None-checks.
+    """
+    from opentelemetry import trace
+    if tracer_provider is None:
+        return trace.get_tracer(name)
+    return tracer_provider.get_tracer(name)
