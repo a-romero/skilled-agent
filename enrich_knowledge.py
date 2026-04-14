@@ -49,7 +49,7 @@ def generate_summary_for_dir(directory: Path, knowledge_root: Path) -> str:
         sub_summary = subdir / "SUMMARY.MD"
         if not sub_summary.exists():
             continue
-        lines = sub_summary.read_text().splitlines()
+        lines = sub_summary.read_text(encoding="utf-8").splitlines()
         desc = next(
             (
                 l.strip()
@@ -67,7 +67,7 @@ def generate_summary_for_dir(directory: Path, knowledge_root: Path) -> str:
 
     index_file = directory / "index.md"
     if index_file.exists():
-        fm, _ = parse_frontmatter(index_file.read_text())
+        fm, _ = parse_frontmatter(index_file.read_text(encoding="utf-8"))
         title = fm.get("title", "Overview")
         summary = fm.get("summary", "")
         pages.append(f"- [{title}](index.md) — {summary}")
@@ -75,7 +75,7 @@ def generate_summary_for_dir(directory: Path, knowledge_root: Path) -> str:
     heading = _section_heading(directory, knowledge_root)
     section_desc = ""
     if index_file.exists():
-        fm, _ = parse_frontmatter(index_file.read_text())
+        fm, _ = parse_frontmatter(index_file.read_text(encoding="utf-8"))
         section_desc = fm.get("summary", "")
 
     out: list[str] = [f"# {heading}", ""]
@@ -125,7 +125,7 @@ def enrich_file(
     path: Path, client: LLMClient | None, dry_run: bool = False
 ) -> bool:
     """Enrich a file's frontmatter with summary/topics/keywords. Returns True if modified."""
-    text = path.read_text()
+    text = path.read_text(encoding="utf-8")
     fm, body = parse_frontmatter(text)
 
     if not _needs_enrichment(fm):

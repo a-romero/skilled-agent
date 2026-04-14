@@ -56,7 +56,7 @@ def build_skill_registry(root: Path) -> dict[str, dict]:
 def _extract_description(path: Path) -> str:
     """Pull the `description` value out of YAML-ish frontmatter."""
     try:
-        text = path.read_text()
+        text = path.read_text(encoding="utf-8")
         if text.startswith("---"):
             end = text.index("---", 3)
             fm = text[3:end]
@@ -94,7 +94,7 @@ def read_skill(input_: dict, registry: dict) -> str:
         available = ", ".join(registry.keys())
         return f"Error: skill '{name}' not found. Available: {available}"
     path = Path(registry[name]["path"])
-    return path.read_text()
+    return path.read_text(encoding="utf-8")
 
 
 # ---------------------------------------------------------------------------
@@ -141,7 +141,7 @@ def _handle_read_file(inp: dict) -> str:
     path = Path(inp["path"])
     if not path.exists():
         return f"Error: {path} does not exist"
-    return path.read_text()
+    return path.read_text(encoding="utf-8")
 
 
 def _handle_run_python(inp: dict) -> str:
@@ -211,7 +211,7 @@ def run_agent(task: str, verbose: bool = True) -> str:
             f"{knowledge_summary_path} not found. "
             "Run: uv run python enrich_knowledge.py"
         )
-    knowledge_index = knowledge_summary_path.read_text()
+    knowledge_index = knowledge_summary_path.read_text(encoding="utf-8")
 
     client = create_client()
 

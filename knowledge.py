@@ -8,7 +8,7 @@ KNOWLEDGE_ROOT = Path(__file__).parent / "knowledge"
 def build_source_registry(readme: Path) -> dict[str, dict]:
     """Parse knowledge/README.md table into {relative_path: {url, title}}."""
     registry: dict[str, dict] = {}
-    for line in readme.read_text().splitlines():
+    for line in readme.read_text(encoding="utf-8").splitlines():
         if not line.startswith("|"):
             continue
         cells = [c.strip() for c in line.strip("|").split("|")]
@@ -41,7 +41,7 @@ def read_knowledge(
         return f"Error: '{rel_path}' not found in knowledge base"
     if not target.is_file():
         return f"Error: '{rel_path}' is not a readable file"
-    content = target.read_text()
+    content = target.read_text(encoding="utf-8")
     if rel_path.endswith("index.md") and rel_path in source_registry:
         source = source_registry[rel_path]
         content = f"[Source: {source['title']} — {source['url']}]\n\n{content}"
