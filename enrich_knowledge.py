@@ -22,7 +22,17 @@ def parse_frontmatter(text: str) -> tuple[dict, str]:
         return {}, text
     fm_text = text[3:end]
     body = text[end + 3:]
-    return yaml.safe_load(fm_text) or {}, body
+    try:
+        return yaml.safe_load(fm_text) or {}, body
+    except yaml.YAMLError:
+        # Fallback for files with unquoted colons in values (e.g. page titles).
+        # Splits each line on the first ": " only, which handles the common case.
+        fm: dict = {}
+        for line in fm_text.splitlines():
+            if ": " in line:
+                key, _, value = line.partition(": ")
+                fm[key.strip()] = value.strip()
+        return fm, body
 
 
 def write_frontmatter(fm: dict, body: str) -> str:
