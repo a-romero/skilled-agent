@@ -1843,6 +1843,16 @@ function App() {
               updateMsg(m => ({ ...m, trace: [...m.trace, { kind: "think", text: evt.text }] }));
             }
 
+          } else if (evt.kind === "skill_list") {
+            updateMsg(m => ({ ...m, trace: [...m.trace, { kind: "skill", name: "list_skills", desc: "Browsed skill library" }] }));
+
+          } else if (evt.kind === "skill_read") {
+            setReadingSkill(evt.name);
+            updateMsg(m => ({ ...m, trace: [...m.trace, { kind: "skill", name: evt.name, desc: evt.desc }] }));
+            await new Promise(r => setTimeout(r, 300));
+            setUsedSkillsInTurn(prev => new Set(prev).add(evt.name));
+            setReadingSkill(null);
+
           } else if (evt.kind === "say_start") {
             updateMsg(m => ({ ...m, running: false, streaming: true }));
 
