@@ -95,3 +95,53 @@ def test_dspy_knowledge_agent_accepts_extra_tools() -> None:
     tool_names = list(agent.react.tools.keys())
     assert "fake_list_skills" in tool_names
     assert "fake_read_skill" in tool_names
+
+
+def test_make_skill_tools_list_emits_skill_list_event(skills_root: Path) -> None:
+    """list_skills_tool fires {"kind": "skill_list"} before returning."""
+    from dspy_agent import _make_skill_tools
+    from skills import build_skill_registry
+
+    registry = build_skill_registry(skills_root)
+    events: list[dict] = []
+    list_skills_tool, _ = _make_skill_tools(registry, event_callback=events.append)
+    list_skills_tool()
+    assert events == [{"kind": "skill_list"}]
+
+
+def test_make_skill_tools_read_emits_skill_read_event(skills_root: Path) -> None:
+    """read_skill_tool fires {"kind": "skill_read", ...} before returning."""
+    from dspy_agent import _make_skill_tools
+    from skills import build_skill_registry
+
+    registry = build_skill_registry(skills_root)
+    events: list[dict] = []
+    _, read_skill_tool = _make_skill_tools(registry, event_callback=events.append)
+    read_skill_tool("summariser")
+    assert len(events) == 1
+    assert events[0]["kind"] == "skill_read"
+    assert events[0]["name"] == "summariser"
+    assert events[0]["desc"] == "Summarise long texts into bullet points."
+
+
+def test_make_skill_tools_no_callback_does_not_raise(skills_root: Path) -> None:
+    """Factory works without a callback — no event_callback provided."""
+    from dspy_agent import _make_skill_tools
+    from skills import build_skill_registry
+
+    registry = build_skill_registry(skills_root)
+    list_skills_tool, read_skill_tool = _make_skill_tools(registry)
+    list_skills_tool()          # must not raise
+    read_skill_tool("summariser")  # must not raise
+
+
+def test_make_skill_tools_list_returns_json(skills_root: Path) -> None:
+    """list_skills_tool still returns valid JSON skill list."""
+    import json
+    from dspy_agent import _make_skill_tools
+    from skills import build_skill_registry
+
+    registry = build_skill_registry(skills_root)
+    list_skills_tool, _ = _make_skill_tools(registry)
+    result = json.loads(list_skills_tool())
+    assert any(s["name"] == "summariser" for s in result)

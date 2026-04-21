@@ -55,6 +55,53 @@ def _load_knowledge_index() -> str:
 
 
 # ---------------------------------------------------------------------------
+# Skill tools factory
+# ---------------------------------------------------------------------------
+
+def _make_skill_tools(
+    registry: dict,
+    event_callback: Callable[[dict], None] | None = None,
+) -> tuple[Callable, Callable]:
+    """Build list_skills and read_skill tool closures with optional event instrumentation.
+
+    Args:
+        registry: Skill registry built by build_skill_registry.
+        event_callback: Optional callable fired before each tool returns.
+            list_skills fires {"kind": "skill_list"}.
+            read_skill fires {"kind": "skill_read", "name": ..., "desc": ...}.
+
+    Returns:
+        (list_skills_tool, read_skill_tool) closures ready for dspy.ReAct.
+    """
+
+    def list_skills_tool() -> str:
+        """List all available skills with their one-line descriptions.
+        Call this first to discover what capabilities are available before
+        deciding which skill to load."""
+        if event_callback:
+            event_callback({"kind": "skill_list"})
+        return list_skills({}, registry)
+
+    def read_skill_tool(skill_name: str) -> str:
+        """Read the full SKILL.md for a named skill. Only call when you have
+        determined the skill is relevant. The file contains instructions and
+        examples.
+
+        Args:
+            skill_name: Exact skill name as returned by list_skills_tool.
+        """
+        if event_callback:
+            event_callback({
+                "kind": "skill_read",
+                "name": skill_name,
+                "desc": registry.get(skill_name, {}).get("description", ""),
+            })
+        return read_skill({"skill_name": skill_name}, registry)
+
+    return list_skills_tool, read_skill_tool
+
+
+# ---------------------------------------------------------------------------
 # Tool exposed to the ReAct agent
 # ---------------------------------------------------------------------------
 
@@ -184,21 +231,7 @@ def run_agent(
 
     skill_registry = build_skill_registry(SKILLS_ROOT)
 
-    def list_skills_tool() -> str:
-        """List all available skills with their one-line descriptions.
-        Call this first to discover what capabilities are available before
-        deciding which skill to load."""
-        return list_skills({}, skill_registry)
-
-    def read_skill_tool(skill_name: str) -> str:
-        """Read the full SKILL.md for a named skill. Only call when you have
-        determined the skill is relevant. The file contains instructions and
-        examples.
-
-        Args:
-            skill_name: Exact skill name as returned by list_skills_tool.
-        """
-        return read_skill({"skill_name": skill_name}, skill_registry)
+    list_skills_tool, read_skill_tool = _make_skill_tools(skill_registry, event_callback)
 
     knowledge_index = _load_knowledge_index()
 
