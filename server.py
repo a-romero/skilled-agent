@@ -18,18 +18,29 @@ import threading
 from pathlib import Path
 from typing import Any
 
+from skills import build_skill_registry
+
 import yaml
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse, StreamingResponse
+from fastapi.staticfiles import StaticFiles
 
 load_dotenv()
-
-app = FastAPI(title="Meridian Assistant")
 
 _HERE = Path(__file__).parent
 KNOWLEDGE_ROOT = _HERE / "knowledge"
 HTML_FILE = _HERE / "Open Virtual Assistant.html"
+
+app = FastAPI(title="Meridian Assistant")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+app.mount("/static", StaticFiles(directory=_HERE / "static"), name="static")
 
 
 # ---------------------------------------------------------------------------
@@ -175,6 +186,16 @@ async def config() -> dict:
 async def knowledge_tree() -> dict:
     """Return the real knowledge directory as a JSON tree."""
     return build_knowledge_tree()
+
+
+@app.get("/api/skills")
+async def skills_list() -> list[dict]:
+    """Return all available skills with their one-line descriptions."""
+    registry = build_skill_registry(_HERE / "skills")
+    return [
+        {"name": name, "description": meta["description"]}
+        for name, meta in registry.items()
+    ]
 
 
 @app.post("/api/chat")
