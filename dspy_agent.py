@@ -22,8 +22,11 @@ import dspy
 
 from knowledge import KNOWLEDGE_ROOT, build_source_registry, read_knowledge
 from arize_tracing import setup_arize, instrument_dspy, get_tracer
+from skills import build_skill_registry, list_skills, read_skill
 
 load_dotenv()
+
+SKILLS_ROOT = Path("./skills")
 
 # ---------------------------------------------------------------------------
 # Knowledge base setup
@@ -116,10 +119,17 @@ def _configure_dspy() -> None:
 class KnowledgeAgentSignature(dspy.Signature):
     """Answer customer queries about Aviva's products and services.
 
-    Use the read_knowledge tool to navigate the knowledge base:
-    1. Start with SUMMARY.MD files to explore sections.
-    2. Read specific index.md pages for full content.
-    3. Always cite sources (title and URL) at the end of your answer.
+    You have access to a skill library and a knowledge base.
+
+    Skills:
+    1. Call list_skills_tool to discover available skills and their descriptions.
+    2. Call read_skill_tool with a skill name to load its full instructions.
+    3. Only read a skill if it is relevant to the task.
+
+    Knowledge base:
+    4. Use read_knowledge to navigate: start with SUMMARY.MD files, then read
+       specific index.md pages for full content.
+    5. Always cite sources (title and URL) at the end of your answer.
 
     Format your sources section as:
     ## Sources
@@ -173,6 +183,24 @@ def run_agent(
 
     _configure_dspy()
 
+    skill_registry = build_skill_registry(SKILLS_ROOT)
+
+    def list_skills_tool() -> str:
+        """List all available skills with their one-line descriptions.
+        Call this first to discover what capabilities are available before
+        deciding which skill to load."""
+        return list_skills({}, skill_registry)
+
+    def read_skill_tool(skill_name: str) -> str:
+        """Read the full SKILL.md for a named skill. Only call when you have
+        determined the skill is relevant. The file contains instructions and
+        examples.
+
+        Args:
+            skill_name: Exact skill name as returned by list_skills_tool.
+        """
+        return read_skill({"skill_name": skill_name}, skill_registry)
+
     knowledge_index = _load_knowledge_index()
 
     # Set up Arize tracing — DSPy instrumentor covers all LM calls automatically
@@ -192,7 +220,7 @@ def run_agent(
 
     agent = DSPyKnowledgeAgent(
         max_iters=10,
-        tools=[_instrumented_read],
+        tools=[list_skills_tool, read_skill_tool, _instrumented_read],
     )
 
     if verbose:
