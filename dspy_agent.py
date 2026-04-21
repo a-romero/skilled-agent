@@ -15,6 +15,7 @@ Usage:
 """
 
 import os
+from typing import Callable
 from dotenv import load_dotenv
 from pathlib import Path
 
@@ -123,13 +124,12 @@ class KnowledgeAgentSignature(dspy.Signature):
 
     Skills:
     1. Call list_skills_tool to discover available skills and their descriptions.
-    2. Call read_skill_tool with a skill name to load its full instructions.
-    3. Only read a skill if it is relevant to the task.
+    2. Call read_skill_tool with a skill name only if you have determined it is relevant.
 
     Knowledge base:
-    4. Use read_knowledge to navigate: start with SUMMARY.MD files, then read
+    3. Use read_knowledge to navigate: start with SUMMARY.MD files, then read
        specific index.md pages for full content.
-    5. Always cite sources (title and URL) at the end of your answer.
+    4. Always cite sources (title and URL) at the end of your answer.
 
     Format your sources section as:
     ## Sources
@@ -167,7 +167,7 @@ class DSPyKnowledgeAgent(dspy.Module):
 def run_agent(
     task: str,
     verbose: bool = True,
-    event_callback: "Callable[[dict], None] | None" = None,
+    event_callback: Callable[[dict], None] | None = None,
 ) -> str:
     """Run the DSPy ReAct agent for a given task. Returns the final answer.
 
@@ -179,7 +179,6 @@ def run_agent(
               {"kind": "read",  "path": "..."}
               {"kind": "think", "text": "..."}
     """
-    from typing import Callable  # local import avoids circular at module level
 
     _configure_dspy()
 
