@@ -811,17 +811,16 @@ input, textarea { font-family: inherit; color: inherit; }
   border-radius: 6px;
 }
 .skill-row.reading {
-  background: var(--warm-soft);
-  animation: readPulse 1.1s ease-out infinite;
+  animation: skillReadPulse 1.1s ease-out infinite;
 }
-.skill-row.used-in-turn::before {
-  content: "";
-  position: absolute;
-  left: -2px; top: 4px; bottom: 4px;
-  width: 2px;
-  border-radius: 2px;
-  background: oklch(0.6 0.14 300);
-  opacity: 0.7;
+@keyframes skillReadPulse {
+  0%   { background: var(--warm-soft); }
+  50%  { background: oklch(0.92 0.06 55); }
+  100% { background: var(--warm-soft); }
+}
+.skill-row.used-in-turn {
+  border-left: 2px solid oklch(0.6 0.14 300 / 0.7);
+  padding-left: 6px;
 }
 .skill-row-name {
   display: flex;
