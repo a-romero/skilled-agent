@@ -14,85 +14,25 @@ Flow:
 """
 
 import os
+from dotenv import load_dotenv
 import json
-import anthropic
 from pathlib import Path
 from typing import Any
+
+from knowledge import KNOWLEDGE_TOOLS, handle_knowledge_tool, build_source_registry, KNOWLEDGE_ROOT
+from llm import create_client, complete, make_assistant_message, make_tool_result_messages
+from skills import build_skill_registry, list_skills, read_skill
+from opentelemetry.trace import Status, StatusCode
+from arize_tracing import setup_arize, instrument_litellm, instrument_anthropic, get_tracer
 
 # ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
 
-MODEL = "claude-opus-4-5"          # use the latest Opus; swap to sonnet for speed
 SKILLS_ROOT = Path("./skills")     # root of the skills filesystem
 MAX_ITERATIONS = 20                # guard against infinite loops
 
-client = anthropic.Anthropic()     # reads ANTHROPIC_API_KEY from env
-
-
-# ---------------------------------------------------------------------------
-# Skill registry — built once at startup by scanning SKILLS_ROOT
-# ---------------------------------------------------------------------------
-
-def build_skill_registry(root: Path) -> dict[str, dict]:
-    """
-    Walk SKILLS_ROOT and parse each SKILL.md for its frontmatter description.
-    Returns a dict: { skill_name -> { path, description } }
-    """
-    registry = {}
-    for skill_md in root.rglob("SKILL.md"):
-        skill_name = skill_md.parent.name
-        description = _extract_description(skill_md)
-        registry[skill_name] = {
-            "path": str(skill_md),
-            "description": description,
-        }
-    return registry
-
-
-def _extract_description(path: Path) -> str:
-    """Pull the `description` value out of YAML-ish frontmatter."""
-    try:
-        text = path.read_text()
-        if text.startswith("---"):
-            end = text.index("---", 3)
-            fm = text[3:end]
-            for line in fm.splitlines():
-                if line.strip().startswith("description:"):
-                    # strip the key and any surrounding quotes
-                    val = line.split("description:", 1)[1].strip().strip('"').strip("'")
-                    return val
-        # fallback: first non-empty line after the frontmatter
-        for line in text.splitlines():
-            if line.strip() and not line.startswith("---") and not line.startswith("#"):
-                return line.strip()[:200]
-    except Exception:
-        pass
-    return "(no description)"
-
-
-# ---------------------------------------------------------------------------
-# Built-in tools (always available to the agent)
-# ---------------------------------------------------------------------------
-
-def list_skills(_input: dict, registry: dict) -> str:
-    """Return a JSON list of available skills and their one-line descriptions."""
-    skills = [
-        {"name": name, "description": meta["description"]}
-        for name, meta in registry.items()
-    ]
-    return json.dumps(skills, indent=2)
-
-
-def read_skill(input_: dict, registry: dict) -> str:
-    """Read and return the full contents of a SKILL.md file."""
-    name = input_.get("skill_name", "").strip()
-    if name not in registry:
-        available = ", ".join(registry.keys())
-        return f"Error: skill '{name}' not found. Available: {available}"
-    path = Path(registry[name]["path"])
-    return path.read_text()
-
+load_dotenv()
 
 # ---------------------------------------------------------------------------
 # Skill-defined tools — loaded lazily when read_skill is called
@@ -138,7 +78,7 @@ def _handle_read_file(inp: dict) -> str:
     path = Path(inp["path"])
     if not path.exists():
         return f"Error: {path} does not exist"
-    return path.read_text()
+    return path.read_text(encoding="utf-8")
 
 
 def _handle_run_python(inp: dict) -> str:
@@ -187,7 +127,7 @@ CORE_TOOLS = [
             "required": ["skill_name"],
         },
     },
-]
+] + KNOWLEDGE_TOOLS
 
 
 # ---------------------------------------------------------------------------
@@ -200,12 +140,35 @@ def run_agent(task: str, verbose: bool = True) -> str:
     Returns the agent's final text response.
     """
     registry = build_skill_registry(SKILLS_ROOT)
+    source_registry = build_source_registry(KNOWLEDGE_ROOT / "README.md")
+
+    knowledge_summary_path = KNOWLEDGE_ROOT / "SUMMARY.MD"
+    if not knowledge_summary_path.exists():
+        raise FileNotFoundError(
+            f"{knowledge_summary_path} not found. "
+            "Run: uv run python enrich_knowledge.py"
+        )
+    knowledge_index = knowledge_summary_path.read_text(encoding="utf-8")
+
+    client = create_client()
+
+    # Set up tracing — instrument the underlying provider so LLM calls become
+    # child spans, then get a tracer for manual agent/tool spans.
+    tracer_provider = setup_arize(
+        project_name=os.getenv("ARIZE_PROJECT_NAME", "skilled-agent")
+    )
+    if client.provider == "litellm":
+        instrument_litellm(tracer_provider)
+    elif client.provider == "anthropic":
+        instrument_anthropic(tracer_provider)
+    tracer = get_tracer(tracer_provider, __name__)
+
     active_skill_tools: list[dict] = []   # tools unlocked after read_skill calls
     loaded_skills: set[str] = set()
 
     messages: list[dict] = [{"role": "user", "content": task}]
 
-    system_prompt = f"""You are a capable AI agent with access to a skill library.
+    system_prompt = f"""You are a capable AI agent with access to a skill library and a knowledge base.
 
 Skills are organised as markdown files in a filesystem. You must:
 1. Call `list_skills` to discover available skills.
@@ -213,96 +176,115 @@ Skills are organised as markdown files in a filesystem. You must:
 3. Follow the instructions in the skill file precisely.
 4. Only read a skill if it's actually needed for the task.
 
+You also have access to a knowledge base about Aviva's products and services.
+Navigate it using read_knowledge with SUMMARY.MD files to explore sections,
+then read the specific index.md page once identified.
+
+When answering a customer query, always end your response with a "Sources"
+section listing the title and URL of every index.md file you read:
+
+## Sources
+- [Page Title](https://url)
+
 Current working directory: {Path.cwd()}
 Available skills root: {SKILLS_ROOT.resolve()}
+
+<knowledge_index>
+{knowledge_index}
+</knowledge_index>
 """
 
-    for iteration in range(MAX_ITERATIONS):
-        all_tools = CORE_TOOLS + active_skill_tools
+    # Root AGENT span — all LLM and tool child spans nest under this so every
+    # run appears as a single connected trace in Arize.
+    with tracer.start_as_current_span("agent") as agent_span:
+        agent_span.set_attribute("openinference.span.kind", "AGENT")
+        agent_span.set_attribute("input.value", task)
 
-        if verbose:
-            print(f"\n{'='*60}")
-            print(f"Iteration {iteration + 1}")
-            print(f"Active skill tools: {[t['name'] for t in active_skill_tools]}")
-
-        response = client.messages.create(
-            model=MODEL,
-            max_tokens=4096,
-            system=system_prompt,
-            tools=all_tools,
-            messages=messages,
-        )
-
-        if verbose:
-            print(f"Stop reason: {response.stop_reason}")
-
-        # Append assistant turn
-        messages.append({"role": "assistant", "content": response.content})
-
-        # If no tool calls → done
-        if response.stop_reason == "end_turn":
-            final = " ".join(
-                block.text for block in response.content
-                if hasattr(block, "text")
-            )
-            if verbose:
-                print(f"\nFinal answer:\n{final}")
-            return final
-
-        # Process tool calls
-        tool_results = []
-        for block in response.content:
-            if block.type != "tool_use":
-                continue
-
-            tool_name = block.name
-            tool_input = block.input
-            tool_use_id = block.id
+        for iteration in range(MAX_ITERATIONS):
+            all_tools = CORE_TOOLS + active_skill_tools
 
             if verbose:
-                print(f"\nTool call: {tool_name}")
-                print(f"Input: {json.dumps(tool_input, indent=2)}")
+                print(f"\n{'='*60}")
+                print(f"Iteration {iteration + 1}")
+                print(f"Active skill tools: {[t['name'] for t in active_skill_tools]}")
 
-            # Route to the appropriate handler
-            if tool_name == "list_skills":
-                result = list_skills(tool_input, registry)
-
-            elif tool_name == "read_skill":
-                result = read_skill(tool_input, registry)
-                skill_name = tool_input.get("skill_name", "")
-                # Unlock any tools defined in this skill
-                if skill_name not in loaded_skills and skill_name in registry:
-                    new_tools = _parse_skill_tools(result)
-                    if new_tools:
-                        active_skill_tools.extend(new_tools)
-                        loaded_skills.add(skill_name)
-                        if verbose:
-                            print(f"Unlocked tools from '{skill_name}': "
-                                  f"{[t['name'] for t in new_tools]}")
-
-            elif tool_name in SKILL_TOOL_HANDLERS:
-                try:
-                    result = SKILL_TOOL_HANDLERS[tool_name](tool_input)
-                except Exception as e:
-                    result = f"Error executing {tool_name}: {e}"
-
-            else:
-                result = f"Error: unknown tool '{tool_name}'"
+            response = complete(client, messages, system_prompt=system_prompt, tools=all_tools)
 
             if verbose:
-                preview = str(result)[:300]
-                print(f"Result preview: {preview}{'...' if len(str(result)) > 300 else ''}")
+                print(f"Stop reason: {'done' if response.is_done else 'tool_calls'}")
 
-            tool_results.append({
-                "type": "tool_result",
-                "tool_use_id": tool_use_id,
-                "content": str(result),
-            })
+            # Append assistant turn
+            messages.append(make_assistant_message(response))
 
-        # Append user turn with all tool results
-        messages.append({"role": "user", "content": tool_results})
+            # If no tool calls → done
+            if response.is_done:
+                if verbose:
+                    print(f"\nFinal answer:\n{response.text}")
+                agent_span.set_attribute("output.value", response.text)
+                agent_span.set_status(Status(StatusCode.OK))
+                return response.text
 
-    return "Error: maximum iterations reached without a final answer."
+            # Process tool calls
+            tool_results: list[dict] = []
+            for tool_call in response.tool_calls:
+                tool_name = tool_call.name
+                tool_input = tool_call.input
+                tool_use_id = tool_call.id
+
+                if verbose:
+                    print(f"\nTool call: {tool_name}")
+                    print(f"Input: {json.dumps(tool_input, indent=2)}")
+
+                with tracer.start_as_current_span(tool_name) as tool_span:
+                    tool_span.set_attribute("openinference.span.kind", "TOOL")
+                    tool_span.set_attribute("tool.name", tool_name)
+                    tool_span.set_attribute("input.value", json.dumps(tool_input))
+
+                    # Route to the appropriate handler
+                    if tool_name == "list_skills":
+                        result = list_skills(tool_input, registry)
+
+                    elif tool_name == "read_skill":
+                        result = read_skill(tool_input, registry)
+                        skill_name = tool_input.get("skill_name", "")
+                        # Unlock any tools defined in this skill
+                        if skill_name not in loaded_skills and skill_name in registry:
+                            new_tools = _parse_skill_tools(result)
+                            if new_tools:
+                                active_skill_tools.extend(new_tools)
+                                loaded_skills.add(skill_name)
+                                if verbose:
+                                    print(f"Unlocked tools from '{skill_name}': "
+                                          f"{[t['name'] for t in new_tools]}")
+
+                    elif tool_name == "read_knowledge":
+                        result = handle_knowledge_tool(tool_name, tool_input, source_registry)
+
+                    elif tool_name in SKILL_TOOL_HANDLERS:
+                        try:
+                            result = SKILL_TOOL_HANDLERS[tool_name](tool_input)
+                        except Exception as e:
+                            result = f"Error executing {tool_name}: {e}"
+                            tool_span.record_exception(e)
+
+                    else:
+                        result = f"Error: unknown tool '{tool_name}'"
+
+                    tool_span.set_attribute("output.value", str(result)[:2000])
+
+                if verbose:
+                    preview = str(result)[:300]
+                    print(f"Result preview: {preview}{'...' if len(str(result)) > 300 else ''}")
+
+                tool_results.extend(make_tool_result_messages(client, tool_use_id, str(result)))
+
+            # Extend messages with all tool results
+            messages.extend(tool_results)
+
+        final = "Error: maximum iterations reached without a final answer."
+        agent_span.set_attribute("output.value", final)
+        agent_span.set_status(Status(StatusCode.ERROR, "Maximum iterations reached"))
+        return final
 
 
 # ---------------------------------------------------------------------------
