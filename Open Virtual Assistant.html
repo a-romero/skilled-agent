@@ -1719,6 +1719,10 @@ function App() {
         if (data.org)  setUserOrg(data.org);
       })
       .catch(() => {});
+    fetch("/api/skills")
+      .then(r => r.json())
+      .then(data => setSkills(data))
+      .catch(() => {});
   }, []);
 
   const [expanded, setExpanded] = React.useState(new Set(["business"]));
@@ -1730,6 +1734,8 @@ function App() {
   const [messages, setMessages] = React.useState([]);
   const [busy, setBusy] = React.useState(false);
   const [skills, setSkills] = React.useState([]);
+  const [readingSkill, setReadingSkill] = React.useState(null);
+  const [usedSkillsInTurn, setUsedSkillsInTurn] = React.useState(new Set());
   const [tokens, setTokens] = React.useState({ input: 0, output: 0 });
   const [history, setHistory] = React.useState(() => {
     try {
@@ -1788,6 +1794,8 @@ function App() {
   async function runAgent(userQuery) {
     setBusy(true);
     setReadInTurn(new Set());
+    setUsedSkillsInTurn(new Set());
+    setReadingSkill(null);
     const t0 = Date.now();
     const msgId = "m" + Date.now();
     setMessages(ms => [...ms,
@@ -1912,12 +1920,16 @@ function App() {
     setActiveChat(id);
     setHistory(h => h.map(x => ({ ...x, active: x.id === id })));
     setSkills([]);
+    setReadingSkill(null);
+    setUsedSkillsInTurn(new Set());
   };
 
   const newChat = () => {
     setMessages([]);
     setReadInTurn(new Set());
     setSkills([]);
+    setReadingSkill(null);
+    setUsedSkillsInTurn(new Set());
     setTokens({ input: 0, output: 0 });
     setActiveChat(null);
     setHistory(h => h.map(x => ({...x, active: false})));
@@ -1988,6 +2000,11 @@ function App() {
           searchQ={searchQ}
           onHover={onHover}
           onLeave={onLeave}
+        />
+        <SkillsPanel
+          skills={skills}
+          readingSkill={readingSkill}
+          usedSkillsInTurn={usedSkillsInTurn}
         />
         {selectedPath && <FilePreview path={selectedPath} onClose={() => setSelectedPath(null)} />}
         {hover && !selectedPath && hover.summary && (
