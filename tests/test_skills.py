@@ -66,9 +66,16 @@ def test_read_skill_unknown_returns_error(skills_root: Path) -> None:
     assert result.startswith("Error:")
 
 
+def test_read_skill_error_when_file_deleted(skills_root: Path) -> None:
+    registry = build_skill_registry(skills_root)
+    (skills_root / "python-coder" / "SKILL.md").unlink()
+    result = read_skill({"skill_name": "python-coder"}, registry)
+    assert result.startswith("Error:")
+
+
 def test_description_fallback_for_skill_without_frontmatter(tmp_path: Path) -> None:
     skill_dir = tmp_path / "bare-skill"
     skill_dir.mkdir()
     (skill_dir / "SKILL.md").write_text("# Bare Skill\n\nSome instructions.\n")
     registry = build_skill_registry(tmp_path)
-    assert registry["bare-skill"]["description"] != ""
+    assert registry["bare-skill"]["description"] == "Some instructions."
