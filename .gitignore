@@ -1,13 +1,13 @@
 .venv*
-__pycache__
+__pycache__/
 data/
 data.bkp/
 *node_modules/
 **/.old_node_modules/
 .next/
-*.json
-*.csv
-*.jsonl
+data/*.json                             
+data/*.csv                                                                                                                                                               
+data/*.jsonl
 .env
 secret.key
 .DS_Store
@@ -19,3 +19,9 @@ mp
 wandb/
 .tmp/
 *.egg-info/
+.claude/
+knowledge*/
+Skilled Agent-handoff/
+output/
+*.zip
+.superpowers/
