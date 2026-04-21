@@ -7,6 +7,10 @@ dependencies = [
     "pyyaml",
     "anthropic",
     "litellm",
+    "opentelemetry-api>=1.41.0",
+    "fastapi>=0.136.0",
+    "uvicorn[standard]>=0.44.0",
+    "aiofiles>=25.1.0",
 ]
 
 [build-system]
@@ -22,5 +26,6 @@ asyncio_mode = "auto"
 
 [dependency-groups]
 dev = [
+    "httpx>=0.28.1",
     "pytest>=8.3.5",
 ]
