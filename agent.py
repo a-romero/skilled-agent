@@ -21,6 +21,7 @@ from typing import Any
 
 from knowledge import KNOWLEDGE_TOOLS, handle_knowledge_tool, build_source_registry, KNOWLEDGE_ROOT
 from llm import create_client, complete, make_assistant_message, make_tool_result_messages
+from skills import build_skill_registry, list_skills, read_skill
 from opentelemetry.trace import Status, StatusCode
 from arize_tracing import setup_arize, instrument_litellm, instrument_anthropic, get_tracer
 
@@ -32,70 +33,6 @@ SKILLS_ROOT = Path("./skills")     # root of the skills filesystem
 MAX_ITERATIONS = 20                # guard against infinite loops
 
 load_dotenv()
-
-# ---------------------------------------------------------------------------
-# Skill registry — built once at startup by scanning SKILLS_ROOT
-# ---------------------------------------------------------------------------
-
-def build_skill_registry(root: Path) -> dict[str, dict]:
-    """
-    Walk SKILLS_ROOT and parse each SKILL.md for its frontmatter description.
-    Returns a dict: { skill_name -> { path, description } }
-    """
-    registry = {}
-    for skill_md in root.rglob("SKILL.md"):
-        skill_name = skill_md.parent.name
-        description = _extract_description(skill_md)
-        registry[skill_name] = {
-            "path": str(skill_md),
-            "description": description,
-        }
-    return registry
-
-
-def _extract_description(path: Path) -> str:
-    """Pull the `description` value out of YAML-ish frontmatter."""
-    try:
-        text = path.read_text(encoding="utf-8")
-        if text.startswith("---"):
-            end = text.index("---", 3)
-            fm = text[3:end]
-            for line in fm.splitlines():
-                if line.strip().startswith("description:"):
-                    # strip the key and any surrounding quotes
-                    val = line.split("description:", 1)[1].strip().strip('"').strip("'")
-                    return val
-        # fallback: first non-empty line after the frontmatter
-        for line in text.splitlines():
-            if line.strip() and not line.startswith("---") and not line.startswith("#"):
-                return line.strip()[:200]
-    except Exception:
-        pass
-    return "(no description)"
-
-
-# ---------------------------------------------------------------------------
-# Built-in tools (always available to the agent)
-# ---------------------------------------------------------------------------
-
-def list_skills(_input: dict, registry: dict) -> str:
-    """Return a JSON list of available skills and their one-line descriptions."""
-    skills = [
-        {"name": name, "description": meta["description"]}
-        for name, meta in registry.items()
-    ]
-    return json.dumps(skills, indent=2)
-
-
-def read_skill(input_: dict, registry: dict) -> str:
-    """Read and return the full contents of a SKILL.md file."""
-    name = input_.get("skill_name", "").strip()
-    if name not in registry:
-        available = ", ".join(registry.keys())
-        return f"Error: skill '{name}' not found. Available: {available}"
-    path = Path(registry[name]["path"])
-    return path.read_text(encoding="utf-8")
-
 
 # ---------------------------------------------------------------------------
 # Skill-defined tools — loaded lazily when read_skill is called
