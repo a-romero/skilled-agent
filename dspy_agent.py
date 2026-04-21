@@ -128,8 +128,8 @@ def read_knowledge_tool(path: str) -> str:
 # DSPy configuration
 # ---------------------------------------------------------------------------
 
-def _configure_dspy() -> None:
-    """Configure the DSPy LM from environment variables."""
+def _build_lm() -> dspy.LM:
+    """Build a DSPy LM from environment variables."""
     provider = os.environ.get("LLM_PROVIDER", "")
     model = os.environ.get("LLM_MODEL", "")
 
@@ -142,22 +142,19 @@ def _configure_dspy() -> None:
         api_key = os.environ.get("ANTHROPIC_API_KEY", "")
         if not api_key:
             raise ValueError("ANTHROPIC_API_KEY env var not set")
-        lm = dspy.LM(f"anthropic/{model}", api_key=api_key)
+        return dspy.LM(f"anthropic/{model}", api_key=api_key)
 
-    elif provider == "litellm":
+    if provider == "litellm":
         base_url = os.environ.get("LITELLM_BASE_URL", "")
         api_key = os.environ.get("LITELLM_API_KEY", "openai")
         # DSPy uses LiteLLM under the hood; route through a custom proxy
-        lm = dspy.LM(
+        return dspy.LM(
             f"openai/{model}",
             api_base=base_url or None,
             api_key=api_key,
         )
 
-    else:
-        raise ValueError(f"Unknown LLM_PROVIDER: {provider!r}")
-
-    dspy.configure(lm=lm)
+    raise ValueError(f"Unknown LLM_PROVIDER: {provider!r}")
 
 
 # ---------------------------------------------------------------------------
@@ -227,7 +224,7 @@ def run_agent(
               {"kind": "think", "text": "..."}
     """
 
-    _configure_dspy()
+    lm = _build_lm()
 
     skill_registry = build_skill_registry(SKILLS_ROOT)
 
@@ -258,7 +255,10 @@ def run_agent(
     if verbose:
         print(f"Task: {task}\n")
 
-    with tracer.start_as_current_span("agent") as agent_span:
+    # Use dspy.context so each background thread gets its own LM config
+    # rather than mutating global settings (which DSPy restricts to the
+    # thread that first called dspy.configure).
+    with dspy.context(lm=lm), tracer.start_as_current_span("agent") as agent_span:
         from opentelemetry.trace import Status, StatusCode
 
         agent_span.set_attribute("openinference.span.kind", "AGENT")
