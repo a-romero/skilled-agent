@@ -25,30 +25,44 @@ def skills_root(tmp_path: Path) -> Path:
     return tmp_path
 
 
-def test_list_skills_tool_returns_available_skills(skills_root: Path) -> None:
-    """list_skills tool should return JSON listing skills from the registry."""
+def test_list_skills_closure_returns_json(tmp_path: Path) -> None:
+    """Closure built from a real registry returns valid JSON skill list."""
     from skills import build_skill_registry, list_skills
+
+    registry = build_skill_registry(tmp_path)  # empty root — returns []
+
+    def list_skills_tool() -> str:
+        return list_skills({}, registry)
+
+    result = list_skills_tool()
+    assert json.loads(result) == []
+
+
+def test_list_skills_closure_finds_skill(skills_root: Path) -> None:
+    """Closure built from a populated registry lists the available skill."""
+    from skills import build_skill_registry, list_skills
+
     registry = build_skill_registry(skills_root)
-    result = list_skills({}, registry)
-    skills = json.loads(result)
-    names = [s["name"] for s in skills]
-    assert "summariser" in names
+
+    def list_skills_tool() -> str:
+        return list_skills({}, registry)
+
+    skills = json.loads(list_skills_tool())
+    assert any(s["name"] == "summariser" for s in skills)
+    assert all("description" in s for s in skills)
 
 
-def test_read_skill_tool_returns_content(skills_root: Path) -> None:
-    """read_skill tool should return SKILL.md content for a known skill."""
+def test_read_skill_closure_returns_content_and_errors(skills_root: Path) -> None:
+    """Closure built from registry returns content for known, error for unknown."""
     from skills import build_skill_registry, read_skill
-    registry = build_skill_registry(skills_root)
-    result = read_skill({"skill_name": "summariser"}, registry)
-    assert "Summariser Skill" in result
 
-
-def test_read_skill_tool_error_for_unknown(skills_root: Path) -> None:
-    """read_skill tool should return an error for an unknown skill name."""
-    from skills import build_skill_registry, read_skill
     registry = build_skill_registry(skills_root)
-    result = read_skill({"skill_name": "does-not-exist"}, registry)
-    assert result.startswith("Error:")
+
+    def read_skill_tool(skill_name: str) -> str:
+        return read_skill({"skill_name": skill_name}, registry)
+
+    assert "Summariser Skill" in read_skill_tool("summariser")
+    assert read_skill_tool("nonexistent").startswith("Error:")
 
 
 def test_dspy_agent_has_skills_root_constant() -> None:
