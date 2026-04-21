@@ -1919,7 +1919,6 @@ function App() {
     } catch {}
     setActiveChat(id);
     setHistory(h => h.map(x => ({ ...x, active: x.id === id })));
-    setSkills([]);
     setReadingSkill(null);
     setUsedSkillsInTurn(new Set());
   };
@@ -1927,7 +1926,6 @@ function App() {
   const newChat = () => {
     setMessages([]);
     setReadInTurn(new Set());
-    setSkills([]);
     setReadingSkill(null);
     setUsedSkillsInTurn(new Set());
     setTokens({ input: 0, output: 0 });
