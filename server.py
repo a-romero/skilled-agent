@@ -4,6 +4,7 @@ Meridian Assistant — FastAPI server
 Serves the frontend and provides two API endpoints:
 
   GET  /api/knowledge/tree   — real knowledge directory as JSON tree
+  GET  /api/skills           — available skill names and descriptions
   POST /api/chat             — SSE stream: runs dspy_agent and emits events
 
 Run with:
@@ -18,14 +19,14 @@ import threading
 from pathlib import Path
 from typing import Any
 
-from skills import build_skill_registry
-
 import yaml
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
+
+from skills import build_skill_registry
 
 load_dotenv()
 
