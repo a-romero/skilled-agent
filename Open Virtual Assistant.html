@@ -1,0 +1,2045 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=1280" />
+  <title>Open Virtual Assistant</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+/* ============================================================
+   Meridian — Skilled Agent UI
+   Modern SaaS. Inter + JetBrains Mono.
+   Single accent (indigo-blue), warm pulse for "reading".
+   ============================================================ */
+
+:root {
+  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* Light theme */
+  --bg:        oklch(0.985 0.003 250);
+  --surface:  oklch(1 0 0);
+  --surface-2:oklch(0.975 0.004 250);
+  --surface-3:oklch(0.955 0.005 250);
+  --border:   oklch(0.915 0.008 250);
+  --border-2: oklch(0.88 0.01 250);
+  --text:     oklch(0.22 0.015 260);
+  --text-2:   oklch(0.45 0.01 260);
+  --text-3:   oklch(0.62 0.01 260);
+  --accent:       oklch(0.58 0.14 255);
+  --accent-soft:  oklch(0.95 0.035 255);
+  --accent-ring:  oklch(0.58 0.14 255 / 0.22);
+  --warm:         oklch(0.70 0.12 55);
+  --warm-soft:    oklch(0.96 0.04 60);
+  --success:      oklch(0.62 0.12 155);
+  --danger:       oklch(0.6 0.17 25);
+  --shadow-sm: 0 1px 2px oklch(0.2 0.02 260 / 0.05);
+  --shadow:    0 2px 8px oklch(0.2 0.02 260 / 0.06), 0 1px 2px oklch(0.2 0.02 260 / 0.04);
+  --shadow-lg: 0 12px 32px oklch(0.2 0.02 260 / 0.08), 0 4px 12px oklch(0.2 0.02 260 / 0.05);
+  --radius: 10px;
+  --radius-sm: 7px;
+  --tree-row-h: 26px;
+}
+
+[data-theme="dark"] {
+  --bg:        oklch(0.18 0.01 260);
+  --surface:  oklch(0.215 0.012 260);
+  --surface-2:oklch(0.245 0.013 260);
+  --surface-3:oklch(0.275 0.014 260);
+  --border:   oklch(0.32 0.015 260);
+  --border-2: oklch(0.38 0.018 260);
+  --text:     oklch(0.96 0.005 260);
+  --text-2:   oklch(0.75 0.01 260);
+  --text-3:   oklch(0.58 0.01 260);
+  --accent:       oklch(0.72 0.13 250);
+  --accent-soft:  oklch(0.32 0.06 255);
+  --accent-ring:  oklch(0.72 0.13 250 / 0.3);
+  --warm:         oklch(0.78 0.13 60);
+  --warm-soft:    oklch(0.34 0.06 55);
+  --shadow-sm: 0 1px 2px oklch(0 0 0 / 0.25);
+  --shadow:    0 2px 10px oklch(0 0 0 / 0.3);
+  --shadow-lg: 0 12px 32px oklch(0 0 0 / 0.4);
+}
+
+* { box-sizing: border-box; }
+html, body, #root { height: 100%; margin: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+button { font-family: inherit; cursor: pointer; color: inherit; }
+input, textarea { font-family: inherit; color: inherit; }
+
+/* ============== Layout ============== */
+.app {
+  display: grid;
+  grid-template-columns: 240px 360px 1fr;
+  height: 100vh;
+  min-width: 980px;
+}
+.pane {
+  min-height: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--border);
+  background: var(--surface);
+}
+.pane.chat { border-right: none; background: var(--bg); }
+
+/* ============== Brand / history sidebar ============== */
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  height: 56px;
+}
+.brand-mark {
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  background: linear-gradient(135deg, var(--accent), oklch(0.5 0.15 280));
+  position: relative;
+  flex-shrink: 0;
+}
+.brand-mark::after {
+  content: "";
+  position: absolute;
+  inset: 6px;
+  border: 1.5px solid white;
+  border-radius: 3px;
+  opacity: 0.9;
+}
+.brand-name {
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: -0.01em;
+}
+.brand-sub {
+  font-size: 11px;
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  margin-top: 1px;
+}
+
+.new-chat {
+  margin: 12px;
+  padding: 9px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border-2);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 120ms;
+}
+.new-chat:hover { background: var(--surface-2); border-color: var(--accent); }
+
+.history-label {
+  padding: 4px 16px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-3);
+  font-weight: 600;
+}
+.history-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px 8px 16px;
+}
+.history-item {
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  color: var(--text-2);
+  font-size: 13px;
+  cursor: pointer;
+  margin-bottom: 1px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.history-item:hover { background: var(--surface-2); color: var(--text); }
+.history-item.active { background: var(--accent-soft); color: var(--accent); font-weight: 500; }
+.history-time { color: var(--text-3); font-size: 11px; margin-left: auto; flex-shrink: 0; }
+
+.sidebar-footer {
+  padding: 12px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.avatar {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, oklch(0.75 0.09 35), oklch(0.68 0.11 15));
+  display: grid; place-items: center;
+  font-size: 11px; font-weight: 600; color: white;
+  flex-shrink: 0;
+}
+.user-info { flex: 1; min-width: 0; }
+.user-name { font-size: 13px; font-weight: 500; }
+.user-role { font-size: 11px; color: var(--text-3); }
+.icon-btn {
+  width: 28px; height: 28px;
+  border: none; background: transparent;
+  border-radius: 6px;
+  display: grid; place-items: center;
+  color: var(--text-2);
+  transition: background 120ms;
+}
+.icon-btn:hover { background: var(--surface-2); color: var(--text); }
+
+/* ============== Knowledge pane ============== */
+.kpane-header {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  height: 56px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.kpane-title {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+}
+.kpane-badge {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-3);
+  padding: 2px 6px;
+  background: var(--surface-2);
+  border-radius: 4px;
+}
+
+.ksearch {
+  margin: 10px 12px 6px;
+  position: relative;
+}
+.ksearch input {
+  width: 100%;
+  padding: 8px 10px 8px 30px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  color: var(--text);
+  outline: none;
+  transition: border-color 120ms, background 120ms;
+}
+.ksearch input:focus {
+  border-color: var(--accent);
+  background: var(--surface);
+  box-shadow: 0 0 0 3px var(--accent-ring);
+}
+.ksearch input::placeholder { color: var(--text-3); }
+.ksearch-icon {
+  position: absolute;
+  left: 10px; top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-3);
+  pointer-events: none;
+}
+
+.ktree {
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px 6px 16px;
+  font-size: 13px;
+}
+.knode {
+  position: relative;
+}
+.krow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--text-2);
+  position: relative;
+  user-select: none;
+  min-height: var(--tree-row-h);
+}
+.krow:hover { background: var(--surface-2); color: var(--text); }
+.krow.selected { background: var(--accent-soft); color: var(--accent); }
+.krow.reading { background: var(--warm-soft); color: var(--text); }
+.krow.read-in-turn::before {
+  content: "";
+  position: absolute;
+  left: -2px; top: 4px; bottom: 4px;
+  width: 2px;
+  border-radius: 2px;
+  background: var(--accent);
+  opacity: 0.6;
+}
+.caret {
+  width: 14px; height: 14px;
+  display: grid; place-items: center;
+  color: var(--text-3);
+  transition: transform 160ms;
+  flex-shrink: 0;
+}
+.caret.open { transform: rotate(90deg); }
+.caret.leaf { visibility: hidden; }
+.kicon {
+  width: 14px; height: 14px;
+  flex-shrink: 0;
+  color: var(--text-3);
+}
+.krow.selected .kicon, .krow.reading .kicon { color: inherit; }
+.kname {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+}
+.kname.dir { font-family: var(--font-sans); font-size: 13px; font-weight: 500; }
+.kchildren {
+  margin-left: 12px;
+  border-left: 1px dashed var(--border);
+  padding-left: 4px;
+}
+.kreadmark {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--accent);
+  opacity: 0.7;
+}
+
+/* Hover popover for folder summaries */
+.kpop {
+  position: fixed;
+  z-index: 60;
+  width: 280px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px;
+  box-shadow: var(--shadow-lg);
+  font-size: 12.5px;
+  color: var(--text-2);
+  line-height: 1.55;
+  pointer-events: none;
+  animation: pop 120ms ease-out;
+}
+.kpop-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 4px;
+  font-family: var(--font-mono);
+}
+@keyframes pop { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Reading pulse */
+@keyframes readPulse {
+  0%   { box-shadow: 0 0 0 0 var(--warm) inset, 0 0 0 0 oklch(0.7 0.12 55 / 0.5); }
+  60%  { box-shadow: 0 0 0 0 var(--warm) inset, 0 0 0 8px oklch(0.7 0.12 55 / 0); }
+  100% { box-shadow: 0 0 0 0 var(--warm) inset, 0 0 0 0 oklch(0.7 0.12 55 / 0); }
+}
+.krow.reading {
+  animation: readPulse 1.1s ease-out infinite;
+}
+
+/* File preview overlay */
+.kpreview {
+  position: absolute;
+  inset: 0;
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+  z-index: 20;
+}
+.kpreview-head {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 56px;
+}
+.kpreview-back {
+  background: none; border: 1px solid var(--border-2);
+  padding: 4px 8px; font-size: 12px; border-radius: 6px;
+  color: var(--text-2);
+  display: flex; align-items: center; gap: 4px;
+}
+.kpreview-back:hover { background: var(--surface-2); color: var(--text); }
+.kpreview-path {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--text-3);
+  margin-left: auto;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.kpreview-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+}
+.kfrontmatter {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  margin-bottom: 14px;
+  color: var(--text-2);
+}
+.kfrontmatter .fm-k { color: var(--accent); }
+.kfrontmatter .fm-v { color: var(--text); }
+.kfrontmatter .fm-row { margin-bottom: 2px; }
+
+.kchips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
+}
+.kchip {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  padding: 2px 6px;
+  background: var(--surface-3);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-2);
+}
+.kchip.topic { border-color: var(--accent-ring); color: var(--accent); background: var(--accent-soft); }
+
+.ktitle {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 4px;
+  letter-spacing: -0.01em;
+}
+.ksummary { color: var(--text-2); margin-bottom: 14px; font-size: 13px; }
+.kbody { font-size: 13.5px; line-height: 1.65; color: var(--text); }
+.kbody p { margin: 0 0 10px; }
+.ksource-link {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+}
+.ksource-link a { color: var(--accent); font-family: var(--font-mono); text-decoration: none; word-break: break-all; }
+
+/* ============== Chat pane ============== */
+.chat-header {
+  padding: 0 20px;
+  border-bottom: 1px solid var(--border);
+  height: 56px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.chat-title {
+  font-size: 14px;
+  font-weight: 600;
+}
+.chat-sub {
+  font-size: 12px;
+  color: var(--text-3);
+  font-family: var(--font-mono);
+}
+.chat-status {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-2);
+  padding: 4px 8px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+}
+.status-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--success);
+  box-shadow: 0 0 0 3px oklch(0.62 0.12 155 / 0.15);
+}
+.status-dot.thinking { background: var(--warm); box-shadow: 0 0 0 3px oklch(0.7 0.12 55 / 0.2); animation: blink 1s infinite; }
+@keyframes blink { 50% { opacity: 0.35; } }
+
+.chat-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 28px 0 24px;
+}
+.chat-inner {
+  max-width: 740px;
+  margin: 0 auto;
+  padding: 0 28px;
+}
+
+.suggest-wrap { margin-top: 40px; }
+.suggest-hi {
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  margin: 0 0 8px;
+}
+.suggest-sub {
+  color: var(--text-2);
+  margin: 0 0 24px;
+  font-size: 14px;
+}
+.suggest-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.suggest-card {
+  text-align: left;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  color: var(--text);
+  transition: all 140ms;
+}
+.suggest-card:hover {
+  border-color: var(--accent);
+  box-shadow: var(--shadow);
+  transform: translateY(-1px);
+}
+.suggest-label {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--text-3);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.suggest-q { font-size: 14px; font-weight: 500; line-height: 1.4; }
+
+/* Messages */
+.msg { margin-bottom: 26px; }
+.msg-role {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-size: 12px;
+  color: var(--text-3);
+  font-weight: 500;
+}
+.msg-role .av {
+  width: 22px; height: 22px;
+  border-radius: 5px;
+  display: grid; place-items: center;
+  font-size: 10px; font-weight: 600;
+  color: white;
+}
+.msg.user .av { background: linear-gradient(135deg, oklch(0.75 0.09 35), oklch(0.68 0.11 15)); }
+.msg.assistant .av {
+  background: linear-gradient(135deg, var(--accent), oklch(0.5 0.14 280));
+  position: relative;
+}
+.msg.assistant .av::after {
+  content: "";
+  position: absolute;
+  inset: 5px;
+  border: 1.2px solid white;
+  border-radius: 2px;
+  opacity: 0.9;
+}
+.msg-content {
+  font-size: 14.5px;
+  line-height: 1.65;
+}
+.msg-content p { margin: 0 0 10px; }
+.msg-content p:last-child { margin-bottom: 0; }
+.msg-content ul { margin: 0 0 12px; padding-left: 20px; }
+.msg-content li { margin-bottom: 4px; }
+.msg-content strong { font-weight: 600; color: var(--text); }
+.msg-content em { color: var(--text-2); }
+.msg-content code {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+.msg-content table {
+  border-collapse: collapse;
+  margin: 10px 0 14px;
+  font-size: 13.5px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+.msg-content th, .msg-content td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+}
+.msg-content th {
+  background: var(--surface-2);
+  font-weight: 600;
+  font-size: 12px;
+  color: var(--text-2);
+}
+.msg-content tr:last-child td { border-bottom: none; }
+.msg-content td + td, .msg-content th + th { border-left: 1px solid var(--border); }
+
+/* Inline citation markers */
+.cite {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 17px;
+  padding: 0 4px;
+  margin: 0 2px;
+  font-size: 10.5px;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-ring);
+  border-radius: 4px;
+  vertical-align: 1px;
+  cursor: pointer;
+  transition: all 120ms;
+}
+.cite:hover { background: var(--accent); color: white; }
+
+/* Streaming caret */
+.stream-caret {
+  display: inline-block;
+  width: 7px;
+  height: 15px;
+  background: var(--accent);
+  vertical-align: -2px;
+  animation: caret 1s steps(2) infinite;
+  margin-left: 2px;
+  border-radius: 1px;
+}
+@keyframes caret { 50% { opacity: 0; } }
+
+/* Reasoning trace */
+.trace {
+  margin: 4px 0 14px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.trace-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  font-size: 12.5px;
+  color: var(--text-2);
+  cursor: pointer;
+  user-select: none;
+}
+.trace-head:hover { background: var(--surface-2); }
+.trace-head .dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--accent);
+}
+.trace-head .dot.active { background: var(--warm); animation: blink 1s infinite; }
+.trace-title { font-weight: 500; color: var(--text); }
+.trace-stats { margin-left: auto; font-family: var(--font-mono); font-size: 11px; color: var(--text-3); }
+.trace-caret { transition: transform 160ms; color: var(--text-3); }
+.trace.open .trace-caret { transform: rotate(90deg); }
+
+.trace-body {
+  display: none;
+  padding: 4px 12px 12px;
+  border-top: 1px solid var(--border);
+}
+.trace.open .trace-body { display: block; }
+
+.step {
+  display: flex;
+  gap: 10px;
+  padding: 8px 0;
+  font-size: 12.5px;
+  animation: stepIn 240ms ease-out;
+}
+@keyframes stepIn {
+  from { opacity: 0; transform: translateX(-4px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.step-bullet {
+  width: 18px;
+  flex-shrink: 0;
+  display: flex;
+  justify-content: center;
+  padding-top: 2px;
+  position: relative;
+}
+.step-bullet::before {
+  content: "";
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--border-2);
+  margin-top: 4px;
+}
+.step.active .step-bullet::before { background: var(--warm); }
+.step.think .step-bullet::before { background: var(--text-3); }
+.step.read .step-bullet::before { background: var(--accent); }
+.step.skill .step-bullet::before { background: oklch(0.6 0.14 300); }
+.step-body { flex: 1; color: var(--text-2); }
+.step.think .step-body { font-style: italic; color: var(--text-2); }
+.step.read .step-body {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--text);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  padding: 4px 8px;
+  border-radius: 5px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.step.read .tool-tag {
+  font-size: 10px;
+  padding: 1px 5px;
+  background: var(--accent);
+  color: white;
+  border-radius: 3px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.step.skill .step-body {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  background: oklch(0.97 0.03 300);
+  border: 1px solid oklch(0.85 0.06 300);
+  padding: 4px 8px;
+  border-radius: 5px;
+  font-size: 12px;
+  color: oklch(0.4 0.12 300);
+}
+[data-theme="dark"] .step.skill .step-body {
+  background: oklch(0.32 0.06 300);
+  border-color: oklch(0.45 0.08 300);
+  color: oklch(0.85 0.08 300);
+}
+.step.skill .skill-tag {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  padding: 1px 5px;
+  background: oklch(0.6 0.14 300);
+  color: white;
+  border-radius: 3px;
+  font-weight: 600;
+}
+
+/* ============== Skills panel ============== */
+.spane {
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  max-height: 220px;
+}
+.spane-header {
+  padding: 7px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+  flex-shrink: 0;
+  color: var(--text-2);
+}
+.spane-header:hover { background: var(--surface-2); color: var(--text); }
+.spane-title {
+  font-size: 12px;
+  font-weight: 600;
+}
+.spane-badge {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-3);
+  padding: 2px 6px;
+  background: var(--surface-2);
+  border-radius: 4px;
+}
+.spane-body {
+  overflow-y: auto;
+  padding: 2px 6px 6px;
+}
+.skill-row {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+.skill-row.reading {
+  background: var(--warm-soft);
+  animation: readPulse 1.1s ease-out infinite;
+}
+.skill-row.used-in-turn::before {
+  content: "";
+  position: absolute;
+  left: -2px; top: 4px; bottom: 4px;
+  width: 2px;
+  border-radius: 2px;
+  background: oklch(0.6 0.14 300);
+  opacity: 0.7;
+}
+.skill-row-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.skill-row-desc {
+  font-size: 11px;
+  color: var(--text-3);
+  padding-left: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 4px 0;
+  color: var(--text-3);
+}
+.breadcrumb .bc {
+  padding: 2px 6px;
+  border-radius: 3px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text-2);
+}
+.breadcrumb .bc.active { background: var(--accent-soft); color: var(--accent); border-color: var(--accent-ring); }
+.breadcrumb .sep { color: var(--text-3); }
+
+/* Sources block */
+.sources {
+  margin-top: 12px;
+  padding: 12px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.sources-head {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-3);
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.source-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 6px 0;
+  border-top: 1px solid var(--border);
+  font-size: 13px;
+  cursor: pointer;
+  transition: color 120ms;
+}
+.source-item:first-of-type { border-top: none; }
+.source-item:hover .source-title { color: var(--accent); }
+.source-num {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--accent);
+  background: var(--accent-soft);
+  padding: 2px 6px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.source-title { font-weight: 500; color: var(--text); }
+.source-url {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-3);
+  margin-top: 2px;
+  word-break: break-all;
+}
+
+/* Composer */
+.composer-wrap {
+  padding: 0 28px 20px;
+  max-width: 740px;
+  margin: 0 auto;
+  width: 100%;
+}
+.composer {
+  background: var(--surface);
+  border: 1px solid var(--border-2);
+  border-radius: 14px;
+  padding: 12px 14px;
+  box-shadow: var(--shadow);
+  transition: border-color 140ms, box-shadow 140ms;
+}
+.composer:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-ring), var(--shadow);
+}
+.composer textarea {
+  width: 100%;
+  border: none;
+  resize: none;
+  background: transparent;
+  font-size: 14.5px;
+  line-height: 1.5;
+  outline: none;
+  min-height: 22px;
+  max-height: 160px;
+}
+.composer textarea::placeholder { color: var(--text-3); }
+.composer-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+}
+.composer-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11.5px;
+  padding: 3px 8px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  color: var(--text-2);
+  font-family: var(--font-mono);
+}
+.send-btn {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px; height: 32px;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  transition: background 120ms, transform 80ms;
+}
+.send-btn:hover { background: oklch(0.52 0.15 255); }
+.send-btn:disabled { background: var(--border-2); color: var(--text-3); cursor: not-allowed; }
+.send-btn:active:not(:disabled) { transform: scale(0.95); }
+
+.disclaimer {
+  text-align: center;
+  font-size: 11px;
+  color: var(--text-3);
+  margin-top: 10px;
+}
+
+/* ============== Tweaks panel ============== */
+.tweaks-panel {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 100;
+  width: 280px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  box-shadow: var(--shadow-lg);
+  font-size: 13px;
+  display: none;
+}
+.tweaks-panel.open { display: block; }
+.tweaks-head {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.tweaks-title { font-weight: 600; font-size: 13px; }
+.tweaks-x {
+  margin-left: auto;
+  background: none; border: none;
+  color: var(--text-3);
+  width: 22px; height: 22px;
+  border-radius: 5px;
+}
+.tweaks-x:hover { background: var(--surface-2); color: var(--text); }
+.tweak-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-top: 1px solid var(--border);
+  font-size: 12.5px;
+}
+.tweak-row:first-of-type { border-top: none; }
+.tweak-label { color: var(--text-2); }
+.seg {
+  display: inline-flex;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 2px;
+}
+.seg button {
+  font-size: 11.5px;
+  padding: 3px 9px;
+  border: none;
+  background: transparent;
+  color: var(--text-2);
+  border-radius: 5px;
+  font-weight: 500;
+}
+.seg button.active { background: var(--surface); color: var(--text); box-shadow: var(--shadow-sm); }
+
+/* Misc */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; border: 2px solid var(--surface); }
+::-webkit-scrollbar-thumb:hover { background: var(--border-2); }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <!-- ================================================================
+       Data — populated at runtime from /api/knowledge/tree
+       ================================================================ -->
+  <script>
+// Placeholder replaced by the fetch in App on mount.
+// Kept so resolvePath / flatten can be called safely before the fetch completes.
+window.KNOWLEDGE = {
+  brand: "Aviva",
+  root: { path: "", name: "knowledge", summary: "", children: [] }
+};
+  </script>
+
+
+  <!-- React + Babel -->
+  <script src="/static/react.development.js"></script>
+  <script src="/static/react-dom.development.js"></script>
+  <script src="/static/babel.min.js"></script>
+
+  <!-- ================================================================
+       Components (all inlined, in dependency order)
+       ================================================================ -->
+  <script type="text/babel">
+
+// ── shared.jsx ──────────────────────────────────────────────────────────────
+
+const Icon = ({ name, size = 14 }) => {
+  const s = { width: size, height: size, stroke: "currentColor", fill: "none", strokeWidth: 1.6, strokeLinecap: "round", strokeLinejoin: "round", display: "inline-block", verticalAlign: "middle" };
+  switch (name) {
+    case "chevron":
+      return <svg viewBox="0 0 16 16" style={s}><polyline points="6,3 11,8 6,13" /></svg>;
+    case "folder":
+      return <svg viewBox="0 0 16 16" style={s}><path d="M1.5 4.5a1 1 0 0 1 1-1h3l1.5 1.5h6.5a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1h-11a1 1 0 0 1-1-1v-7.5Z" /></svg>;
+    case "folder-open":
+      return <svg viewBox="0 0 16 16" style={s}><path d="M1.5 4.5a1 1 0 0 1 1-1h3l1.5 1.5h6.5a1 1 0 0 1 1 1V6H1.5V4.5Z"/><path d="M1.5 6h13l-1.4 5.8a1 1 0 0 1-1 .7h-10.2a1 1 0 0 1-1-.8L1.5 6Z"/></svg>;
+    case "file":
+      return <svg viewBox="0 0 16 16" style={s}><path d="M4 2h5l3 3v9H4z"/><path d="M9 2v3h3"/></svg>;
+    case "file-summary":
+      return <svg viewBox="0 0 16 16" style={s}><path d="M4 2h5l3 3v9H4z"/><path d="M9 2v3h3"/><line x1="6" y1="9" x2="10" y2="9"/><line x1="6" y1="11" x2="10" y2="11"/></svg>;
+    case "search":
+      return <svg viewBox="0 0 16 16" style={{...s, width: 13, height: 13}}><circle cx="7" cy="7" r="4.5"/><line x1="10.5" y1="10.5" x2="14" y2="14"/></svg>;
+    case "send":
+      return <svg viewBox="0 0 16 16" style={{...s, strokeWidth: 1.8}}><path d="M3 8h10M9 4l4 4-4 4"/></svg>;
+    case "plus":
+      return <svg viewBox="0 0 16 16" style={s}><line x1="8" y1="3" x2="8" y2="13"/><line x1="3" y1="8" x2="13" y2="8"/></svg>;
+    case "sun":
+      return <svg viewBox="0 0 16 16" style={s}><circle cx="8" cy="8" r="3"/><line x1="8" y1="1" x2="8" y2="3"/><line x1="8" y1="13" x2="8" y2="15"/><line x1="1" y1="8" x2="3" y2="8"/><line x1="13" y1="8" x2="15" y2="8"/><line x1="3" y1="3" x2="4.5" y2="4.5"/><line x1="11.5" y1="11.5" x2="13" y2="13"/><line x1="3" y1="13" x2="4.5" y2="11.5"/><line x1="11.5" y1="4.5" x2="13" y2="3"/></svg>;
+    case "moon":
+      return <svg viewBox="0 0 16 16" style={s}><path d="M13 9.5A5.5 5.5 0 1 1 6.5 3a4.5 4.5 0 0 0 6.5 6.5Z"/></svg>;
+    case "settings":
+      return <svg viewBox="0 0 16 16" style={s}><circle cx="8" cy="8" r="2"/><path d="M12.5 8a4.5 4.5 0 0 0-.1-1l1.3-1-1-1.7-1.5.5a4.5 4.5 0 0 0-1.7-1l-.3-1.6h-2l-.3 1.6a4.5 4.5 0 0 0-1.7 1l-1.5-.5-1 1.7 1.3 1a4.5 4.5 0 0 0 0 2l-1.3 1 1 1.7 1.5-.5a4.5 4.5 0 0 0 1.7 1l.3 1.6h2l.3-1.6a4.5 4.5 0 0 0 1.7-1l1.5.5 1-1.7-1.3-1a4.5 4.5 0 0 0 .1-1Z"/></svg>;
+    case "message":
+      return <svg viewBox="0 0 16 16" style={s}><path d="M2 3h12v8H6l-3 3v-3H2z"/></svg>;
+    case "back":
+      return <svg viewBox="0 0 16 16" style={s}><path d="M10 3 5 8l5 5"/></svg>;
+    case "zap":
+      return <svg viewBox="0 0 16 16" style={s}><path d="M9 1 3 9h4l-1 6 6-8H8l1-6Z"/></svg>;
+    default: return null;
+  }
+};
+
+function renderMarkdown(src, citeMap) {
+  if (!src) return null;
+  const blocks = src.split(/\n{2,}/);
+  const nodes = [];
+  for (let bi = 0; bi < blocks.length; bi++) {
+    const block = blocks[bi];
+    const trimmed = block.trim();
+    const lines = trimmed.split("\n");
+    if (lines.length >= 2 && lines.every(l => l.includes("|")) && /^\|?\s*:?-+:?/.test(lines[1])) {
+      const rows = lines.map(l => l.replace(/^\||\|$/g, "").split("|").map(c => c.trim()));
+      const header = rows[0];
+      const body = rows.slice(2);
+      nodes.push(
+        <table key={bi}>
+          <thead><tr>{header.map((h, i) => <th key={i}>{renderInline(h, citeMap)}</th>)}</tr></thead>
+          <tbody>{body.map((r, ri) => <tr key={ri}>{r.map((c, ci) => <td key={ci}>{renderInline(c, citeMap)}</td>)}</tr>)}</tbody>
+        </table>
+      );
+      continue;
+    }
+    if (lines.every(l => /^\s*-\s+/.test(l))) {
+      nodes.push(
+        <ul key={bi}>
+          {lines.map((l, i) => <li key={i}>{renderInline(l.replace(/^\s*-\s+/, ""), citeMap)}</li>)}
+        </ul>
+      );
+      continue;
+    }
+    if (/^##\s/.test(trimmed)) {
+      nodes.push(<h3 key={bi} style={{margin: "10px 0 6px", fontSize: 14, fontWeight: 600}}>{renderInline(trimmed.replace(/^##\s/, ""), citeMap)}</h3>);
+      continue;
+    }
+    const parts = trimmed.split("\n");
+    nodes.push(
+      <p key={bi}>
+        {parts.map((part, pi) => (
+          <React.Fragment key={pi}>
+            {renderInline(part, citeMap)}
+            {pi < parts.length - 1 && <br />}
+          </React.Fragment>
+        ))}
+      </p>
+    );
+  }
+  return nodes;
+}
+
+function renderInline(str, citeMap) {
+  const out = [];
+  let i = 0;
+  let key = 0;
+  while (i < str.length) {
+    const mCite = str.slice(i).match(/^\[(\d+)\]/);
+    if (mCite && citeMap && citeMap["[" + mCite[1] + "]"]) {
+      const num = mCite[1];
+      const path = citeMap["[" + num + "]"];
+      out.push(
+        <span key={key++} className="cite"
+          onClick={() => window.dispatchEvent(new CustomEvent("open-knowledge-file", { detail: { path } }))}
+          title={path}
+        >{num}</span>
+      );
+      i += mCite[0].length;
+      continue;
+    }
+    if (str.slice(i, i + 2) === "**") {
+      const end = str.indexOf("**", i + 2);
+      if (end > -1) { out.push(<strong key={key++}>{renderInline(str.slice(i + 2, end), citeMap)}</strong>); i = end + 2; continue; }
+    }
+    if (str[i] === "*" && str[i + 1] !== "*") {
+      const end = str.indexOf("*", i + 1);
+      if (end > -1) { out.push(<em key={key++}>{str.slice(i + 1, end)}</em>); i = end + 1; continue; }
+    }
+    if (str[i] === "`") {
+      const end = str.indexOf("`", i + 1);
+      if (end > -1) { out.push(<code key={key++}>{str.slice(i + 1, end)}</code>); i = end + 1; continue; }
+    }
+    const mLink = str.slice(i).match(/^\[([^\]]+)\]\(([^)]+)\)/);
+    if (mLink) {
+      out.push(<a key={key++} href={mLink[2]} target="_blank" rel="noreferrer" style={{color: "var(--accent)"}}>{mLink[1]}</a>);
+      i += mLink[0].length;
+      continue;
+    }
+    const nextSpecial = str.slice(i).search(/\*|`|\[/);
+    if (nextSpecial === -1) { out.push(str.slice(i)); break; }
+    else if (nextSpecial === 0) { out.push(str[i]); i++; }
+    else { out.push(str.slice(i, i + nextSpecial)); i += nextSpecial; }
+  }
+  return out;
+}
+
+// ── knowledge_pane.jsx ───────────────────────────────────────────────────────
+
+function flatten(root) {
+  const out = [];
+  function walk(children, prefix, depth) {
+    for (const c of children) {
+      const path = prefix + c.name;
+      out.push({ ...c, path, depth });
+      if (c.type === "dir") walk(c.children, path + "/", depth + 1);
+    }
+  }
+  walk(root.children, "", 0);
+  return out;
+}
+
+function resolvePath(path) {
+  const flat = flatten(window.KNOWLEDGE.root);
+  if (path.endsWith("SUMMARY.MD")) {
+    const dirPath = path.replace(/\/?SUMMARY\.MD$/, "");
+    if (dirPath === "") {
+      return { synthetic: "summary", dirPath: "", name: "knowledge", summary: window.KNOWLEDGE.root.summary, children: window.KNOWLEDGE.root.children };
+    }
+    const dir = flat.find(n => n.type === "dir" && n.path === dirPath);
+    if (dir) return { synthetic: "summary", dirPath, name: dir.name, summary: dir.summary, children: dir.children };
+    return null;
+  }
+  return flat.find(n => n.path === path) || null;
+}
+
+function KnowledgeTree({ expandedPaths, setExpandedPaths, readingPath, readInTurn, selectedPath, setSelectedPath, searchQ, onHover, onLeave }) {
+  const root = window.KNOWLEDGE.root;
+  const match = (name, summary) => {
+    if (!searchQ) return true;
+    const q = searchQ.toLowerCase();
+    return name.toLowerCase().includes(q) || (summary || "").toLowerCase().includes(q);
+  };
+  const anyMatchIn = (node) => {
+    if (node.type === "file") return match(node.name, node.frontmatter?.summary);
+    if (match(node.name, node.summary)) return true;
+    return node.children?.some(anyMatchIn);
+  };
+
+  function renderNode(node, prefix, depth) {
+    const path = prefix + node.name;
+    const isDir = node.type === "dir";
+    const isOpen = expandedPaths.has(path);
+    const isReading = readingPath === path || (isDir && readingPath?.startsWith(path + "/"));
+    const summaryPath = isDir ? (path + "/SUMMARY.MD") : null;
+    const isSummaryReading = summaryPath && readingPath === summaryPath;
+    const wasRead = readInTurn.has(path) || (summaryPath && readInTurn.has(summaryPath));
+    const isSelected = selectedPath === path;
+    if (searchQ && !anyMatchIn(node)) return null;
+    const toggle = () => {
+      if (!isDir) { setSelectedPath(path); return; }
+      setExpandedPaths(prev => {
+        const next = new Set(prev);
+        if (next.has(path)) next.delete(path); else next.add(path);
+        return next;
+      });
+    };
+    return (
+      <div key={path} className="knode">
+        <div
+          className={"krow" + (isSelected ? " selected" : "") + ((isReading && !isDir) ? " reading" : "") + (wasRead ? " read-in-turn" : "")}
+          style={{ paddingLeft: 6 + depth * 12 }}
+          onClick={toggle}
+          onMouseEnter={(e) => onHover(node, path, e.currentTarget)}
+          onMouseLeave={onLeave}
+        >
+          <span className={"caret" + (isOpen ? " open" : "") + (!isDir ? " leaf" : "")}>
+            <Icon name="chevron" size={11} />
+          </span>
+          <span className="kicon">
+            {isDir ? <Icon name={isOpen ? "folder-open" : "folder"} /> : <Icon name="file" />}
+          </span>
+          <span className={"kname" + (isDir ? " dir" : "")}>{node.name}</span>
+          {wasRead && <span className="kreadmark">●</span>}
+        </div>
+        {isDir && isOpen && (
+          <div className="kchildren">
+            <div
+              className={"krow" + (selectedPath === summaryPath ? " selected" : "") + (isSummaryReading ? " reading" : "") + (readInTurn.has(summaryPath) ? " read-in-turn" : "")}
+              style={{ paddingLeft: 6 + (depth + 1) * 12 }}
+              onClick={() => setSelectedPath(summaryPath)}
+              onMouseEnter={(e) => onHover({ synthetic: "summary", name: "SUMMARY.MD", summary: node.summary }, summaryPath, e.currentTarget)}
+              onMouseLeave={onLeave}
+            >
+              <span className="caret leaf"><Icon name="chevron" size={11} /></span>
+              <span className="kicon"><Icon name="file-summary" /></span>
+              <span className="kname">SUMMARY.MD</span>
+              {readInTurn.has(summaryPath) && <span className="kreadmark">●</span>}
+            </div>
+            {node.children.map(c => renderNode(c, path + "/", depth + 1))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  const rootSummaryPath = "SUMMARY.MD";
+  return (
+    <div className="ktree">
+      <div
+        className={"krow" + (selectedPath === rootSummaryPath ? " selected" : "") + (readingPath === rootSummaryPath ? " reading" : "") + (readInTurn.has(rootSummaryPath) ? " read-in-turn" : "")}
+        onClick={() => setSelectedPath(rootSummaryPath)}
+        onMouseEnter={(e) => onHover({ synthetic: "summary", name: "SUMMARY.MD", summary: root.summary }, rootSummaryPath, e.currentTarget)}
+        onMouseLeave={onLeave}
+        style={{ paddingLeft: 6 }}
+      >
+        <span className="caret leaf"><Icon name="chevron" size={11} /></span>
+        <span className="kicon"><Icon name="file-summary" /></span>
+        <span className="kname">SUMMARY.MD</span>
+        {readInTurn.has(rootSummaryPath) && <span className="kreadmark">●</span>}
+      </div>
+      {root.children.map(c => renderNode(c, "", 0))}
+    </div>
+  );
+}
+
+function FrontmatterView({ fm }) {
+  if (!fm) return null;
+  return (
+    <div className="kfrontmatter">
+      <div className="fm-row"><span className="fm-k">url</span>: <span className="fm-v">{fm.url}</span></div>
+      <div className="fm-row"><span className="fm-k">title</span>: <span className="fm-v">"{fm.title}"</span></div>
+      <div className="fm-row"><span className="fm-k">summary</span>: <span className="fm-v">"{fm.summary}"</span></div>
+      <div className="fm-row" style={{marginTop: 6}}>
+        <span className="fm-k">topics</span>:
+        <div className="kchips" style={{marginTop: 3}}>
+          {fm.topics.map(t => <span key={t} className="kchip topic">{t}</span>)}
+        </div>
+      </div>
+      <div className="fm-row" style={{marginTop: 6}}>
+        <span className="fm-k">keywords</span>:
+        <div className="kchips" style={{marginTop: 3}}>
+          {fm.keywords.map(k => <span key={k} className="kchip">{k}</span>)}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SkillsPanel({ skills, readingSkill, usedSkillsInTurn }) {
+  const [open, setOpen] = React.useState(true);
+  if (!skills.length) return null;
+  return (
+    <div className="spane">
+      <div className="spane-header" onClick={() => setOpen(o => !o)}>
+        <Icon name="zap" size={13} />
+        <span className="spane-title">Skills</span>
+        <span className="spane-badge">{skills.length}</span>
+        <span className={"caret" + (open ? " open" : "")} style={{marginLeft: "auto"}}>
+          <Icon name="chevron" size={11} />
+        </span>
+      </div>
+      {open && (
+        <div className="spane-body">
+          {skills.map(s => (
+            <div
+              key={s.name}
+              className={
+                "skill-row" +
+                (readingSkill === s.name ? " reading" : "") +
+                (usedSkillsInTurn.has(s.name) ? " used-in-turn" : "")
+              }
+            >
+              <div className="skill-row-name">
+                <span className="skill-tag">SKILL</span>
+                <strong style={{fontSize: 12, color: "var(--text)"}}>{s.name}</strong>
+              </div>
+              <div className="skill-row-desc">{s.description}</div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function FilePreview({ path, onClose }) {
+  const node = resolvePath(path);
+  if (!node) {
+    return (
+      <div className="kpreview">
+        <div className="kpreview-head">
+          <button className="kpreview-back" onClick={onClose}><Icon name="back" size={12} /> back</button>
+          <span className="kpreview-path">{path}</span>
+        </div>
+        <div className="kpreview-body"><p style={{color: "var(--text-3)"}}>File not found.</p></div>
+      </div>
+    );
+  }
+  if (node.synthetic === "summary") {
+    const dirPath = node.dirPath;
+    return (
+      <div className="kpreview">
+        <div className="kpreview-head">
+          <button className="kpreview-back" onClick={onClose}><Icon name="back" size={12} /> back</button>
+          <span className="kpreview-path">{path}</span>
+        </div>
+        <div className="kpreview-body">
+          <h3 className="ktitle" style={{textTransform: "capitalize"}}>{dirPath || "Knowledge"}</h3>
+          <p className="ksummary">{node.summary}</p>
+          <div style={{fontSize: 11, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--text-3)", fontWeight: 600, marginTop: 16, marginBottom: 8}}>Sections</div>
+          {node.children.filter(c => c.type === "dir").map(c => (
+            <div key={c.name} style={{padding: "6px 0", fontSize: 13}}>
+              <div style={{fontWeight: 500, fontFamily: "var(--font-mono)", fontSize: 12.5}}>{c.name}/</div>
+              <div style={{color: "var(--text-2)", marginTop: 2}}>{c.summary}</div>
+            </div>
+          ))}
+          <div style={{fontSize: 11, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--text-3)", fontWeight: 600, marginTop: 16, marginBottom: 8}}>Pages</div>
+          {node.children.filter(c => c.type === "file").map(c => (
+            <div key={c.name} style={{padding: "6px 0", fontSize: 13}}>
+              <div style={{fontWeight: 500, fontFamily: "var(--font-mono)", fontSize: 12.5}}>{c.name}</div>
+              <div style={{color: "var(--text-2)", marginTop: 2}}>{c.frontmatter?.summary}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+  const fm = node.frontmatter;
+  return (
+    <div className="kpreview">
+      <div className="kpreview-head">
+        <button className="kpreview-back" onClick={onClose}><Icon name="back" size={12} /> back</button>
+        <span className="kpreview-path">{path}</span>
+      </div>
+      <div className="kpreview-body">
+        <FrontmatterView fm={fm} />
+        <h3 className="ktitle">{fm.title}</h3>
+        <div className="kbody">{renderMarkdown(node.body)}</div>
+        <div className="ksource-link">
+          <a href={fm.url} target="_blank" rel="noreferrer">{fm.url}</a>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── chat_pane.jsx ────────────────────────────────────────────────────────────
+
+function Suggestions({ onPick }) {
+  const items = [
+    { label: "Group Protection", q: "Can you explain group life insurance for employees?" },
+    { label: "Claims", q: "How do I make a claim on a life insurance policy?" },
+    { label: "Workplace Pensions", q: "What workplace pension options are available?" },
+    { label: "Personal Life", q: "What's the difference between level and decreasing term life?" }
+  ];
+  return (
+    <div className="suggest-wrap">
+      <h1 className="suggest-hi">How can I help today?</h1>
+      <p className="suggest-sub">Ask anything about Meridian's products — I'll navigate the knowledge base and cite every page I read.</p>
+      <div className="suggest-grid">
+        {items.map(it => (
+          <button key={it.q} className="suggest-card" onClick={() => onPick(it.q)}>
+            <div className="suggest-label">{it.label}</div>
+            <div className="suggest-q">{it.q}</div>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function Breadcrumb({ path, active }) {
+  const parts = path.split("/");
+  return (
+    <div className="breadcrumb">
+      <span className="bc">knowledge</span>
+      {parts.map((p, i) => (
+        <React.Fragment key={i}>
+          <span className="sep">/</span>
+          <span className={"bc" + (i === parts.length - 1 && active ? " active" : "")}>{p}</span>
+        </React.Fragment>
+      ))}
+    </div>
+  );
+}
+
+function Trace({ steps, running, elapsed }) {
+  const [open, setOpen] = React.useState(true);
+  const readCount = steps.filter(s => s.kind === "read").length;
+  const skillCount = steps.filter(s => s.kind === "skill").length;
+  return (
+    <div className={"trace" + (open ? " open" : "")}>
+      <div className="trace-head" onClick={() => setOpen(o => !o)}>
+        <span className={"dot" + (running ? " active" : "")}></span>
+        <span className="trace-title">{running ? "Thinking…" : "Thought process"}</span>
+        <span className="trace-stats">
+          {readCount} read · {skillCount} skill{skillCount === 1 ? "" : "s"} · {elapsed}s
+        </span>
+        <span className="trace-caret"><Icon name="chevron" size={11} /></span>
+      </div>
+      <div className="trace-body">
+        {steps.map((s, i) => {
+          const active = running && i === steps.length - 1;
+          if (s.kind === "think") {
+            return (
+              <div key={i} className={"step think" + (active ? " active" : "")}>
+                <span className="step-bullet"></span>
+                <span className="step-body">{s.text}</span>
+              </div>
+            );
+          }
+          if (s.kind === "read") {
+            return (
+              <div key={i} className={"step read" + (active ? " active" : "")}>
+                <span className="step-bullet"></span>
+                <div style={{display: "flex", flexDirection: "column", gap: 4}}>
+                  <span className="step-body">
+                    <span className="tool-tag">read_knowledge</span>
+                    <span>{s.path}</span>
+                  </span>
+                  <Breadcrumb path={s.path} active={active} />
+                </div>
+              </div>
+            );
+          }
+          if (s.kind === "skill") {
+            return (
+              <div key={i} className={"step skill" + (active ? " active" : "")}>
+                <span className="step-bullet"></span>
+                <span className="step-body">
+                  <span className="skill-tag">SKILL</span>
+                  <strong>{s.name}</strong>
+                  <span style={{color: "var(--text-3)"}}>· {s.desc}</span>
+                </span>
+              </div>
+            );
+          }
+          return null;
+        })}
+      </div>
+    </div>
+  );
+}
+
+function Sources({ paths }) {
+  return (
+    <div className="sources">
+      <div className="sources-head">Sources</div>
+      {paths.map((p, i) => {
+        const node = resolvePath(p);
+        const fm = node?.frontmatter;
+        return (
+          <div key={p} className="source-item" onClick={() => window.dispatchEvent(new CustomEvent("open-knowledge-file", { detail: { path: p } }))}>
+            <span className="source-num">{i + 1}</span>
+            <div style={{flex: 1, minWidth: 0}}>
+              <div className="source-title">{fm?.title || p}</div>
+              <div className="source-url">{fm?.url || p}</div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function Message({ m, userInitials }) {
+  if (m.role === "user") {
+    return (
+      <div className="msg user">
+        <div className="msg-role">
+          <span className="av">{userInitials || "?"}</span>
+          <span>You</span>
+        </div>
+        <div className="msg-content">{m.text}</div>
+      </div>
+    );
+  }
+  return (
+    <div className="msg assistant">
+      <div className="msg-role">
+        <span className="av"></span>
+        <span>Open Virtual Assistant</span>
+      </div>
+      {m.trace && m.trace.length > 0 && (
+        <Trace steps={m.trace} running={m.running} elapsed={m.elapsed || 0} />
+      )}
+      {m.text && (
+        <div className="msg-content">
+          {renderMarkdown(m.text, m.citeMap)}
+          {m.streaming && <span className="stream-caret" />}
+        </div>
+      )}
+      {m.sources && m.sources.length > 0 && <Sources paths={m.sources} />}
+    </div>
+  );
+}
+
+function Composer({ onSend, busy, skills, modelName }) {
+  const [value, setValue] = React.useState("");
+  const ref = React.useRef(null);
+  React.useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    el.style.height = "22px";
+    el.style.height = Math.min(el.scrollHeight, 160) + "px";
+  }, [value]);
+  const submit = () => {
+    if (!value.trim() || busy) return;
+    onSend(value.trim());
+    setValue("");
+  };
+  return (
+    <div className="composer-wrap">
+      <div className="composer">
+        <textarea
+          ref={ref}
+          value={value}
+          onChange={e => setValue(e.target.value)}
+          onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); submit(); } }}
+          placeholder="Ask about claims, products, or policies…"
+          rows={1}
+        />
+        <div className="composer-row">
+          {modelName && (
+            <span className="composer-chip">
+              <Icon name="zap" size={11} /> {modelName}
+            </span>
+          )}
+          {skills.map(s => (
+            <span key={s} className="composer-chip" style={{color: "oklch(0.55 0.14 300)"}}>
+              <span style={{fontFamily: "var(--font-mono)", fontSize: 9.5, padding: "1px 4px", background: "oklch(0.6 0.14 300)", color: "white", borderRadius: 3, fontWeight: 600}}>SKILL</span>
+              {s}
+            </span>
+          ))}
+          <button className="send-btn" disabled={!value.trim() || busy} onClick={submit} aria-label="Send">
+            <Icon name="send" size={14} />
+          </button>
+        </div>
+      </div>
+      <div className="disclaimer">Open Virtual Assistant may be inaccurate — verify important info on the linked source pages.</div>
+    </div>
+  );
+}
+
+// ── app.jsx ──────────────────────────────────────────────────────────────────
+
+const LS_KEY = "ova-theme-v1";
+const LS_CONVOS_KEY = "ova-conversations-v1";
+const TWEAK_DEFAULTS = { theme: "light", density: "comfortable", traceVerbosity: "full" };
+
+function useTheme() {
+  const [theme, setTheme] = React.useState(() => {
+    const saved = localStorage.getItem(LS_KEY);
+    if (saved) { try { return JSON.parse(saved).theme || TWEAK_DEFAULTS.theme; } catch {} }
+    return TWEAK_DEFAULTS.theme;
+  });
+  React.useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+    const saved = JSON.parse(localStorage.getItem(LS_KEY) || "{}");
+    localStorage.setItem(LS_KEY, JSON.stringify({...saved, theme}));
+  }, [theme]);
+  return [theme, setTheme];
+}
+
+function TweaksPanel({ open, onClose, theme, setTheme, density, setDensity, verbosity, setVerbosity }) {
+  return (
+    <div className={"tweaks-panel" + (open ? " open" : "")}>
+      <div className="tweaks-head">
+        <span className="tweaks-title">Tweaks</span>
+        <button className="tweaks-x" onClick={onClose}>×</button>
+      </div>
+      <div className="tweak-row">
+        <span className="tweak-label">Theme</span>
+        <div className="seg">
+          <button className={theme === "light" ? "active" : ""} onClick={() => setTheme("light")}>Light</button>
+          <button className={theme === "dark" ? "active" : ""} onClick={() => setTheme("dark")}>Dark</button>
+        </div>
+      </div>
+      <div className="tweak-row">
+        <span className="tweak-label">Tree density</span>
+        <div className="seg">
+          <button className={density === "compact" ? "active" : ""} onClick={() => setDensity("compact")}>Compact</button>
+          <button className={density === "comfortable" ? "active" : ""} onClick={() => setDensity("comfortable")}>Comfort</button>
+        </div>
+      </div>
+      <div className="tweak-row">
+        <span className="tweak-label">Trace detail</span>
+        <div className="seg">
+          <button className={verbosity === "concise" ? "active" : ""} onClick={() => setVerbosity("concise")}>Concise</button>
+          <button className={verbosity === "full" ? "active" : ""} onClick={() => setVerbosity("full")}>Full</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function App() {
+  const [theme, setTheme] = useTheme();
+  const [density, setDensity] = React.useState(TWEAK_DEFAULTS.density);
+  const [verbosity, setVerbosity] = React.useState(TWEAK_DEFAULTS.traceVerbosity);
+  const [tweaksOpen, setTweaksOpen] = React.useState(false);
+
+  React.useEffect(() => {
+    const listener = (e) => {
+      if (e.data?.type === "__activate_edit_mode") setTweaksOpen(true);
+      else if (e.data?.type === "__deactivate_edit_mode") setTweaksOpen(false);
+    };
+    window.addEventListener("message", listener);
+    try { window.parent.postMessage({ type: "__edit_mode_available" }, "*"); } catch {}
+    return () => window.removeEventListener("message", listener);
+  }, []);
+
+  // Load knowledge tree and config from the backend on mount
+  const [knowledgeReady, setKnowledgeReady] = React.useState(false);
+  const [modelName, setModelName] = React.useState("");
+  const [userName, setUserName] = React.useState("Anonymous");
+  const [userOrg, setUserOrg] = React.useState("Anonymous");
+  React.useEffect(() => {
+    fetch("/api/knowledge/tree")
+      .then(r => r.json())
+      .then(data => { window.KNOWLEDGE = data; setKnowledgeReady(true); })
+      .catch(err => console.error("Failed to load knowledge tree:", err));
+    fetch("/api/config")
+      .then(r => r.json())
+      .then(data => {
+        if (data.model) setModelName(data.model);
+        if (data.user) setUserName(data.user);
+        if (data.org)  setUserOrg(data.org);
+      })
+      .catch(() => {});
+  }, []);
+
+  const [expanded, setExpanded] = React.useState(new Set(["business"]));
+  const [readingPath, setReadingPath] = React.useState(null);
+  const [readInTurn, setReadInTurn] = React.useState(new Set());
+  const [selectedPath, setSelectedPath] = React.useState(null);
+  const [searchQ, setSearchQ] = React.useState("");
+  const [hover, setHover] = React.useState(null);
+  const [messages, setMessages] = React.useState([]);
+  const [busy, setBusy] = React.useState(false);
+  const [skills, setSkills] = React.useState([]);
+  const [tokens, setTokens] = React.useState({ input: 0, output: 0 });
+  const [history, setHistory] = React.useState(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(LS_CONVOS_KEY) || "[]");
+      return saved.map(c => ({ id: c.id, title: c.title, time: c.time, active: false }));
+    } catch { return []; }
+  });
+  const [activeChat, setActiveChat] = React.useState(null);
+  const chatBodyRef = React.useRef(null);
+
+  React.useEffect(() => {
+    if (chatBodyRef.current) chatBodyRef.current.scrollTop = chatBodyRef.current.scrollHeight;
+  }, [messages]);
+
+  React.useEffect(() => {
+    const handler = (e) => {
+      const path = e.detail.path;
+      const parts = path.split("/");
+      const newExp = new Set(expanded);
+      let acc = "";
+      for (let i = 0; i < parts.length - 1; i++) {
+        acc = acc ? acc + "/" + parts[i] : parts[i];
+        newExp.add(acc);
+      }
+      setExpanded(newExp);
+      setSelectedPath(path);
+    };
+    window.addEventListener("open-knowledge-file", handler);
+    return () => window.removeEventListener("open-knowledge-file", handler);
+  }, [expanded]);
+
+  React.useEffect(() => {
+    if (!readingPath) return;
+    const parts = readingPath.split("/");
+    setExpanded(prev => {
+      const next = new Set(prev);
+      let acc = "";
+      for (let i = 0; i < parts.length - 1; i++) {
+        acc = acc ? acc + "/" + parts[i] : parts[i];
+        next.add(acc);
+      }
+      return next;
+    });
+  }, [readingPath]);
+
+  React.useEffect(() => {
+    document.documentElement.style.setProperty("--tree-row-h", density === "compact" ? "22px" : "26px");
+  }, [density]);
+
+  const onHover = (node, path, el) => {
+    const rect = el.getBoundingClientRect();
+    setHover({ path, name: node.name, summary: node.summary || node.frontmatter?.summary, x: rect.right + 8, y: rect.top });
+  };
+  const onLeave = () => setHover(null);
+
+  async function runAgent(userQuery) {
+    setBusy(true);
+    setReadInTurn(new Set());
+    const t0 = Date.now();
+    const msgId = "m" + Date.now();
+    setMessages(ms => [...ms,
+      { role: "user", text: userQuery, id: "u" + Date.now() },
+      { role: "assistant", id: msgId, trace: [], running: true, text: "", streaming: false, elapsed: 0, citeMap: {}, sources: [] }
+    ]);
+    const updateMsg = (fn) => setMessages(ms => ms.map(m => m.id === msgId ? fn(m) : m));
+
+    const tick = () => updateMsg(m => ({ ...m, elapsed: Math.round((Date.now() - t0) / 100) / 10 }));
+
+    try {
+      const resp = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question: userQuery }),
+      });
+
+      const reader = resp.body.getReader();
+      const decoder = new TextDecoder();
+      let buf = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buf += decoder.decode(value, { stream: true });
+        const lines = buf.split("\n");
+        buf = lines.pop();         // keep incomplete line
+        for (const line of lines) {
+          if (!line.startsWith("data: ")) continue;
+          let evt;
+          try { evt = JSON.parse(line.slice(6)); } catch { continue; }
+
+          tick();
+
+          if (evt.kind === "read") {
+            setReadingPath(evt.path);
+            updateMsg(m => ({ ...m, trace: [...m.trace, { kind: "read", path: evt.path }] }));
+            // Brief visual pause so the pulse animation is visible
+            await new Promise(r => setTimeout(r, 300));
+            setReadInTurn(prev => new Set(prev).add(evt.path));
+            setReadingPath(null);
+
+          } else if (evt.kind === "think") {
+            if (verbosity === "full") {
+              updateMsg(m => ({ ...m, trace: [...m.trace, { kind: "think", text: evt.text }] }));
+            }
+
+          } else if (evt.kind === "say_start") {
+            updateMsg(m => ({ ...m, running: false, streaming: true }));
+
+          } else if (evt.kind === "say_chunk") {
+            updateMsg(m => ({ ...m, text: (m.text || "") + evt.text }));
+            setTokens(t => ({ ...t, output: t.output + Math.round(evt.text.length / 4) }));
+
+          } else if (evt.kind === "say_end") {
+            updateMsg(m => ({ ...m, streaming: false }));
+
+          } else if (evt.kind === "sources") {
+            updateMsg(m => ({ ...m, sources: evt.paths || [] }));
+
+          } else if (evt.kind === "error") {
+            updateMsg(m => ({ ...m, running: false, streaming: false, text: `Error: ${evt.text}` }));
+          }
+        }
+      }
+    } catch (err) {
+      updateMsg(m => ({ ...m, running: false, streaming: false, text: `Network error: ${err.message}` }));
+    }
+
+    updateMsg(m => ({ ...m, running: false, streaming: false }));
+    setBusy(false);
+    tick();
+
+    // Persist the completed conversation to localStorage
+    setMessages(currentMsgs => {
+      const finishedMsgs = currentMsgs.map(m => ({ ...m, running: false, streaming: false }));
+      setReadInTurn(currentRead => {
+        const readPaths = [...currentRead];
+
+        let convoId = activeChat;
+        if (!convoId) {
+          convoId = "h" + Date.now();
+          const title = userQuery.length > 40 ? userQuery.slice(0, 40) + "…" : userQuery;
+          const timeLabel = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+          const newEntry = { id: convoId, title, time: timeLabel, active: true };
+          setHistory(h => [newEntry, ...h.map(x => ({...x, active: false}))]);
+          setActiveChat(convoId);
+
+          // Save new conversation
+          try {
+            const all = JSON.parse(localStorage.getItem(LS_CONVOS_KEY) || "[]");
+            all.unshift({ id: convoId, title: newEntry.title, time: newEntry.time, messages: finishedMsgs, readPaths });
+            localStorage.setItem(LS_CONVOS_KEY, JSON.stringify(all.slice(0, 50)));
+          } catch {}
+        } else {
+          // Update existing conversation messages
+          try {
+            const all = JSON.parse(localStorage.getItem(LS_CONVOS_KEY) || "[]");
+            const idx = all.findIndex(c => c.id === convoId);
+            if (idx !== -1) { all[idx].messages = finishedMsgs; all[idx].readPaths = readPaths; }
+            localStorage.setItem(LS_CONVOS_KEY, JSON.stringify(all.slice(0, 50)));
+          } catch {}
+        }
+
+        return currentRead;
+      });
+      return finishedMsgs;
+    });
+  }
+
+  const onSend = (q) => runAgent(q);
+
+  const loadConversation = (id) => {
+    if (id === activeChat) return;
+    try {
+      const all = JSON.parse(localStorage.getItem(LS_CONVOS_KEY) || "[]");
+      const convo = all.find(c => c.id === id);
+      if (!convo) return;
+      setMessages(convo.messages || []);
+      setReadInTurn(new Set(convo.readPaths || []));
+    } catch {}
+    setActiveChat(id);
+    setHistory(h => h.map(x => ({ ...x, active: x.id === id })));
+    setSkills([]);
+  };
+
+  const newChat = () => {
+    setMessages([]);
+    setReadInTurn(new Set());
+    setSkills([]);
+    setTokens({ input: 0, output: 0 });
+    setActiveChat(null);
+    setHistory(h => h.map(x => ({...x, active: false})));
+  };
+
+  const hasMessages = messages.length > 0;
+
+  return (
+    <div className="app">
+      {/* LEFT: history + brand */}
+      <aside className="pane">
+        <div className="brand">
+          <div className="brand-mark" />
+          <div style={{minWidth: 0, flex: 1}}>
+            <div className="brand-name">Open Virtual Assistant</div>
+          </div>
+        </div>
+        <button className="new-chat" onClick={newChat}>
+          <Icon name="plus" size={13} /> New conversation
+        </button>
+        <div className="history-label">Recent</div>
+        <div className="history-list">
+          {history.map(h => (
+            <div key={h.id} className={"history-item" + (h.active ? " active" : "")} onClick={() => loadConversation(h.id)}>
+              <Icon name="message" size={12} />
+              <span style={{flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis"}}>{h.title}</span>
+              <span className="history-time">{h.time}</span>
+            </div>
+          ))}
+        </div>
+        <div className="sidebar-footer">
+          <div className="avatar">{userName.split(" ").map(w => w[0]).join("").slice(0,2).toUpperCase()}</div>
+          <div className="user-info">
+            <div className="user-name">{userName}</div>
+            <div className="user-role">{userOrg}</div>
+          </div>
+          <button className="icon-btn" onClick={() => setTheme(theme === "light" ? "dark" : "light")} title="Toggle theme">
+            <Icon name={theme === "light" ? "moon" : "sun"} size={14} />
+          </button>
+          <button className="icon-btn" onClick={() => setTweaksOpen(o => !o)} title="Tweaks">
+            <Icon name="settings" size={14} />
+          </button>
+        </div>
+      </aside>
+
+      {/* MIDDLE: knowledge pane */}
+      <aside className="pane" style={{position: "relative"}}>
+        <div className="kpane-header">
+          <Icon name="folder" size={14} />
+          <span className="kpane-title">Knowledge</span>
+          <span className="kpane-badge">{knowledgeReady ? "Aviva KB" : "loading…"}</span>
+        </div>
+        <div className="ksearch">
+          <span className="ksearch-icon"><Icon name="search" size={13} /></span>
+          <input
+            placeholder="Search knowledge…"
+            value={searchQ}
+            onChange={e => setSearchQ(e.target.value)}
+          />
+        </div>
+        <KnowledgeTree
+          expandedPaths={expanded}
+          setExpandedPaths={setExpanded}
+          readingPath={readingPath}
+          readInTurn={readInTurn}
+          selectedPath={selectedPath}
+          setSelectedPath={setSelectedPath}
+          searchQ={searchQ}
+          onHover={onHover}
+          onLeave={onLeave}
+        />
+        {selectedPath && <FilePreview path={selectedPath} onClose={() => setSelectedPath(null)} />}
+        {hover && !selectedPath && hover.summary && (
+          <div className="kpop" style={{left: Math.min(hover.x, window.innerWidth - 300), top: Math.min(hover.y, window.innerHeight - 180)}}>
+            <div className="kpop-title">{hover.path}</div>
+            <div>{hover.summary}</div>
+          </div>
+        )}
+      </aside>
+
+      {/* RIGHT: chat pane */}
+      <main className="pane chat">
+        <div className="chat-header">
+          <div>
+            <div className="chat-title">Knowledge Assistant</div>
+            <div className="chat-sub">skilled-agent · dspy · {skills.length} skill{skills.length === 1 ? "" : "s"} loaded</div>
+          </div>
+          <div className="chat-status">
+            <span className="status-pill">
+              <span className={"status-dot" + (busy ? " thinking" : "")} />
+              {busy ? "working" : "ready"}
+            </span>
+            <span className="status-pill" title="Tokens used this session">
+              ↓ {tokens.input.toLocaleString()} · ↑ {tokens.output.toLocaleString()} tok
+            </span>
+            <span className="status-pill" title="Estimated cost">
+              ${((tokens.input * 0.000003) + (tokens.output * 0.000015)).toFixed(4)}
+            </span>
+          </div>
+        </div>
+        <div className="chat-body" ref={chatBodyRef}>
+          <div className="chat-inner">
+            {!hasMessages && <Suggestions onPick={onSend} />}
+            {messages.map(m => <Message key={m.id || Math.random()} m={m} userInitials={userName.split(" ").map(w => w[0]).join("").slice(0,2).toUpperCase()} />)}
+          </div>
+        </div>
+        <Composer onSend={onSend} busy={busy} skills={skills} modelName={modelName} />
+      </main>
+
+      <TweaksPanel
+        open={tweaksOpen}
+        onClose={() => setTweaksOpen(false)}
+        theme={theme} setTheme={setTheme}
+        density={density} setDensity={setDensity}
+        verbosity={verbosity} setVerbosity={setVerbosity}
+      />
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+</body>
+</html>
