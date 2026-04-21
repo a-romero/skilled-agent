@@ -1618,9 +1618,9 @@ function Composer({ onSend, busy, skills, modelName }) {
             </span>
           )}
           {skills.map(s => (
-            <span key={s} className="composer-chip" style={{color: "oklch(0.55 0.14 300)"}}>
+            <span key={s.name} className="composer-chip" style={{color: "oklch(0.55 0.14 300)"}}>
               <span style={{fontFamily: "var(--font-mono)", fontSize: 9.5, padding: "1px 4px", background: "oklch(0.6 0.14 300)", color: "white", borderRadius: 3, fontWeight: 600}}>SKILL</span>
-              {s}
+              {s.name}
             </span>
           ))}
           <button className="send-btn" disabled={!value.trim() || busy} onClick={submit} aria-label="Send">
