@@ -11,6 +11,8 @@ dependencies = [
     "fastapi>=0.136.0",
     "uvicorn[standard]>=0.44.0",
     "aiofiles>=25.1.0",
+    "kuzu>=0.11.3",
+    "rank-bm25>=0.2.2",
 ]
 
 [build-system]
