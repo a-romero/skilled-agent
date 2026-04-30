@@ -24,6 +24,7 @@ import dspy
 from knowledge import KNOWLEDGE_ROOT, build_source_registry, read_knowledge
 from arize_tracing import setup_arize, instrument_dspy, get_tracer
 from skills import build_skill_registry, list_skills, read_skill
+from knowledge_graph import KnowledgeGraph as _KGClass
 
 load_dotenv()
 
@@ -42,6 +43,23 @@ def _get_source_registry() -> dict:
     if not _SOURCE_REGISTRY:
         _SOURCE_REGISTRY = build_source_registry(KNOWLEDGE_ROOT / "README.md")
     return _SOURCE_REGISTRY
+
+
+_KNOWLEDGE_GRAPH: _KGClass | None = None
+
+
+def _get_knowledge_graph() -> _KGClass:
+    """Lazily instantiate and cache the KnowledgeGraph."""
+    global _KNOWLEDGE_GRAPH
+    if _KNOWLEDGE_GRAPH is None:
+        _KNOWLEDGE_GRAPH = _KGClass()
+        if not _KNOWLEDGE_GRAPH.available:
+            import warnings
+            warnings.warn(
+                "Knowledge graph not available — run: uv run python enrich_knowledge.py",
+                stacklevel=2,
+            )
+    return _KNOWLEDGE_GRAPH
 
 
 def _load_knowledge_index() -> str:
@@ -124,6 +142,33 @@ def read_knowledge_tool(path: str) -> str:
     return read_knowledge({"path": path}, _get_source_registry(), KNOWLEDGE_ROOT)
 
 
+def search_knowledge_graph_tool(query: str, section: str = "") -> str:
+    """Search the knowledge graph for pages relevant to a query.
+
+    Returns the top 5 most relevant pages with their path, title, and summary.
+    Use this as your primary navigation method instead of reading SUMMARY.MD files.
+    Provide a section to scope the search when the topic domain is clear.
+
+    Available sections: business, health, health-insurance, health-providers,
+    help-and-support, insurance, investments, retirement, risksolutions, services.
+    Leave section empty to search globally.
+
+    Args:
+        query: Natural language query describing what you are looking for.
+        section: Optional top-level section to scope the search.
+
+    Returns:
+        JSON list of up to 5 results, each with path, title, and summary.
+        Returns "[]" if the graph is unavailable or no results match.
+    """
+    import json
+    kg = _get_knowledge_graph()
+    if not kg.available:
+        return json.dumps([])
+    results = kg.search(query, section=section or None)
+    return json.dumps(results, indent=2)
+
+
 # ---------------------------------------------------------------------------
 # DSPy configuration
 # ---------------------------------------------------------------------------
@@ -171,9 +216,12 @@ class KnowledgeAgentSignature(dspy.Signature):
     2. Call read_skill_tool with a skill name only if you have determined it is relevant.
 
     Knowledge base:
-    3. Use read_knowledge to navigate: start with SUMMARY.MD files, then read
-       specific index.md pages for full content.
-    4. Always cite sources (title and URL) at the end of your answer.
+    3. Use search_knowledge_graph_tool as your primary navigation method:
+       - Call it with the user's query and a section if the domain is clear.
+       - Review the returned titles and summaries to pick the 1-2 most relevant pages.
+       - Call read_knowledge to retrieve full content from those paths.
+    4. Only fall back to SUMMARY.MD navigation via read_knowledge if search returns no results.
+    5. Always cite sources (title and URL) at the end of your answer.
 
     Format your sources section as:
     ## Sources
@@ -181,7 +229,7 @@ class KnowledgeAgentSignature(dspy.Signature):
     """
 
     knowledge_index: str = dspy.InputField(
-        desc="Top-level knowledge index (SUMMARY.MD) for initial navigation"
+        desc="Top-level knowledge index (SUMMARY.MD) for fallback navigation"
     )
     question: str = dspy.InputField(desc="Customer question to answer")
     answer: str = dspy.OutputField(
@@ -239,7 +287,7 @@ def run_agent(
     instrument_dspy(tracer_provider)
     tracer = get_tracer(tracer_provider, __name__)
 
-    # Build an instrumented tool that fires events before each read
+    # Build instrumented tools that fire events before each call
     def _instrumented_read(path: str) -> str:
         if event_callback:
             event_callback({"kind": "read", "path": path})
@@ -247,9 +295,16 @@ def run_agent(
 
     _instrumented_read.__doc__ = read_knowledge_tool.__doc__
 
+    def _instrumented_search(query: str, section: str = "") -> str:
+        if event_callback:
+            event_callback({"kind": "search", "query": query, "section": section})
+        return search_knowledge_graph_tool(query, section)
+
+    _instrumented_search.__doc__ = search_knowledge_graph_tool.__doc__
+
     agent = DSPyKnowledgeAgent(
         max_iters=10,
-        tools=[list_skills_tool, read_skill_tool, _instrumented_read],
+        tools=[list_skills_tool, read_skill_tool, _instrumented_search, _instrumented_read],
     )
 
     if verbose:
