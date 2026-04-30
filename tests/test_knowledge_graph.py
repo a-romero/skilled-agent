@@ -46,3 +46,52 @@ def test_populate_is_idempotent(graph_dir: Path, two_nodes: list[dict]) -> None:
     populate(two_nodes, graph_dir)
     populate(two_nodes, graph_dir)  # second run must not raise
     assert graph_dir.exists()
+
+
+def test_search_returns_relevant_result(graph_dir: Path, two_nodes: list[dict]) -> None:
+    from knowledge_graph import populate, KnowledgeGraph
+    populate(two_nodes, graph_dir)
+    kg = KnowledgeGraph(graph_dir)
+    results = kg.search("home contents insurance")
+    assert len(results) >= 1
+    assert results[0]["path"] == "insurance/home-insurance/index.md"
+
+
+def test_search_with_section_scopes_results(graph_dir: Path, two_nodes: list[dict]) -> None:
+    from knowledge_graph import populate, KnowledgeGraph
+    populate(two_nodes, graph_dir)
+    kg = KnowledgeGraph(graph_dir)
+    results = kg.search("pension annuity", section="business")
+    assert all(r["path"].startswith("business/") for r in results)
+
+
+def test_search_section_excludes_wrong_section(graph_dir: Path, two_nodes: list[dict]) -> None:
+    from knowledge_graph import populate, KnowledgeGraph
+    populate(two_nodes, graph_dir)
+    kg = KnowledgeGraph(graph_dir)
+    # Searching business section for home insurance should return nothing
+    results = kg.search("home contents insurance", section="business")
+    assert not any(r["path"].startswith("insurance/") for r in results)
+
+
+def test_search_returns_empty_when_graph_missing(tmp_path: Path) -> None:
+    from knowledge_graph import KnowledgeGraph
+    kg = KnowledgeGraph(tmp_path / "nonexistent")
+    assert kg.search("anything") == []
+
+
+def test_search_result_has_required_keys(graph_dir: Path, two_nodes: list[dict]) -> None:
+    from knowledge_graph import populate, KnowledgeGraph
+    populate(two_nodes, graph_dir)
+    kg = KnowledgeGraph(graph_dir)
+    results = kg.search("insurance")
+    assert results
+    assert all({"path", "title", "summary"} <= set(r.keys()) for r in results)
+
+
+def test_search_respects_top_k(graph_dir: Path, two_nodes: list[dict]) -> None:
+    from knowledge_graph import populate, KnowledgeGraph
+    populate(two_nodes, graph_dir)
+    kg = KnowledgeGraph(graph_dir)
+    results = kg.search("insurance pension home annuity", top_k=1)
+    assert len(results) <= 1
