@@ -184,8 +184,11 @@ Skills are organised as markdown files in a filesystem. You must:
 4. Only read a skill if it's actually needed for the task.
 
 You also have access to a knowledge base about Aviva's products and services.
-Navigate it using read_knowledge with SUMMARY.MD files to explore sections,
-then read the specific index.md page once identified.
+Use `search_knowledge_graph` as your primary navigation method:
+  1. Call `search_knowledge_graph` with the user's query and a `section` if the domain is clear.
+  2. Review the returned titles and summaries to identify the 1–2 most relevant pages.
+  3. Call `read_knowledge` on those paths to retrieve full content.
+Only fall back to SUMMARY.MD navigation via `read_knowledge` if `search_knowledge_graph` returns no results.
 
 When answering a customer query, always end your response with a "Sources"
 section listing the title and URL of every index.md file you read:

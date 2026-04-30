@@ -273,14 +273,20 @@ def test_run_phase3_populates_searchable_nodes(tmp_path: Path) -> None:
 
     root = tmp_path / "knowledge"
     root.mkdir()
-    biz = root / "business"
-    biz.mkdir()
-    (biz / "index.md").write_text(
-        "---\ntitle: Business\nsummary: Products for employers.\n"
-        "topics:\n- business insurance\nkeywords:\n- employer\nurl: https://example.com\n---\n\nContent."
-    )
+    for name, title, summary, topic, kw in [
+        ("business", "Business", "Products for employers.", "business insurance", "employer"),
+        ("insurance", "Insurance", "Home and car insurance.", "home insurance", "car"),
+        ("retirement", "Retirement", "Pensions and annuities.", "pensions", "annuity"),
+    ]:
+        section = root / name
+        section.mkdir()
+        (section / "index.md").write_text(
+            f"---\ntitle: {title}\nsummary: {summary}\n"
+            f"topics:\n- {topic}\nkeywords:\n- {kw}\nurl: https://example.com/{name}\n---\n\nContent."
+        )
     graph_dir = tmp_path / "kg"
     run_phase3(root, dry_run=False, graph_dir=graph_dir)
 
     kg = KnowledgeGraph(graph_dir)
-    assert kg.available
+    results = kg.search("employer products business")
+    assert any(r["path"] == "business/index.md" for r in results)

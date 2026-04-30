@@ -9,12 +9,12 @@ Use this skill when you need to find information in the Aviva knowledge base. It
 
 ## When to use
 
-Always use `search_knowledge_graph_tool` before reading any SUMMARY.MD. Only fall back to SUMMARY.MD navigation if `search_knowledge_graph_tool` returns an empty list (`[]`).
+Always use `search_knowledge_graph` before reading any SUMMARY.MD. Only fall back to SUMMARY.MD navigation if `search_knowledge_graph` returns an empty list (`[]`).
 
 ## How to search
 
 1. Identify the section from the user's question (see table below).
-2. Call `search_knowledge_graph_tool` with the user's question as the query:
+2. Call `search_knowledge_graph` with the user's question as the query:
 
 ```json
 {"query": "what does home insurance cover", "section": "insurance"}
@@ -50,6 +50,6 @@ Each result has `path`, `title`, and `summary`. Use the summary to judge relevan
 
 ## Fallback
 
-If `search_knowledge_graph_tool` returns `[]`, the graph is not populated. Fall back to:
+If `search_knowledge_graph` returns `[]`, the graph is not populated. Fall back to:
 1. `read_knowledge` with `SUMMARY.MD` to explore sections
 2. Navigate down using section-level SUMMARY.MD files
