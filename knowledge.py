@@ -56,7 +56,7 @@ def handle_knowledge_tool(
     inp: dict,
     source_registry: dict,
     knowledge_root: Path = KNOWLEDGE_ROOT,
-    knowledge_graph: "KnowledgeGraph | None" = None,
+    knowledge_graph: KnowledgeGraph | None = None,
 ) -> str:
     """Dispatch knowledge tool calls."""
     if name == "read_knowledge":
