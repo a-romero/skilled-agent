@@ -5,7 +5,8 @@ A DSPy-based ReAct agent that mirrors the knowledge-access pattern of agent.py
 but uses dspy.ReAct for the reasoning loop.
 
 The agent:
-  1. Uses read_knowledge to navigate the knowledge base (SUMMARY.MD → index.md)
+  1. Uses search_knowledge_graph to find relevant knowledge pages, falling back to
+     read_knowledge / SUMMARY.MD navigation when the graph is unavailable
   2. Answers queries about Aviva's products/services with proper source citations
   3. Traces every run to Arize via the DSPy OpenInference instrumentor
      (same SSL/endpoint workaround as agent.py)
