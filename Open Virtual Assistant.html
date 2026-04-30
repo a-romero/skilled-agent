@@ -1132,8 +1132,19 @@ function renderMarkdown(src, citeMap) {
       );
       continue;
     }
-    if (/^##\s/.test(trimmed)) {
-      nodes.push(<h3 key={bi} style={{margin: "10px 0 6px", fontSize: 14, fontWeight: 600}}>{renderInline(trimmed.replace(/^##\s/, ""), citeMap)}</h3>);
+    const headingMatch = trimmed.match(/^(#{1,6})\s+([^\n]+)$/);
+    if (headingMatch) {
+      const level = headingMatch[1].length;
+      const headingStyles = [
+        {margin: "12px 0 8px", fontSize: 18, fontWeight: 700},
+        {margin: "10px 0 6px", fontSize: 16, fontWeight: 600},
+        {margin: "10px 0 6px", fontSize: 14, fontWeight: 600},
+        {margin: "8px 0 4px", fontSize: 13, fontWeight: 600},
+        {margin: "8px 0 4px", fontSize: 12, fontWeight: 600},
+        {margin: "8px 0 4px", fontSize: 12, fontWeight: 500},
+      ];
+      const Tag = `h${Math.min(level + 1, 6)}`;
+      nodes.push(React.createElement(Tag, {key: bi, style: headingStyles[level - 1]}, renderInline(headingMatch[2], citeMap)));
       continue;
     }
     const parts = trimmed.split("\n");

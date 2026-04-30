@@ -130,8 +130,13 @@ def complete(
     if system_prompt:
         all_messages.append({"role": "system", "content": system_prompt})
     all_messages.extend(messages)
+    # When routing via a custom proxy, litellm needs an "openai/" prefix to use
+    # the OpenAI-compatible path; skip if the caller already provided a prefix.
+    litellm_model = effective_model
+    if client._raw.get("api_base") and "/" not in litellm_model:
+        litellm_model = f"openai/{litellm_model}"
     kwargs = {
-        "model": effective_model,
+        "model": litellm_model,
         "max_tokens": max_tokens,
         "messages": all_messages,
     }
