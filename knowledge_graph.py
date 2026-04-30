@@ -4,6 +4,7 @@ import shutil
 from pathlib import Path
 
 import kuzu
+from rank_bm25 import BM25Okapi
 
 GRAPH_ROOT = Path(__file__).parent / "knowledge_graph"
 
@@ -77,7 +78,7 @@ class KnowledgeGraph:
 
     def __init__(self, graph_dir: Path = GRAPH_ROOT) -> None:
         self._docs: list[dict] = []
-        self._bm25 = None
+        self._bm25: BM25Okapi | None = None
         if not graph_dir.exists():
             return
         db = kuzu.Database(str(graph_dir))
@@ -102,7 +103,6 @@ class KnowledgeGraph:
             })
         self._docs = rows
         if rows:
-            from rank_bm25 import BM25Okapi
             corpus = [self._text(d).split() for d in rows]
             self._bm25 = BM25Okapi(corpus)
 
@@ -138,16 +138,17 @@ class KnowledgeGraph:
         if not candidates:
             return []
 
-        from rank_bm25 import BM25Okapi
         if section:
-            bm25 = BM25Okapi([self._text(c).split() for c in candidates])
+            bm25: BM25Okapi = BM25Okapi([self._text(c).split() for c in candidates])
         else:
             bm25 = self._bm25
+        if bm25 is None:
+            return []
 
         scores = bm25.get_scores(query.lower().split())
         ranked = sorted(zip(scores, candidates), key=lambda x: x[0], reverse=True)
         return [
             {"path": d["path"], "title": d["title"], "summary": d["summary"]}
             for score, d in ranked[:top_k]
-            if score >= 0
+            if score > 0
         ]
