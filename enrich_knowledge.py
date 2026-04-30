@@ -210,6 +210,45 @@ def run_phase1(knowledge_root: Path, dry_run: bool = False) -> None:
             print(f"  {p}")
 
 
+def run_phase3(
+    knowledge_root: Path,
+    dry_run: bool = False,
+    graph_dir: Path | None = None,
+) -> None:
+    """Populate knowledge graph from enriched index.md files."""
+    from knowledge_graph import populate, GRAPH_ROOT
+
+    _graph_dir = graph_dir or GRAPH_ROOT
+    files = sorted(p for p in knowledge_root.rglob("index.md") if not _should_skip(p))
+    nodes: list[dict] = []
+
+    for path in files:
+        fm, _ = parse_frontmatter(path.read_text(encoding="utf-8"))
+        rel = path.relative_to(knowledge_root)
+        parts = rel.parts  # e.g. ('business', 'workplace-pensions', 'index.md')
+        section = parts[0] if len(parts) > 1 else ""
+        depth = len(parts) - 1
+
+        nodes.append({
+            "path": str(rel),
+            "title": fm.get("title", ""),
+            "summary": fm.get("summary", ""),
+            "topics": fm.get("topics") or [],
+            "keywords": fm.get("keywords") or [],
+            "url": fm.get("url", ""),
+            "section": section,
+            "depth": depth,
+        })
+        print(f"  collected: {rel}")
+
+    if dry_run:
+        print(f"[dry-run] Would populate graph with {len(nodes)} nodes at {_graph_dir}")
+        return
+
+    populate(nodes, _graph_dir)
+    print(f"Graph populated: {len(nodes)} nodes at {_graph_dir}")
+
+
 def main() -> None:
     """CLI entry point for knowledge base enrichment."""
     parser = argparse.ArgumentParser(
@@ -224,11 +263,15 @@ def main() -> None:
     parser.add_argument(
         "--phase2-only", action="store_true", help="Run SUMMARY.MD generation only"
     )
+    parser.add_argument(
+        "--phase3-only", action="store_true", help="Run graph population only"
+    )
     args = parser.parse_args()
 
-    if args.phase1_only and args.phase2_only:
+    exclusive = sum([args.phase1_only, args.phase2_only, getattr(args, "phase3_only", False)])
+    if exclusive > 1:
         print(
-            "Error: --phase1-only and --phase2-only are mutually exclusive",
+            "Error: --phase1-only, --phase2-only, and --phase3-only are mutually exclusive",
             file=sys.stderr,
         )
         sys.exit(1)
@@ -238,8 +281,9 @@ def main() -> None:
         print(f"Error: knowledge root '{knowledge_root}' not found", file=sys.stderr)
         sys.exit(1)
 
-    run_phase1_flag = not args.phase2_only
-    run_phase2_flag = not args.phase1_only
+    run_phase1_flag = not args.phase2_only and not args.phase3_only
+    run_phase2_flag = not args.phase1_only and not args.phase3_only
+    run_phase3_flag = not args.phase1_only and not args.phase2_only
 
     if run_phase1_flag:
         print("Phase 1: Enriching frontmatter...")
@@ -248,6 +292,10 @@ def main() -> None:
     if run_phase2_flag:
         print("\nPhase 2: Generating SUMMARY.MD files...")
         generate_all_summaries(knowledge_root, dry_run=args.dry_run)
+
+    if run_phase3_flag:
+        print("\nPhase 3: Populating knowledge graph...")
+        run_phase3(knowledge_root, dry_run=args.dry_run)
 
     print("\nDone.")
 

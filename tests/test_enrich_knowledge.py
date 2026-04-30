@@ -236,3 +236,51 @@ def test_enrich_file_dry_run_does_not_write(mock_complete: MagicMock, tmp_path: 
     enrich_file(p, MagicMock(), dry_run=True)
     assert p.read_text() == original
     mock_complete.assert_not_called()
+
+
+def test_run_phase3_creates_graph(tmp_path: Path) -> None:
+    from enrich_knowledge import run_phase3
+
+    root = tmp_path / "knowledge"
+    root.mkdir()
+    biz = root / "business"
+    biz.mkdir()
+    (biz / "index.md").write_text(
+        "---\ntitle: Business\nsummary: Business products.\n"
+        "topics:\n- business\nkeywords:\n- employer\nurl: https://example.com\n---\n\nContent."
+    )
+    graph_dir = tmp_path / "kg"
+    run_phase3(root, dry_run=False, graph_dir=graph_dir)
+    assert graph_dir.exists()
+
+
+def test_run_phase3_dry_run_does_not_create_graph(tmp_path: Path) -> None:
+    from enrich_knowledge import run_phase3
+
+    root = tmp_path / "knowledge"
+    root.mkdir()
+    (root / "index.md").write_text(
+        "---\ntitle: Root\nsummary: Root.\ntopics: []\nkeywords: []\nurl: https://example.com\n---\n"
+    )
+    graph_dir = tmp_path / "kg"
+    run_phase3(root, dry_run=True, graph_dir=graph_dir)
+    assert not graph_dir.exists()
+
+
+def test_run_phase3_populates_searchable_nodes(tmp_path: Path) -> None:
+    from enrich_knowledge import run_phase3
+    from knowledge_graph import KnowledgeGraph
+
+    root = tmp_path / "knowledge"
+    root.mkdir()
+    biz = root / "business"
+    biz.mkdir()
+    (biz / "index.md").write_text(
+        "---\ntitle: Business\nsummary: Products for employers.\n"
+        "topics:\n- business insurance\nkeywords:\n- employer\nurl: https://example.com\n---\n\nContent."
+    )
+    graph_dir = tmp_path / "kg"
+    run_phase3(root, dry_run=False, graph_dir=graph_dir)
+
+    kg = KnowledgeGraph(graph_dir)
+    assert kg.available
