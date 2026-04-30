@@ -20,6 +20,7 @@ from pathlib import Path
 from typing import Any
 
 from knowledge import KNOWLEDGE_TOOLS, handle_knowledge_tool, build_source_registry, KNOWLEDGE_ROOT
+from knowledge_graph import KnowledgeGraph
 from llm import create_client, complete, make_assistant_message, make_tool_result_messages
 from skills import build_skill_registry, list_skills, read_skill
 from opentelemetry.trace import Status, StatusCode
@@ -141,6 +142,12 @@ def run_agent(task: str, verbose: bool = True) -> str:
     """
     registry = build_skill_registry(SKILLS_ROOT)
     source_registry = build_source_registry(KNOWLEDGE_ROOT / "README.md")
+    knowledge_graph = KnowledgeGraph()
+    if not knowledge_graph.available:
+        print(
+            "Warning: knowledge graph not available — "
+            "run: uv run python enrich_knowledge.py"
+        )
 
     knowledge_summary_path = KNOWLEDGE_ROOT / "SUMMARY.MD"
     if not knowledge_summary_path.exists():
@@ -257,8 +264,10 @@ Available skills root: {SKILLS_ROOT.resolve()}
                                     print(f"Unlocked tools from '{skill_name}': "
                                           f"{[t['name'] for t in new_tools]}")
 
-                    elif tool_name == "read_knowledge":
-                        result = handle_knowledge_tool(tool_name, tool_input, source_registry)
+                    elif tool_name in {t["name"] for t in KNOWLEDGE_TOOLS}:
+                        result = handle_knowledge_tool(
+                            tool_name, tool_input, source_registry, knowledge_graph=knowledge_graph
+                        )
 
                     elif tool_name in SKILL_TOOL_HANDLERS:
                         try:
