@@ -268,7 +268,7 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    exclusive = sum([args.phase1_only, args.phase2_only, getattr(args, "phase3_only", False)])
+    exclusive = sum([args.phase1_only, args.phase2_only, args.phase3_only])
     if exclusive > 1:
         print(
             "Error: --phase1-only, --phase2-only, and --phase3-only are mutually exclusive",
