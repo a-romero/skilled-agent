@@ -1,5 +1,5 @@
 ---
-name: knowledge-graph
+name: kg-navigation
 description: "Navigate the knowledge base using the knowledge graph. Use when answering questions about Aviva products and services to find the right page faster."
 ---
 
