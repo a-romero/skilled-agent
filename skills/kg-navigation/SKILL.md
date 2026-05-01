@@ -20,7 +20,7 @@ Always use `search_knowledge_graph` before reading any SUMMARY.MD. Only fall bac
 {"query": "what does home insurance cover", "section": "insurance"}
 ```
 
-3. Read the returned titles and summaries. Pick the 1–2 paths that best match.
+3. Read the returned titles and summaries. Read every path whose summary looks relevant — do not stop at one if multiple results could contribute to the answer.
 4. Call `read_knowledge` on each selected path.
 
 If the domain is unclear across multiple sections, omit `section` to search globally:
@@ -46,7 +46,7 @@ If the domain is unclear across multiple sections, omit `section` to search glob
 
 ## Interpreting results
 
-Each result has `path`, `title`, and `summary`. Use the summary to judge relevance — if it clearly describes what the user is asking about, read that `index.md`. If 2+ results look equally relevant, read both.
+Each result has `path`, `title`, and `summary`. Use the summary to judge relevance — read every `index.md` whose summary could contribute to the answer. Only skip a result if its summary is clearly unrelated to the question.
 
 ## Fallback
 
