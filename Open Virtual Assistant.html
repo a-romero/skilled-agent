@@ -1842,6 +1842,12 @@ function App() {
   const onLeave = () => setHover(null);
 
   async function runAgent(userQuery) {
+    // Capture completed turns before adding the new in-progress message.
+    const historyTurns = messages
+      .filter(m => m.role === "user" || (m.role === "assistant" && m.text && !m.running))
+      .slice(-6)
+      .map(m => ({ role: m.role, text: m.text }));
+
     setBusy(true);
     setReadInTurn(new Set());
     setUsedSkillsInTurn(new Set());
@@ -1860,7 +1866,7 @@ function App() {
       const resp = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question: userQuery }),
+        body: JSON.stringify({ question: userQuery, history: historyTurns }),
       });
 
       const reader = resp.body.getReader();

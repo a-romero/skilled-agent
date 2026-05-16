@@ -204,6 +204,7 @@ async def chat(request: Request) -> StreamingResponse:
     """Run dspy_agent and stream events to the frontend as SSE."""
     body = await request.json()
     question: str = body.get("question", "").strip()
+    history: list[dict] = body.get("history", [])[-6:]
     if not question:
         async def _empty():
             yield 'data: {"kind":"error","text":"No question provided."}\n\n'
@@ -228,6 +229,7 @@ async def chat(request: Request) -> StreamingResponse:
                 task=question,
                 verbose=False,
                 event_callback=on_event,
+                history=history,
             )
             # Strip the "## Sources" section from the answer body
             body_text, _ = _extract_sources(answer)

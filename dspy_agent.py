@@ -33,6 +33,28 @@ load_dotenv()
 SKILLS_ROOT = Path("./skills")
 
 # ---------------------------------------------------------------------------
+# Conversation history formatting
+# ---------------------------------------------------------------------------
+
+
+def _format_history(turns: list[dict]) -> str:
+    """Format conversation turns as a plain-text transcript for the agent."""
+    if not turns:
+        return ""
+    lines = []
+    for turn in turns:
+        role_key = turn["role"]
+        if role_key == "user":
+            role = "User"
+        elif role_key == "assistant":
+            role = "Assistant"
+        else:
+            raise ValueError(f"Unknown role: {role_key!r}")
+        lines.append(f"{role}: {turn['text']}")
+    return "\n".join(lines)
+
+
+# ---------------------------------------------------------------------------
 # Knowledge base setup
 # ---------------------------------------------------------------------------
 
@@ -217,19 +239,26 @@ def _build_lm() -> dspy.LM:
 class KnowledgeAgentSignature(dspy.Signature):
     """Answer customer queries about Aviva's products and services.
 
-    You have access to a skill library and a knowledge base.
+    You have access to a skill library and a knowledge base. Always start every request by listing your skills.
+
+    History first — before calling any tools, check whether the conversation
+    history already contains enough information to answer the question. If the
+    question is a clarification or a direct follow-up to something stated in a
+    previous answer (e.g. confirming a detail you already mentioned), answer
+    immediately from that context without calling any tools.
 
     Skills:
     1. Call list_skills_tool to discover available skills and their descriptions.
     2. Call read_skill_tool with a skill name only if you have determined it is relevant.
+    3. If there is a summariser skill always use it to provide any information back to the user.
 
-    Knowledge base:
-    3. Use search_knowledge_graph_tool as your primary navigation method:
+    Knowledge base (only when history does not already contain the answer):
+    4. Use the kg-navigation skill as your primary navigation method:
        - Call it with the user's query and a section if the domain is clear.
        - Review the returned titles and summaries to pick the 1-2 most relevant pages.
        - Call read_knowledge to retrieve full content from those paths.
-    4. Only fall back to SUMMARY.MD navigation via read_knowledge if search returns no results.
-    5. Always cite sources (title and URL) at the end of your answer.
+    5. Only fall back to SUMMARY.MD navigation via read_knowledge if search returns no results.
+    6. Always cite sources (title and URL) at the end of your answer.
 
     Format your sources section as:
     ## Sources
@@ -238,6 +267,10 @@ class KnowledgeAgentSignature(dspy.Signature):
 
     knowledge_index: str = dspy.InputField(
         desc="Top-level knowledge index (SUMMARY.MD) for fallback navigation"
+    )
+    history: str = dspy.InputField(
+        desc="Prior conversation turns, oldest first. Empty string if this is the first question. "
+             "Check this before calling any tools — if the answer is already present here, respond directly."
     )
     question: str = dspy.InputField(desc="Customer question to answer")
     answer: str = dspy.OutputField(
@@ -255,9 +288,9 @@ class DSPyKnowledgeAgent(dspy.Module):
             max_iters=max_iters,
         )
 
-    def forward(self, question: str, knowledge_index: str) -> dspy.Prediction:
+    def forward(self, question: str, knowledge_index: str, history: str = "") -> dspy.Prediction:
         """Run the ReAct loop for a given question."""
-        return self.react(question=question, knowledge_index=knowledge_index)
+        return self.react(question=question, knowledge_index=knowledge_index, history=history)
 
 
 # ---------------------------------------------------------------------------
@@ -268,6 +301,7 @@ def run_agent(
     task: str,
     verbose: bool = True,
     event_callback: Callable[[dict], None] | None = None,
+    history: list[dict] | None = None,
 ) -> str:
     """Run the DSPy ReAct agent for a given task. Returns the final answer.
 
@@ -278,7 +312,10 @@ def run_agent(
             works.  Events match the frontend protocol:
               {"kind": "read",  "path": "..."}
               {"kind": "think", "text": "..."}
+        history: Prior conversation turns as list of {"role": ..., "text": ...} dicts.
     """
+    if history is None:
+        history = []
 
     lm = _build_lm()
 
@@ -328,8 +365,12 @@ def run_agent(
         agent_span.set_attribute("input.value", task)
 
         try:
-            result = agent(question=task, knowledge_index=knowledge_index)
-            answer: str = result.answer or ""
+            result = agent(
+                question=task,
+                knowledge_index=knowledge_index,
+                history=_format_history(history),
+            )
+            answer: str = result.answer
             agent_span.set_attribute("output.value", answer)
             agent_span.set_status(Status(StatusCode.OK))
         except Exception as exc:
