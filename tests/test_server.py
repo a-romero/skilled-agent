@@ -1,3 +1,5 @@
+from unittest.mock import MagicMock, patch
+
 from fastapi.testclient import TestClient
 from server import app
 
@@ -29,9 +31,6 @@ def test_skills_endpoint_returns_known_skills() -> None:
     names = {s["name"] for s in resp.json()}
     assert "python-coder" in names
     assert "summariser" in names
-
-
-from unittest.mock import MagicMock, patch
 
 
 def test_chat_accepts_history_field() -> None:
@@ -82,6 +81,7 @@ def test_chat_caps_history_at_six_turns() -> None:
     ]
     with patch("dspy_agent.run_agent", mock_run):
         client.post("/api/chat", json={"question": "q", "history": long_history})
+    mock_run.assert_called_once()
     kwargs = mock_run.call_args.kwargs
     assert len(kwargs["history"]) == 6
     assert kwargs["history"] == long_history[-6:]
