@@ -1,5 +1,5 @@
 """
-Centralized Arize tracing initialization for Jointly Studio.
+Centralized Arize tracing initialization
 
 Each agent gets its own Arize project (project_name = agent_id). Providers are
 created on first use and cached so subsequent calls for the same agent_id are free.
@@ -17,9 +17,13 @@ Usage:
 
 import logging
 import os
+import threading
+from dotenv import load_dotenv
 from typing import Any, Dict, Optional
 
 logger = logging.getLogger(__name__)
+
+load_dotenv()
 
 # Enable tracing via ARIZE_TRACING_ENABLED=true (or 1/yes)
 _ARIZE_TRACING_ENABLED: bool = os.getenv("ARIZE_TRACING_ENABLED", "false").lower() in (
@@ -28,12 +32,14 @@ _ARIZE_TRACING_ENABLED: bool = os.getenv("ARIZE_TRACING_ENABLED", "false").lower
 
 # Cache of tracer providers keyed by project_name
 _providers: Dict[str, Any] = {}
+_providers_lock = threading.Lock()
 
 # Guard flags — instrumentors wrap libraries globally, so we only apply them once
 _litellm_instrumented: bool = False
 _dspy_instrumented: bool = False
 _openai_agents_instrumented: bool = False
 _anthropic_instrumented: bool = False
+_ssl_patched: bool = False
 
 
 def setup_arize(project_name: str) -> Optional[Any]:
@@ -48,48 +54,55 @@ def setup_arize(project_name: str) -> Optional[Any]:
     if project_name in _providers:
         return _providers[project_name]
 
-    api_key = os.getenv("ARIZE_API_KEY", "")
-    space_id = os.getenv("ARIZE_SPACE_ID", "")
+    with _providers_lock:
+        if project_name in _providers:
+            return _providers[project_name]
 
-    if not api_key:
-        logger.warning("Arize tracing disabled: ARIZE_API_KEY is not set")
-        return None
-    if not space_id:
-        logger.warning("Arize tracing disabled: ARIZE_SPACE_ID is not set")
-        return None
+        api_key = os.getenv("ARIZE_API_KEY", "")
+        space_id = os.getenv("ARIZE_SPACE_ID", "")
 
-    try:
-        import requests
-        import urllib3
-        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-        _orig_send = requests.Session.send
-        def _send_no_verify(self, request, **kwargs):  # type: ignore[override]
-            kwargs["verify"] = False
-            return _orig_send(self, request, **kwargs)
-        requests.Session.send = _send_no_verify  # type: ignore[method-assign]
+        if not api_key:
+            logger.warning("Arize tracing disabled: ARIZE_API_KEY is not set")
+            return None
+        if not space_id:
+            logger.warning("Arize tracing disabled: ARIZE_SPACE_ID is not set")
+            return None
 
-        from arize.otel import register, Transport
+        try:
+            global _ssl_patched
+            if not _ssl_patched:
+                import requests
+                import urllib3
+                urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+                _orig_send = requests.Session.send
+                def _send_no_verify(self, request, **kwargs):  # type: ignore[override]
+                    kwargs["verify"] = False
+                    return _orig_send(self, request, **kwargs)
+                requests.Session.send = _send_no_verify  # type: ignore[method-assign]
+                _ssl_patched = True
 
-        tracer_provider = register(
-            space_id=space_id,
-            api_key=api_key,
-            project_name=project_name,
-            endpoint="https://otlp.eu-west-1a.arize.com/v1/traces",
-            transport=Transport.HTTP,
-        )
-        _providers[project_name] = tracer_provider
-        logger.info(f"Arize tracing initialized for project: {project_name}")
-        return tracer_provider
+            from arize.otel import register, Transport
 
-    except ImportError:
-        logger.warning(
-            "arize-otel package not available — Arize tracing disabled. "
-            "Install with: pip install arize-otel"
-        )
-        return None
-    except Exception as e:
-        logger.error(f"Failed to initialize Arize tracing for project '{project_name}': {e}")
-        return None
+            tracer_provider = register(
+                space_id=space_id,
+                api_key=api_key,
+                project_name=project_name,
+                endpoint="https://otlp.eu-west-1a.arize.com/v1/traces",
+                transport=Transport.HTTP,
+            )
+            _providers[project_name] = tracer_provider
+            logger.info(f"Arize tracing initialized for project: {project_name}")
+            return tracer_provider
+
+        except ImportError:
+            logger.warning(
+                "arize-otel package not available — Arize tracing disabled. "
+                "Install with: pip install arize-otel"
+            )
+            return None
+        except Exception as e:
+            logger.error(f"Failed to initialize Arize tracing for project '{project_name}': {e}")
+            return None
 
 
 def instrument_litellm(tracer_provider: Optional[Any]) -> None:

@@ -16,6 +16,7 @@ Usage:
 """
 
 import os
+import threading
 from typing import Callable
 from dotenv import load_dotenv
 from pathlib import Path
@@ -36,30 +37,36 @@ SKILLS_ROOT = Path("./skills")
 # ---------------------------------------------------------------------------
 
 _SOURCE_REGISTRY: dict = {}
+_SOURCE_REGISTRY_LOCK = threading.Lock()
 
 
 def _get_source_registry() -> dict:
     """Lazily build and cache the source registry."""
     global _SOURCE_REGISTRY
     if not _SOURCE_REGISTRY:
-        _SOURCE_REGISTRY = build_source_registry(KNOWLEDGE_ROOT / "README.md")
+        with _SOURCE_REGISTRY_LOCK:
+            if not _SOURCE_REGISTRY:
+                _SOURCE_REGISTRY = build_source_registry(KNOWLEDGE_ROOT / "README.md")
     return _SOURCE_REGISTRY
 
 
 _KNOWLEDGE_GRAPH: _KGClass | None = None
+_KNOWLEDGE_GRAPH_LOCK = threading.Lock()
 
 
 def _get_knowledge_graph() -> _KGClass:
     """Lazily instantiate and cache the KnowledgeGraph."""
     global _KNOWLEDGE_GRAPH
     if _KNOWLEDGE_GRAPH is None:
-        _KNOWLEDGE_GRAPH = _KGClass()
-        if not _KNOWLEDGE_GRAPH.available:
-            import warnings
-            warnings.warn(
-                "Knowledge graph not available — run: uv run python enrich_knowledge.py",
-                stacklevel=2,
-            )
+        with _KNOWLEDGE_GRAPH_LOCK:
+            if _KNOWLEDGE_GRAPH is None:
+                _KNOWLEDGE_GRAPH = _KGClass()
+                if not _KNOWLEDGE_GRAPH.available:
+                    import warnings
+                    warnings.warn(
+                        "Knowledge graph not available — run: uv run python enrich_knowledge.py",
+                        stacklevel=2,
+                    )
     return _KNOWLEDGE_GRAPH
 
 
@@ -322,7 +329,7 @@ def run_agent(
 
         try:
             result = agent(question=task, knowledge_index=knowledge_index)
-            answer: str = result.answer
+            answer: str = result.answer or ""
             agent_span.set_attribute("output.value", answer)
             agent_span.set_status(Status(StatusCode.OK))
         except Exception as exc:
