@@ -43,7 +43,13 @@ def _format_history(turns: list[dict]) -> str:
         return ""
     lines = []
     for turn in turns:
-        role = "User" if turn["role"] == "user" else "Assistant"
+        role_key = turn["role"]
+        if role_key == "user":
+            role = "User"
+        elif role_key == "assistant":
+            role = "Assistant"
+        else:
+            raise ValueError(f"Unknown role: {role_key!r}")
         lines.append(f"{role}: {turn['text']}")
     return "\n".join(lines)
 

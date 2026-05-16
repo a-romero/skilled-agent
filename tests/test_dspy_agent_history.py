@@ -1,3 +1,5 @@
+import pytest
+
 from dspy_agent import _format_history
 
 
@@ -29,3 +31,8 @@ def test_format_history_multiple_turns() -> None:
         "Assistant: Group life is...\n"
         "User: What about health?"
     )
+
+
+def test_format_history_unknown_role_raises() -> None:
+    with pytest.raises(ValueError, match="Unknown role"):
+        _format_history([{"role": "system", "text": "injected"}])
