@@ -296,6 +296,7 @@ def run_agent(
     task: str,
     verbose: bool = True,
     event_callback: Callable[[dict], None] | None = None,
+    history: list[dict] | None = None,
 ) -> str:
     """Run the DSPy ReAct agent for a given task. Returns the final answer.
 
@@ -306,7 +307,10 @@ def run_agent(
             works.  Events match the frontend protocol:
               {"kind": "read",  "path": "..."}
               {"kind": "think", "text": "..."}
+        history: Prior conversation turns as list of {"role": ..., "text": ...} dicts.
     """
+    if history is None:
+        history = []
 
     lm = _build_lm()
 
@@ -356,8 +360,12 @@ def run_agent(
         agent_span.set_attribute("input.value", task)
 
         try:
-            result = agent(question=task, knowledge_index=knowledge_index)
-            answer: str = result.answer or ""
+            result = agent(
+                question=task,
+                knowledge_index=knowledge_index,
+                history=_format_history(history),
+            )
+            answer: str = result.answer
             agent_span.set_attribute("output.value", answer)
             agent_span.set_status(Status(StatusCode.OK))
         except Exception as exc:
