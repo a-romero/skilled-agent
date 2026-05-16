@@ -239,22 +239,26 @@ def _build_lm() -> dspy.LM:
 class KnowledgeAgentSignature(dspy.Signature):
     """Answer customer queries about Aviva's products and services.
 
-    You have access to a skill library and a knowledge base.
+    You have access to a skill library and a knowledge base. Always start every request by listing your skills.
 
-    If prior conversation history is provided, use it to understand follow-up
-    questions and maintain context across turns.
+    History first — before calling any tools, check whether the conversation
+    history already contains enough information to answer the question. If the
+    question is a clarification or a direct follow-up to something stated in a
+    previous answer (e.g. confirming a detail you already mentioned), answer
+    immediately from that context without calling any tools.
 
     Skills:
     1. Call list_skills_tool to discover available skills and their descriptions.
     2. Call read_skill_tool with a skill name only if you have determined it is relevant.
+    3. If there is a summariser skill always use it to provide any information back to the user.
 
-    Knowledge base:
-    3. Use search_knowledge_graph_tool as your primary navigation method:
+    Knowledge base (only when history does not already contain the answer):
+    4. Use the kg-navigation skill as your primary navigation method:
        - Call it with the user's query and a section if the domain is clear.
        - Review the returned titles and summaries to pick the 1-2 most relevant pages.
        - Call read_knowledge to retrieve full content from those paths.
-    4. Only fall back to SUMMARY.MD navigation via read_knowledge if search returns no results.
-    5. Always cite sources (title and URL) at the end of your answer.
+    5. Only fall back to SUMMARY.MD navigation via read_knowledge if search returns no results.
+    6. Always cite sources (title and URL) at the end of your answer.
 
     Format your sources section as:
     ## Sources
@@ -265,7 +269,8 @@ class KnowledgeAgentSignature(dspy.Signature):
         desc="Top-level knowledge index (SUMMARY.MD) for fallback navigation"
     )
     history: str = dspy.InputField(
-        desc="Prior conversation turns, oldest first. Empty string if this is the first question."
+        desc="Prior conversation turns, oldest first. Empty string if this is the first question. "
+             "Check this before calling any tools — if the answer is already present here, respond directly."
     )
     question: str = dspy.InputField(desc="Customer question to answer")
     answer: str = dspy.OutputField(
