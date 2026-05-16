@@ -718,6 +718,7 @@ input, textarea { font-family: inherit; color: inherit; }
 .step.think .step-bullet::before { background: var(--text-3); }
 .step.read .step-bullet::before { background: var(--accent); }
 .step.skill .step-bullet::before { background: oklch(0.6 0.14 300); }
+.step.search .step-bullet::before { background: oklch(0.65 0.16 55); }
 .step-body { flex: 1; color: var(--text-2); }
 .step.think .step-body { font-style: italic; color: var(--text-2); }
 .step.read .step-body {
@@ -765,6 +766,32 @@ input, textarea { font-family: inherit; color: inherit; }
   color: white;
   border-radius: 3px;
   font-weight: 600;
+}
+.step.search .step-body {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--text);
+  background: oklch(0.97 0.04 55);
+  border: 1px solid oklch(0.88 0.08 55);
+  padding: 4px 8px;
+  border-radius: 5px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+[data-theme="dark"] .step.search .step-body {
+  background: oklch(0.32 0.06 55);
+  border-color: oklch(0.45 0.09 55);
+  color: oklch(0.9 0.06 55);
+}
+.search-tag {
+  font-size: 10px;
+  padding: 1px 5px;
+  background: oklch(0.65 0.16 55);
+  color: white;
+  border-radius: 3px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
 }
 
 /* ============== Skills panel ============== */
@@ -1489,6 +1516,7 @@ function Breadcrumb({ path, active }) {
 function Trace({ steps, running, elapsed }) {
   const [open, setOpen] = React.useState(true);
   const readCount = steps.filter(s => s.kind === "read").length;
+  const searchCount = steps.filter(s => s.kind === "search").length;
   const skillCount = steps.filter(s => s.kind === "skill").length;
   return (
     <div className={"trace" + (open ? " open" : "")}>
@@ -1496,7 +1524,7 @@ function Trace({ steps, running, elapsed }) {
         <span className={"dot" + (running ? " active" : "")}></span>
         <span className="trace-title">{running ? "Thinking…" : "Thought process"}</span>
         <span className="trace-stats">
-          {readCount} read · {skillCount} skill{skillCount === 1 ? "" : "s"} · {elapsed}s
+          {searchCount > 0 && <>{searchCount} search{searchCount === 1 ? "" : "es"} · </>}{readCount} read · {skillCount} skill{skillCount === 1 ? "" : "s"} · {elapsed}s
         </span>
         <span className="trace-caret"><Icon name="chevron" size={11} /></span>
       </div>
@@ -1522,6 +1550,17 @@ function Trace({ steps, running, elapsed }) {
                   </span>
                   <Breadcrumb path={s.path} active={active} />
                 </div>
+              </div>
+            );
+          }
+          if (s.kind === "search") {
+            return (
+              <div key={i} className={"step search" + (active ? " active" : "")}>
+                <span className="step-bullet"></span>
+                <span className="step-body">
+                  <span className="search-tag">search_knowledge_graph</span>
+                  <span>{s.query}{s.section ? <> · <span style={{color: "var(--text-3)"}}>§ {s.section}</span></> : null}</span>
+                </span>
               </div>
             );
           }
@@ -1853,6 +1892,9 @@ function App() {
             if (verbosity === "full") {
               updateMsg(m => ({ ...m, trace: [...m.trace, { kind: "think", text: evt.text }] }));
             }
+
+          } else if (evt.kind === "search") {
+            updateMsg(m => ({ ...m, trace: [...m.trace, { kind: "search", query: evt.query, section: evt.section || "" }] }));
 
           } else if (evt.kind === "skill_list") {
             updateMsg(m => ({ ...m, trace: [...m.trace, { kind: "skill", name: "list_skills", desc: "Browsed skill library" }] }));

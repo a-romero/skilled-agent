@@ -145,3 +145,56 @@ def test_make_skill_tools_list_returns_json(skills_root: Path) -> None:
     list_skills_tool, _ = _make_skill_tools(registry)
     result = json.loads(list_skills_tool())
     assert any(s["name"] == "summariser" for s in result)
+
+
+def test_search_knowledge_graph_tool_returns_empty_when_graph_unavailable() -> None:
+    """search_knowledge_graph_tool returns '[]' when graph is not populated."""
+    import json
+    from unittest.mock import patch, MagicMock
+    from dspy_agent import search_knowledge_graph_tool
+    from knowledge_graph import KnowledgeGraph
+
+    mock_kg = MagicMock(spec=KnowledgeGraph)
+    mock_kg.available = False
+
+    with patch("dspy_agent._get_knowledge_graph", return_value=mock_kg):
+        result = search_knowledge_graph_tool("home insurance")
+    assert json.loads(result) == []
+
+
+def test_search_knowledge_graph_tool_calls_kg_search() -> None:
+    """search_knowledge_graph_tool delegates to KnowledgeGraph.search()."""
+    import json
+    from unittest.mock import patch, MagicMock
+    from dspy_agent import search_knowledge_graph_tool
+    from knowledge_graph import KnowledgeGraph
+
+    mock_kg = MagicMock(spec=KnowledgeGraph)
+    mock_kg.available = True
+    mock_kg.search.return_value = [
+        {"path": "insurance/home/index.md", "title": "Home Insurance", "summary": "Covers your home."}
+    ]
+
+    with patch("dspy_agent._get_knowledge_graph", return_value=mock_kg):
+        result = search_knowledge_graph_tool("home insurance", section="insurance")
+
+    mock_kg.search.assert_called_once_with("home insurance", section="insurance")
+    data = json.loads(result)
+    assert data[0]["path"] == "insurance/home/index.md"
+
+
+def test_search_knowledge_graph_tool_passes_none_for_empty_section() -> None:
+    """Empty section string is converted to None before calling kg.search()."""
+    import json
+    from unittest.mock import patch, MagicMock
+    from dspy_agent import search_knowledge_graph_tool
+    from knowledge_graph import KnowledgeGraph
+
+    mock_kg = MagicMock(spec=KnowledgeGraph)
+    mock_kg.available = True
+    mock_kg.search.return_value = []
+
+    with patch("dspy_agent._get_knowledge_graph", return_value=mock_kg):
+        search_knowledge_graph_tool("pension plans", section="")
+
+    mock_kg.search.assert_called_once_with("pension plans", section=None)

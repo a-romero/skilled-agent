@@ -1,6 +1,9 @@
 """Knowledge base retrieval tools for the skilled agent."""
 
+import json
 from pathlib import Path
+
+from knowledge_graph import KnowledgeGraph
 
 KNOWLEDGE_ROOT = Path(__file__).parent / "knowledge"
 
@@ -53,12 +56,57 @@ def handle_knowledge_tool(
     inp: dict,
     source_registry: dict,
     knowledge_root: Path = KNOWLEDGE_ROOT,
+    knowledge_graph: KnowledgeGraph | None = None,
 ) -> str:
     """Dispatch knowledge tool calls."""
     if name == "read_knowledge":
         return read_knowledge(inp, source_registry, knowledge_root)
+    if name == "search_knowledge_graph":
+        if knowledge_graph is None or not knowledge_graph.available:
+            return json.dumps([])
+        results = knowledge_graph.search(
+            inp.get("query", ""),
+            section=inp.get("section"),
+        )
+        return json.dumps(results, indent=2)
     return f"Error: unknown knowledge tool '{name}'"
 
+
+_SEARCH_TOOL: dict = {
+    "name": "search_knowledge_graph",
+    "description": (
+        "Search the knowledge graph for pages relevant to a query. "
+        "Returns the top 5 most relevant pages with path, title, and summary. "
+        "Use this as your primary navigation method instead of reading SUMMARY.MD files. "
+        "Provide a section when the topic domain is clear to scope the search."
+    ),
+    "input_schema": {
+        "type": "object",
+        "properties": {
+            "query": {
+                "type": "string",
+                "description": "Natural language query describing what you are looking for",
+            },
+            "section": {
+                "type": "string",
+                "description": "Scope search to a top-level section. Omit to search globally.",
+                "enum": [
+                    "business",
+                    "health",
+                    "health-insurance",
+                    "health-providers",
+                    "help-and-support",
+                    "insurance",
+                    "investments",
+                    "retirement",
+                    "risksolutions",
+                    "services",
+                ],
+            },
+        },
+        "required": ["query"],
+    },
+}
 
 KNOWLEDGE_TOOLS: list[dict] = [
     {
@@ -83,5 +131,6 @@ KNOWLEDGE_TOOLS: list[dict] = [
             },
             "required": ["path"],
         },
-    }
+    },
+    _SEARCH_TOOL,
 ]

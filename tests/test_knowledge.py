@@ -154,3 +154,63 @@ def test_knowledge_tools_schema_has_path_param() -> None:
     tool = next(t for t in KNOWLEDGE_TOOLS if t["name"] == "read_knowledge")
     assert "path" in tool["input_schema"]["properties"]
     assert "path" in tool["input_schema"]["required"]
+
+
+def test_knowledge_tools_has_search_knowledge_graph() -> None:
+    from knowledge import KNOWLEDGE_TOOLS
+    names = [t["name"] for t in KNOWLEDGE_TOOLS]
+    assert "search_knowledge_graph" in names
+
+
+def test_search_knowledge_graph_tool_has_query_param() -> None:
+    from knowledge import KNOWLEDGE_TOOLS
+    tool = next(t for t in KNOWLEDGE_TOOLS if t["name"] == "search_knowledge_graph")
+    assert "query" in tool["input_schema"]["properties"]
+    assert "query" in tool["input_schema"]["required"]
+
+
+def test_search_knowledge_graph_tool_has_optional_section() -> None:
+    from knowledge import KNOWLEDGE_TOOLS
+    tool = next(t for t in KNOWLEDGE_TOOLS if t["name"] == "search_knowledge_graph")
+    assert "section" in tool["input_schema"]["properties"]
+    assert "section" not in tool["input_schema"].get("required", [])
+
+
+def test_handle_knowledge_tool_routes_search(
+    knowledge_root: Path, registry_for_root: dict
+) -> None:
+    from knowledge import handle_knowledge_tool
+    from knowledge_graph import KnowledgeGraph
+    from unittest.mock import MagicMock
+
+    mock_kg = MagicMock(spec=KnowledgeGraph)
+    mock_kg.available = True
+    mock_kg.search.return_value = [
+        {"path": "business/index.md", "title": "Business", "summary": "Business products."}
+    ]
+
+    result = handle_knowledge_tool(
+        "search_knowledge_graph",
+        {"query": "business insurance", "section": "business"},
+        registry_for_root,
+        knowledge_graph=mock_kg,
+    )
+
+    mock_kg.search.assert_called_once_with("business insurance", section="business")
+    import json
+    data = json.loads(result)
+    assert data[0]["path"] == "business/index.md"
+
+
+def test_handle_knowledge_tool_search_returns_empty_when_kg_none(
+    knowledge_root: Path, registry_for_root: dict
+) -> None:
+    from knowledge import handle_knowledge_tool
+    result = handle_knowledge_tool(
+        "search_knowledge_graph",
+        {"query": "anything"},
+        registry_for_root,
+        knowledge_graph=None,
+    )
+    import json
+    assert json.loads(result) == []
