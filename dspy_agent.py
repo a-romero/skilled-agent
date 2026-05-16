@@ -33,6 +33,22 @@ load_dotenv()
 SKILLS_ROOT = Path("./skills")
 
 # ---------------------------------------------------------------------------
+# Conversation history formatting
+# ---------------------------------------------------------------------------
+
+
+def _format_history(turns: list[dict]) -> str:
+    """Format conversation turns as a plain-text transcript for the agent."""
+    if not turns:
+        return ""
+    lines = []
+    for turn in turns:
+        role = "User" if turn["role"] == "user" else "Assistant"
+        lines.append(f"{role}: {turn['text']}")
+    return "\n".join(lines)
+
+
+# ---------------------------------------------------------------------------
 # Knowledge base setup
 # ---------------------------------------------------------------------------
 
