@@ -1,6 +1,5 @@
 import pytest
 import dspy
-from unittest.mock import MagicMock
 
 from dspy_agent import _format_history, DSPyKnowledgeAgent
 
@@ -61,3 +60,4 @@ def test_agent_forward_passes_history_to_react() -> None:
     assert len(calls) == 1
     assert calls[0]["history"] == "User: What is group life?\nAssistant: Group life is..."
     assert calls[0]["question"] == "What about health?"
+    assert calls[0]["knowledge_index"] == "idx"
