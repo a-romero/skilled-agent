@@ -241,6 +241,9 @@ class KnowledgeAgentSignature(dspy.Signature):
 
     You have access to a skill library and a knowledge base.
 
+    If prior conversation history is provided, use it to understand follow-up
+    questions and maintain context across turns.
+
     Skills:
     1. Call list_skills_tool to discover available skills and their descriptions.
     2. Call read_skill_tool with a skill name only if you have determined it is relevant.
@@ -261,6 +264,9 @@ class KnowledgeAgentSignature(dspy.Signature):
     knowledge_index: str = dspy.InputField(
         desc="Top-level knowledge index (SUMMARY.MD) for fallback navigation"
     )
+    history: str = dspy.InputField(
+        desc="Prior conversation turns, oldest first. Empty string if this is the first question."
+    )
     question: str = dspy.InputField(desc="Customer question to answer")
     answer: str = dspy.OutputField(
         desc="Complete answer with ## Sources section listing every page read"
@@ -277,9 +283,9 @@ class DSPyKnowledgeAgent(dspy.Module):
             max_iters=max_iters,
         )
 
-    def forward(self, question: str, knowledge_index: str) -> dspy.Prediction:
+    def forward(self, question: str, knowledge_index: str, history: str = "") -> dspy.Prediction:
         """Run the ReAct loop for a given question."""
-        return self.react(question=question, knowledge_index=knowledge_index)
+        return self.react(question=question, knowledge_index=knowledge_index, history=history)
 
 
 # ---------------------------------------------------------------------------
