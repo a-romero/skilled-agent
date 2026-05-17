@@ -25,3 +25,5 @@ Skilled Agent-handoff/
 output/
 *.zip
 .superpowers/
+knowledge_graph
+retirement_knowledge/
