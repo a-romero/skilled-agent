@@ -20,6 +20,7 @@ import threading
 from typing import Callable
 from dotenv import load_dotenv
 from pathlib import Path
+load_dotenv()
 
 import dspy
 
@@ -28,7 +29,6 @@ from arize_tracing import setup_arize, instrument_dspy, get_tracer
 from skills import build_skill_registry, list_skills, read_skill
 from knowledge_graph import KnowledgeGraph as _KGClass
 
-load_dotenv()
 
 SKILLS_ROOT = Path("./skills")
 
