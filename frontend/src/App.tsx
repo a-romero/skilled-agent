@@ -35,6 +35,7 @@ function App() {
   // Chat integration
   const { messages, loading, sendMessage } = useChat(
     config,
+    activeConversation?.id || "",
     activeConversation?.messages || []
   );
 

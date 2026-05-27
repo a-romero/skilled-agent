@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { MarkdownRenderer } from "../shared/MarkdownRenderer";
+import { Icon } from "../shared/Icon";
 import type { Frontmatter, KnowledgeNode, KnowledgeTree } from "../../types/api";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
@@ -13,6 +14,7 @@ interface FileData {
 interface FilePreviewProps {
   path: string | null;
   tree: KnowledgeTree | null;
+  onBack: () => void;
 }
 
 // Helper to resolve a path within the tree structure for SUMMARY.MD synthetic files
@@ -93,7 +95,7 @@ const FrontmatterView: React.FC<{ fm: Frontmatter }> = ({ fm }) => {
   );
 };
 
-export const FilePreview: React.FC<FilePreviewProps> = ({ path, tree }) => {
+export const FilePreview: React.FC<FilePreviewProps> = ({ path, tree, onBack }) => {
   const [file, setFile] = useState<FileData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -147,6 +149,9 @@ export const FilePreview: React.FC<FilePreviewProps> = ({ path, tree }) => {
       return (
         <div className="kpreview">
           <div className="kpreview-head">
+            <button className="icon-btn" onClick={onBack} title="Back to tree">
+              <Icon name="back" size={14} />
+            </button>
             <span className="kpreview-path">{path}</span>
           </div>
           <div className="kpreview-body">
@@ -223,13 +228,25 @@ export const FilePreview: React.FC<FilePreviewProps> = ({ path, tree }) => {
   }
 
   if (loading) {
-    return <div className="kpreview-loading">Loading...</div>;
+    return (
+      <div className="kpreview">
+        <div className="kpreview-head">
+          <button className="icon-btn" onClick={onBack} title="Back to tree">
+            <Icon name="back" size={14} />
+          </button>
+        </div>
+        <div className="kpreview-loading">Loading...</div>
+      </div>
+    );
   }
 
   if (error) {
     return (
       <div className="kpreview">
         <div className="kpreview-head">
+          <button className="icon-btn" onClick={onBack} title="Back to tree">
+            <Icon name="back" size={14} />
+          </button>
           <span className="kpreview-path">{path}</span>
         </div>
         <div className="kpreview-body">
@@ -243,6 +260,9 @@ export const FilePreview: React.FC<FilePreviewProps> = ({ path, tree }) => {
     return (
       <div className="kpreview">
         <div className="kpreview-head">
+          <button className="icon-btn" onClick={onBack} title="Back to tree">
+            <Icon name="back" size={14} />
+          </button>
           <span className="kpreview-path">{path}</span>
         </div>
         <div className="kpreview-body">
@@ -255,6 +275,9 @@ export const FilePreview: React.FC<FilePreviewProps> = ({ path, tree }) => {
   return (
     <div className="kpreview">
       <div className="kpreview-head">
+        <button className="icon-btn" onClick={onBack} title="Back to tree">
+          <Icon name="back" size={14} />
+        </button>
         <span className="kpreview-path">{path}</span>
       </div>
       <div className="kpreview-body">

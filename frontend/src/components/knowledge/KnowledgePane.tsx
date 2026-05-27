@@ -81,7 +81,7 @@ export const KnowledgePane: React.FC = () => {
           />
         ))}
       </div>
-      {selectedPath && <FilePreview path={selectedPath} tree={tree} />}
+      {selectedPath && <FilePreview path={selectedPath} tree={tree} onBack={() => selectFile(null)} />}
     </aside>
   );
 };

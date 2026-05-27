@@ -3,15 +3,15 @@ import type { Message, ChatEvent, Config } from "../types/api";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
 
-export function useChat(config: Config, initialMessages: Message[] = []) {
+export function useChat(config: Config, conversationId: string, initialMessages: Message[] = []) {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Update messages when conversation changes
+  // Update messages when conversation changes (by ID, not reference)
   useEffect(() => {
     setMessages(initialMessages);
-  }, [initialMessages]);
+  }, [conversationId]); // Depend on ID, not message array
 
   const sendMessage = useCallback(async (text: string) => {
     if (!text.trim() || loading) return;
