@@ -1,11 +1,13 @@
-import React from "react";
+import React, { useState } from "react";
 import { useKnowledge } from "../../hooks/useKnowledge";
 import { KnowledgeTree } from "./KnowledgeTree";
 import { FilePreview } from "./FilePreview";
+import { Icon } from "../shared/Icon";
 
 export const KnowledgePane: React.FC = () => {
   const { tree, expanded, selectedPath, loading, error, toggleFolder, selectFile } =
     useKnowledge();
+  const [searchQ, setSearchQ] = useState("");
 
   if (loading) {
     return (
@@ -32,43 +34,54 @@ export const KnowledgePane: React.FC = () => {
   }
 
   return (
-    <div className="pane">
-      <div className="tree-panel">
-        <div className="ktree">
-          {/* Root SUMMARY.MD */}
-          <div
-            className={`krow${selectedPath === "SUMMARY.MD" ? " selected" : ""}`}
-            style={{ paddingLeft: 6 }}
-            onClick={() => selectFile("SUMMARY.MD")}
-          >
-            <span className="caret leaf">
-              <span style={{ display: "inline-block", width: 11 }}>
-                {/* Empty spacer for alignment */}
-              </span>
+    <aside className="pane" style={{ position: "relative" }}>
+      <div className="kpane-header">
+        <Icon name="folder" size={14} />
+        <span className="kpane-title">Knowledge</span>
+        <span className="kpane-badge">Aviva KB</span>
+      </div>
+      <div className="ksearch">
+        <span className="ksearch-icon">
+          <Icon name="search" size={13} />
+        </span>
+        <input
+          placeholder="Search knowledge…"
+          value={searchQ}
+          onChange={(e) => setSearchQ(e.target.value)}
+        />
+      </div>
+      <div className="ktree">
+        {/* Root SUMMARY.MD */}
+        <div
+          className={`krow${selectedPath === "SUMMARY.MD" ? " selected" : ""}`}
+          style={{ paddingLeft: 6 }}
+          onClick={() => selectFile("SUMMARY.MD")}
+        >
+          <span className="caret leaf">
+            <span style={{ display: "inline-block", width: 11 }}>
+              {/* Empty spacer for alignment */}
             </span>
-            <span className="kicon">
-              <span style={{ fontSize: 14 }}>📄</span>
-            </span>
-            <span className="kname">SUMMARY.MD</span>
-          </div>
-          {/* Render tree children */}
-          {tree.root.children.map((node) => (
-            <KnowledgeTree
-              key={node.name}
-              node={node}
-              expanded={expanded}
-              selectedPath={selectedPath}
-              onToggle={toggleFolder}
-              onSelect={selectFile}
-              depth={0}
-              pathPrefix=""
-            />
-          ))}
+          </span>
+          <span className="kicon">
+            <span style={{ fontSize: 14 }}>📄</span>
+          </span>
+          <span className="kname">SUMMARY.MD</span>
         </div>
+        {/* Render tree children */}
+        {tree.root.children.map((node) => (
+          <KnowledgeTree
+            key={node.name}
+            node={node}
+            expanded={expanded}
+            selectedPath={selectedPath}
+            onToggle={toggleFolder}
+            onSelect={selectFile}
+            depth={0}
+            pathPrefix=""
+          />
+        ))}
       </div>
-      <div className="preview-panel">
-        <FilePreview path={selectedPath} tree={tree} />
-      </div>
-    </div>
+      {selectedPath && <FilePreview path={selectedPath} tree={tree} />}
+    </aside>
   );
 };

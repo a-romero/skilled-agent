@@ -137,11 +137,7 @@ export const FilePreview: React.FC<FilePreviewProps> = ({ path, tree }) => {
   }, [path, tree]);
 
   if (!path) {
-    return (
-      <div className="file-preview-placeholder">
-        Select a file to preview
-      </div>
-    );
+    return null; // No placeholder, just hide when nothing selected
   }
 
   // Handle SUMMARY.MD synthetic files

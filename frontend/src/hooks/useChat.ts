@@ -1,12 +1,17 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import type { Message, ChatEvent, Config } from "../types/api";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
 
-export function useChat(config: Config) {
-  const [messages, setMessages] = useState<Message[]>([]);
+export function useChat(config: Config, initialMessages: Message[] = []) {
+  const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Update messages when conversation changes
+  useEffect(() => {
+    setMessages(initialMessages);
+  }, [initialMessages]);
 
   const sendMessage = useCallback(async (text: string) => {
     if (!text.trim() || loading) return;
@@ -67,9 +72,6 @@ export function useChat(config: Config) {
           question: text.trim(), 
           history,
           config: {
-            model: config.model,
-            temperature: config.temperature,
-            max_tokens: config.max_tokens,
             skills: config.skills,
           },
         }),

@@ -37,9 +37,6 @@ export interface Skill {
 }
 
 export interface Config {
-  model: string;
-  temperature: number;
-  max_tokens: number;
   skills?: string[];
 }
 

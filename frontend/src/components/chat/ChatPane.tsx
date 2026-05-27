@@ -1,4 +1,3 @@
-import { useChat } from "../../hooks/useChat";
 import { MessageList } from "./MessageList";
 import { ChatInput } from "./ChatInput";
 import type { Config } from "../../types/api";
@@ -6,11 +5,19 @@ import type { Config } from "../../types/api";
 interface ChatPaneProps {
   userName?: string;
   config: Config;
+  messages: any[]; // From parent (conversation messages)
+  onSendMessage: (text: string) => void;
+  loading: boolean;
 }
 
-export function ChatPane({ userName = "User", config }: ChatPaneProps) {
-  const { messages, loading, sendMessage } = useChat(config);
+const STARTERS = [
+  { label: "Group Protection", q: "Can you explain group life insurance for employees?" },
+  { label: "Claims", q: "How do I make a claim on a life insurance policy?" },
+  { label: "Workplace Pensions", q: "What workplace pension options are available?" },
+  { label: "Personal Life", q: "What's the difference between level and decreasing term life?" },
+];
 
+export function ChatPane({ userName = "User", config, messages, onSendMessage, loading }: ChatPaneProps) {
   // Extract user initials
   const userInitials = userName
     .split(" ")
@@ -29,7 +36,7 @@ export function ChatPane({ userName = "User", config }: ChatPaneProps) {
           <div className="chat-title">Knowledge Assistant</div>
           <div className="chat-sub">
             skilled-agent · dspy · {skillCount} skill
-            {skillCount === 1 ? "" : "s"} enabled
+            {skillCount === 1 ? "" : "s"} loaded
           </div>
         </div>
         <div className="chat-status">
@@ -40,16 +47,34 @@ export function ChatPane({ userName = "User", config }: ChatPaneProps) {
         </div>
       </div>
       <div className="chat-body">
-        {!hasMessages && (
-          <div className="chat-empty">
-            <p>Ask me anything about your knowledge base.</p>
-          </div>
-        )}
-        {hasMessages && (
-          <MessageList messages={messages} userInitials={userInitials} />
-        )}
+        <div className="chat-inner">
+          {!hasMessages && (
+            <div className="suggest-wrap">
+              <h1 className="suggest-hi">How can I help today?</h1>
+              <p className="suggest-sub">
+                Ask anything about Meridian's products — I'll navigate the knowledge base and cite
+                every page I read.
+              </p>
+              <div className="suggest-grid">
+                {STARTERS.map((starter) => (
+                  <button
+                    key={starter.q}
+                    className="suggest-card"
+                    onClick={() => onSendMessage(starter.q)}
+                  >
+                    <div className="suggest-label">{starter.label}</div>
+                    <div className="suggest-q">{starter.q}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+          {hasMessages && (
+            <MessageList messages={messages} userInitials={userInitials} />
+          )}
+        </div>
       </div>
-      <ChatInput onSend={sendMessage} disabled={loading} />
+      <ChatInput onSend={onSendMessage} disabled={loading} />
     </main>
   );
 }
