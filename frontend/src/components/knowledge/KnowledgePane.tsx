@@ -34,7 +34,7 @@ export const KnowledgePane: React.FC = () => {
   }
 
   return (
-    <aside className="pane" style={{ position: "relative" }}>
+    <div style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0, position: "relative" }}>
       <div className="kpane-header">
         <Icon name="folder" size={14} />
         <span className="kpane-title">Knowledge</span>
@@ -82,6 +82,6 @@ export const KnowledgePane: React.FC = () => {
         ))}
       </div>
       {selectedPath && <FilePreview path={selectedPath} tree={tree} onBack={() => selectFile(null)} />}
-    </aside>
+    </div>
   );
 };
