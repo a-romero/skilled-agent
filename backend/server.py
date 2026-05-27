@@ -41,8 +41,12 @@ def _get_cors_origins() -> list[str]:
     """Get CORS allowed origins from environment or return sensible defaults."""
     raw = os.getenv("CORS_ORIGINS")
     if not raw:
-        # Default for local dev: frontend on 5173, backend on 8000
-        return ["http://localhost:5173", "http://localhost:8000"]
+        # Default for local dev: frontend on 5173/5174 (Vite), backend on 8000
+        return [
+            "http://localhost:5173",
+            "http://localhost:5174",
+            "http://localhost:8000",
+        ]
     return [o.strip() for o in raw.split(",") if o.strip()]
 
 
@@ -50,6 +54,7 @@ app = FastAPI(title="Meridian Assistant")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=_get_cors_origins(),
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -239,6 +244,8 @@ async def chat(request: Request) -> StreamingResponse:
     body = await request.json()
     question: str = body.get("question", "").strip()
     history: list[dict] = body.get("history", [])[-6:]
+    config: dict = body.get("config", {})
+    selected_skills: list[str] | None = config.get("skills")
     if not question:
         async def _empty():
             yield 'data: {"kind":"error","text":"No question provided."}\n\n'
@@ -264,6 +271,7 @@ async def chat(request: Request) -> StreamingResponse:
                 verbose=False,
                 event_callback=on_event,
                 history=history,
+                selected_skills=selected_skills,
             )
             # Strip the "## Sources" section from the answer body
             body_text, _ = _extract_sources(answer)

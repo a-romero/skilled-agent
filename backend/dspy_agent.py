@@ -302,6 +302,7 @@ def run_agent(
     verbose: bool = True,
     event_callback: Callable[[dict], None] | None = None,
     history: list[dict] | None = None,
+    selected_skills: list[str] | None = None,
 ) -> str:
     """Run the DSPy ReAct agent for a given task. Returns the final answer.
 
@@ -313,6 +314,8 @@ def run_agent(
               {"kind": "read",  "path": "..."}
               {"kind": "think", "text": "..."}
         history: Prior conversation turns as list of {"role": ..., "text": ...} dicts.
+        selected_skills: Optional list of skill names to make available. If None,
+            all skills are available.
     """
     if history is None:
         history = []
@@ -320,6 +323,14 @@ def run_agent(
     lm = _build_lm()
 
     skill_registry = build_skill_registry(SKILLS_ROOT)
+
+    # Filter skills if specific ones were selected
+    if selected_skills is not None:
+        skill_registry = {
+            name: meta
+            for name, meta in skill_registry.items()
+            if name in selected_skills
+        }
 
     list_skills_tool, read_skill_tool = _make_skill_tools(skill_registry, event_callback)
 
