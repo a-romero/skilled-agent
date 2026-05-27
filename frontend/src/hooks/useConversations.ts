@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import type { Message } from "../types/api";
 
 export interface Conversation {
@@ -102,7 +102,7 @@ export function useConversations() {
     }));
   };
 
-  const updateActiveConversation = (messages: Message[]) => {
+  const updateActiveConversation = useCallback((messages: Message[]) => {
     setState((prev) => {
       const updated = prev.conversations.map((c) => {
         if (c.id === prev.activeConversationId) {
@@ -126,7 +126,7 @@ export function useConversations() {
 
       return { ...prev, conversations: updated };
     });
-  };
+  }, []); // No dependencies - uses functional setState
 
   return {
     conversations: state.conversations,
