@@ -8,7 +8,7 @@ Serves the frontend and provides two API endpoints:
   POST /api/chat             — SSE stream: runs dspy_agent and emits events
 
 Run with:
-    uv run uvicorn server:app --reload --port 8000
+    uv run uvicorn backend.server:app --reload --port 8000
 """
 
 import asyncio
@@ -31,8 +31,8 @@ from backend.skills.skills import build_skill_registry
 load_dotenv()
 
 _HERE = Path(__file__).parent
-KNOWLEDGE_ROOT = _HERE / "knowledge"
-HTML_FILE = _HERE / "Open Virtual Assistant.html"
+KNOWLEDGE_ROOT = (_HERE / ".." / "knowledge").resolve()
+HTML_FILE = (_HERE / ".." / "Open Virtual Assistant.html").resolve()
 
 app = FastAPI(title="Meridian Assistant")
 app.add_middleware(
@@ -41,7 +41,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-app.mount("/static", StaticFiles(directory=_HERE / "static"), name="static")
+app.mount("/static", StaticFiles(directory=(_HERE / ".." / "static").resolve()), name="static")
 
 
 # ---------------------------------------------------------------------------
@@ -192,7 +192,7 @@ async def knowledge_tree() -> dict:
 @app.get("/api/skills")
 async def skills_list() -> list[dict]:
     """Return all available skills with their one-line descriptions."""
-    registry = build_skill_registry(_HERE / "skills")
+    registry = build_skill_registry((_HERE / ".." / "skills").resolve())
     return [
         {"name": name, "description": meta["description"]}
         for name, meta in registry.items()
