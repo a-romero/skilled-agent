@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import type { Message, ChatEvent, Config } from "../types/api";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
@@ -7,11 +7,16 @@ export function useChat(config: Config, conversationId: string, initialMessages:
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const prevConversationIdRef = useRef(conversationId);
 
-  // Update messages when conversation changes (by ID, not reference)
+  // Update messages when conversation changes
   useEffect(() => {
-    setMessages(initialMessages);
-  }, [conversationId]); // Depend on ID, not message array
+    if (conversationId !== prevConversationIdRef.current) {
+      console.log("[useChat] Conversation changed from", prevConversationIdRef.current, "to", conversationId, "- resetting messages to:", initialMessages);
+      setMessages(initialMessages);
+      prevConversationIdRef.current = conversationId;
+    }
+  }, [conversationId, initialMessages]);
 
   const sendMessage = useCallback(async (text: string) => {
     if (!text.trim() || loading) return;
