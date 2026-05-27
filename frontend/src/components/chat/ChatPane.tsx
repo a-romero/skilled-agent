@@ -74,7 +74,7 @@ export function ChatPane({ userName = "User", config, messages, onSendMessage, l
           )}
         </div>
       </div>
-      <ChatInput onSend={onSendMessage} disabled={loading} />
+      <ChatInput onSend={onSendMessage} disabled={loading} config={config} modelName="claude-sonnet-4" />
     </main>
   );
 }

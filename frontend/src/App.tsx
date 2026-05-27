@@ -57,10 +57,10 @@ function App() {
         userName="User"
         userOrg="Organization"
       />
-      <KnowledgePane />
-      <div className="pane">
+      <aside className="pane" style={{ position: "relative" }}>
+        <KnowledgePane />
         <SkillsPanel config={config} onToggleSkill={toggleSkill} />
-      </div>
+      </aside>
       <ChatPane
         userName="User"
         config={config}
