@@ -21,11 +21,12 @@ from typing import Any
 
 import yaml
 from dotenv import load_dotenv
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
+from backend.knowledge.knowledge import read_knowledge_file
 from backend.skills.skills import build_skill_registry
 
 load_dotenv()
@@ -183,10 +184,27 @@ async def config() -> dict:
     }
 
 
+@app.get("/api/health")
+async def health() -> dict:
+    """Simple healthcheck endpoint for frontend and monitoring."""
+    return {"status": "ok"}
+
+
 @app.get("/api/knowledge/tree")
 async def knowledge_tree() -> dict:
     """Return the real knowledge directory as a JSON tree."""
     return build_knowledge_tree()
+
+
+@app.get("/api/knowledge/file")
+async def knowledge_file(
+    path: str = Query(..., description="Knowledge-relative path, e.g. 'business/group-life/index.md'")
+) -> dict:
+    """Return a specific knowledge file's parsed contents with frontmatter and body."""
+    try:
+        return read_knowledge_file(path, knowledge_root=KNOWLEDGE_ROOT)
+    except FileNotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
 
 
 @app.get("/api/skills")

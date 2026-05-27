@@ -85,3 +85,33 @@ def test_chat_caps_history_at_six_turns() -> None:
     kwargs = mock_run.call_args.kwargs
     assert len(kwargs["history"]) == 6
     assert kwargs["history"] == long_history[-6:]
+
+
+def test_health_endpoint() -> None:
+    """GET /api/health returns status ok."""
+    resp = client.get("/api/health")
+    assert resp.status_code == 200
+    assert resp.json() == {"status": "ok"}
+
+
+def test_knowledge_file_endpoint_returns_valid_file() -> None:
+    """GET /api/knowledge/file returns parsed file with frontmatter and body."""
+    resp = client.get("/api/knowledge/file?path=risksolutions/index.md")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert "path" in data
+    assert "frontmatter" in data
+    assert "body" in data
+    assert data["path"] == "risksolutions/index.md"
+
+
+def test_knowledge_file_endpoint_returns_404_for_missing_file() -> None:
+    """GET /api/knowledge/file returns 404 for non-existent files."""
+    resp = client.get("/api/knowledge/file?path=nonexistent/file.md")
+    assert resp.status_code == 404
+
+
+def test_knowledge_file_endpoint_rejects_path_traversal() -> None:
+    """GET /api/knowledge/file rejects paths outside knowledge root."""
+    resp = client.get("/api/knowledge/file?path=../../etc/passwd")
+    assert resp.status_code == 404
