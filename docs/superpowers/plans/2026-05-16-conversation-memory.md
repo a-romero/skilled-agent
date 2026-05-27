@@ -427,7 +427,7 @@ Find the `fetch("/api/chat", ...)` call (around line 1860). Update the `body`:
 
 Start the server:
 ```bash
-uv run uvicorn server:app --reload --port 8000
+uv run uvicorn backend.server:app --reload --port 8000
 ```
 
 Open http://localhost:8000 in a browser. Ask:
