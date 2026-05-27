@@ -24,7 +24,7 @@ import yaml
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, HTMLResponse, StreamingResponse
+from fastapi.responses import StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
 from backend.knowledge.knowledge import read_knowledge_file
@@ -34,7 +34,7 @@ load_dotenv()
 
 _HERE = Path(__file__).parent
 KNOWLEDGE_ROOT = (_HERE / ".." / "knowledge").resolve()
-HTML_FILE = (_HERE / ".." / "Open Virtual Assistant.html").resolve()
+# HTML_FILE moved to archive/ - frontend now runs separately on Vite
 
 
 def _get_cors_origins() -> list[str]:
@@ -177,10 +177,15 @@ def _extract_sources(answer: str) -> tuple[str, list[str]]:
 # API routes
 # ---------------------------------------------------------------------------
 
-@app.get("/", response_class=HTMLResponse)
-async def serve_frontend() -> FileResponse:
-    """Serve the single-file frontend."""
-    return FileResponse(str(HTML_FILE), media_type="text/html")
+@app.get("/")
+async def root() -> dict[str, str]:
+    """Backend API root - frontend runs separately on Vite (default: http://localhost:5173)."""
+    return {
+        "service": "Meridian Assistant API",
+        "frontend": "http://localhost:5173",
+        "docs": "/docs",
+        "health": "/api/health",
+    }
 
 
 @app.get("/api/config")
