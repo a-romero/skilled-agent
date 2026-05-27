@@ -1,7 +1,9 @@
+import { KnowledgePane } from "./components/knowledge/KnowledgePane";
+
 function App() {
   return (
     <div className="app">
-      <div className="pane">Left pane placeholder</div>
+      <KnowledgePane />
       <div className="pane">Middle pane placeholder</div>
       <div className="pane chat">Chat pane placeholder</div>
     </div>
