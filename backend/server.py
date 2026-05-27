@@ -13,6 +13,7 @@ Run with:
 
 import asyncio
 import json
+import os
 import queue
 import re
 import threading
@@ -35,10 +36,20 @@ _HERE = Path(__file__).parent
 KNOWLEDGE_ROOT = (_HERE / ".." / "knowledge").resolve()
 HTML_FILE = (_HERE / ".." / "Open Virtual Assistant.html").resolve()
 
+
+def _get_cors_origins() -> list[str]:
+    """Get CORS allowed origins from environment or return sensible defaults."""
+    raw = os.getenv("CORS_ORIGINS")
+    if not raw:
+        # Default for local dev: frontend on 5173, backend on 8000
+        return ["http://localhost:5173", "http://localhost:8000"]
+    return [o.strip() for o in raw.split(",") if o.strip()]
+
+
 app = FastAPI(title="Meridian Assistant")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=_get_cors_origins(),
     allow_methods=["*"],
     allow_headers=["*"],
 )
