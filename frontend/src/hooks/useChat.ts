@@ -12,7 +12,6 @@ export function useChat(config: Config, conversationId: string, initialMessages:
   // Update messages when conversation changes
   useEffect(() => {
     if (conversationId !== prevConversationIdRef.current) {
-      console.log("[useChat] Conversation changed from", prevConversationIdRef.current, "to", conversationId, "- resetting messages to:", initialMessages);
       setMessages(initialMessages);
       prevConversationIdRef.current = conversationId;
     }
