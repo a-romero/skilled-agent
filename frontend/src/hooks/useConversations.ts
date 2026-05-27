@@ -128,11 +128,47 @@ export function useConversations() {
     });
   }, []); // No dependencies - uses functional setState
 
+  const deleteConversation = useCallback((id: string) => {
+    setState((prev) => {
+      const filtered = prev.conversations.filter((c) => c.id !== id);
+      
+      // If we deleted the active conversation, switch to another
+      let newActiveId = prev.activeConversationId;
+      if (id === prev.activeConversationId) {
+        if (filtered.length > 0) {
+          // Switch to the first remaining conversation
+          newActiveId = filtered[0].id;
+          filtered[0].active = true;
+        } else {
+          // No conversations left, create a new one
+          const newId = crypto.randomUUID();
+          filtered.push({
+            id: newId,
+            title: "New conversation",
+            time: "now",
+            active: true,
+            messages: [],
+          });
+          newActiveId = newId;
+        }
+      }
+
+      return {
+        conversations: filtered.map((c) => ({
+          ...c,
+          active: c.id === newActiveId,
+        })),
+        activeConversationId: newActiveId,
+      };
+    });
+  }, []);
+
   return {
     conversations: state.conversations,
     activeConversation,
     newConversation,
     loadConversation,
     updateActiveConversation,
+    deleteConversation,
   };
 }

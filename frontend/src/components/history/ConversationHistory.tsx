@@ -6,6 +6,7 @@ interface ConversationHistoryProps {
   conversations: Conversation[];
   onNew: () => void;
   onLoad: (id: string) => void;
+  onDelete: (id: string) => void;
   theme: string;
   onToggleTheme: () => void;
   userName?: string;
@@ -16,6 +17,7 @@ export const ConversationHistory: React.FC<ConversationHistoryProps> = ({
   conversations,
   onNew,
   onLoad,
+  onDelete,
   theme,
   onToggleTheme,
   userName = "User",
@@ -47,7 +49,6 @@ export const ConversationHistory: React.FC<ConversationHistoryProps> = ({
           <div
             key={c.id}
             className={"history-item" + (c.active ? " active" : "")}
-            onClick={() => onLoad(c.id)}
           >
             <Icon name="message" size={12} />
             <span
@@ -56,11 +57,24 @@ export const ConversationHistory: React.FC<ConversationHistoryProps> = ({
                 minWidth: 0,
                 overflow: "hidden",
                 textOverflow: "ellipsis",
+                cursor: "pointer",
               }}
+              onClick={() => onLoad(c.id)}
             >
               {c.title}
             </span>
             <span className="history-time">{c.time}</span>
+            <button
+              className="icon-btn"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete(c.id);
+              }}
+              title="Delete conversation"
+              style={{ marginLeft: 4 }}
+            >
+              <Icon name="back" size={10} style={{ transform: "rotate(180deg)" }} />
+            </button>
           </div>
         ))}
       </div>

@@ -15,6 +15,7 @@ function App() {
     newConversation,
     loadConversation,
     updateActiveConversation,
+    deleteConversation,
   } = useConversations();
 
   // Theme management
@@ -52,6 +53,7 @@ function App() {
         conversations={conversations}
         onNew={newConversation}
         onLoad={loadConversation}
+        onDelete={deleteConversation}
         theme={theme}
         onToggleTheme={toggleTheme}
         userName={runtimeConfig?.user || "User"}
