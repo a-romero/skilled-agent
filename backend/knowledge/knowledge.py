@@ -8,7 +8,7 @@ import yaml
 
 from backend.knowledge.knowledge_graph import KnowledgeGraph
 
-KNOWLEDGE_ROOT = Path(__file__).parent / "knowledge"
+KNOWLEDGE_ROOT = (Path(__file__).parent / ".." / ".." / "knowledge").resolve()
 
 
 def _parse_index_md(path: Path) -> dict[str, Any]:
