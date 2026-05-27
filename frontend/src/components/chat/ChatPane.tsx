@@ -1,14 +1,15 @@
 import { useChat } from "../../hooks/useChat";
 import { MessageList } from "./MessageList";
 import { ChatInput } from "./ChatInput";
+import type { Config } from "../../types/api";
 
 interface ChatPaneProps {
   userName?: string;
-  skills?: Array<{ name: string; description: string }>;
+  config: Config;
 }
 
-export function ChatPane({ userName = "User", skills = [] }: ChatPaneProps) {
-  const { messages, loading, sendMessage } = useChat();
+export function ChatPane({ userName = "User", config }: ChatPaneProps) {
+  const { messages, loading, sendMessage } = useChat(config);
 
   // Extract user initials
   const userInitials = userName
@@ -19,6 +20,7 @@ export function ChatPane({ userName = "User", skills = [] }: ChatPaneProps) {
     .toUpperCase();
 
   const hasMessages = messages.length > 0;
+  const skillCount = config.skills?.length || 0;
 
   return (
     <main className="pane chat">
@@ -26,8 +28,8 @@ export function ChatPane({ userName = "User", skills = [] }: ChatPaneProps) {
         <div>
           <div className="chat-title">Knowledge Assistant</div>
           <div className="chat-sub">
-            skilled-agent · dspy · {skills.length} skill
-            {skills.length === 1 ? "" : "s"} loaded
+            skilled-agent · dspy · {skillCount} skill
+            {skillCount === 1 ? "" : "s"} enabled
           </div>
         </div>
         <div className="chat-status">

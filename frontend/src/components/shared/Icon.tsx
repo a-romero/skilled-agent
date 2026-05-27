@@ -12,6 +12,7 @@ export type IconName =
   | "sun"
   | "moon"
   | "settings"
+  | "gear"
   | "message"
   | "back"
   | "zap";
@@ -110,6 +111,7 @@ export const Icon: React.FC<IconProps> = ({ name, size = 14 }) => {
         </svg>
       );
     case "settings":
+    case "gear":
       return (
         <svg viewBox="0 0 16 16" {...s}>
           <circle cx="8" cy="8" r="2" />

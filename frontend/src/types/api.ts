@@ -38,9 +38,9 @@ export interface Skill {
 
 export interface Config {
   model: string;
-  provider: string;
-  user: string;
-  org: string;
+  temperature: number;
+  max_tokens: number;
+  skills?: string[];
 }
 
 export interface ChatHistoryTurn {
@@ -51,6 +51,7 @@ export interface ChatHistoryTurn {
 export interface ChatRequest {
   question: string;
   history: ChatHistoryTurn[];
+  config?: Config;
 }
 
 export type ChatEvent =

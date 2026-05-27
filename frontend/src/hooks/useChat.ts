@@ -1,9 +1,9 @@
 import { useState, useCallback } from "react";
-import type { Message, ChatEvent } from "../types/api";
+import type { Message, ChatEvent, Config } from "../types/api";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
 
-export function useChat() {
+export function useChat(config: Config) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -63,7 +63,16 @@ export function useChat() {
       const response = await fetch(`${API_BASE}/api/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question: text.trim(), history }),
+        body: JSON.stringify({ 
+          question: text.trim(), 
+          history,
+          config: {
+            model: config.model,
+            temperature: config.temperature,
+            max_tokens: config.max_tokens,
+            skills: config.skills,
+          },
+        }),
       });
 
       if (!response.ok) {
