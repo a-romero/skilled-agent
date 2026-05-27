@@ -8,14 +8,18 @@ export function useChat(config: Config, conversationId: string, initialMessages:
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const prevConversationIdRef = useRef(conversationId);
+  const initialMessagesRef = useRef(initialMessages);
 
-  // Update messages when conversation changes
+  // Keep ref updated with latest initialMessages
+  initialMessagesRef.current = initialMessages;
+
+  // Update messages when conversation ID changes
   useEffect(() => {
     if (conversationId !== prevConversationIdRef.current) {
-      setMessages(initialMessages);
+      setMessages(initialMessagesRef.current);
       prevConversationIdRef.current = conversationId;
     }
-  }, [conversationId, initialMessages]);
+  }, [conversationId]); // Only depend on conversationId
 
   const sendMessage = useCallback(async (text: string) => {
     if (!text.trim() || loading) return;
