@@ -9,7 +9,7 @@ interface ChatInputProps {
   modelName?: string;
 }
 
-export function ChatInput({ onSend, disabled = false, config, modelName = "claude-sonnet-4" }: ChatInputProps) {
+export function ChatInput({ onSend, disabled = false, config, modelName }: ChatInputProps) {
   const [value, setValue] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 

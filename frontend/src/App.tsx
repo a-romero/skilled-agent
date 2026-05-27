@@ -8,7 +8,7 @@ import { useConversations } from "./hooks/useConversations";
 import { useChat } from "./hooks/useChat";
 
 function App() {
-  const { config, toggleSkill } = useConfig();
+  const { config, toggleSkill, runtimeConfig } = useConfig();
   const {
     conversations,
     activeConversation,
@@ -54,19 +54,20 @@ function App() {
         onLoad={loadConversation}
         theme={theme}
         onToggleTheme={toggleTheme}
-        userName="User"
-        userOrg="Organization"
+        userName={runtimeConfig?.user || "User"}
+        userOrg={runtimeConfig?.org || "Organization"}
       />
       <aside className="pane" style={{ position: "relative" }}>
         <KnowledgePane />
         <SkillsPanel config={config} onToggleSkill={toggleSkill} />
       </aside>
       <ChatPane
-        userName="User"
+        userName={runtimeConfig?.user || "User"}
         config={config}
         messages={messages}
         onSendMessage={sendMessage}
         loading={loading}
+        modelName={runtimeConfig?.model || ""}
       />
     </div>
   );

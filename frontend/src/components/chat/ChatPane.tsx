@@ -8,6 +8,7 @@ interface ChatPaneProps {
   messages: any[]; // From parent (conversation messages)
   onSendMessage: (text: string) => void;
   loading: boolean;
+  modelName?: string;
 }
 
 const STARTERS = [
@@ -17,7 +18,7 @@ const STARTERS = [
   { label: "Personal Life", q: "What's the difference between level and decreasing term life?" },
 ];
 
-export function ChatPane({ userName = "User", config, messages, onSendMessage, loading }: ChatPaneProps) {
+export function ChatPane({ userName = "User", config, messages, onSendMessage, loading, modelName }: ChatPaneProps) {
   // Extract user initials
   const userInitials = userName
     .split(" ")
@@ -74,7 +75,7 @@ export function ChatPane({ userName = "User", config, messages, onSendMessage, l
           )}
         </div>
       </div>
-      <ChatInput onSend={onSendMessage} disabled={loading} config={config} modelName="claude-sonnet-4" />
+      <ChatInput onSend={onSendMessage} disabled={loading} config={config} modelName={modelName} />
     </main>
   );
 }

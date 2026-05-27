@@ -3,9 +3,25 @@ import type { Config } from "../types/api";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
 
+interface RuntimeConfig {
+  model: string;
+  provider: string;
+  user: string;
+  org: string;
+}
+
 export function useConfig() {
   const [config, setConfig] = useState<Config>({ skills: [] });
   const [skillsLoaded, setSkillsLoaded] = useState(false);
+  const [runtimeConfig, setRuntimeConfig] = useState<RuntimeConfig | null>(null);
+
+  // Fetch runtime config (model, provider, user) from backend
+  useEffect(() => {
+    fetch(`${API_BASE}/api/config`)
+      .then(res => res.json())
+      .then(data => setRuntimeConfig(data))
+      .catch(err => console.error("Failed to load runtime config:", err));
+  }, []);
 
   // Fetch all skills and select them by default
   useEffect(() => {
@@ -33,5 +49,5 @@ export function useConfig() {
     }));
   };
 
-  return { config, toggleSkill };
+  return { config, toggleSkill, runtimeConfig };
 }
