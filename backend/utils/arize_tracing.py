@@ -9,7 +9,7 @@ globally and can only be applied once — they are registered with the first pro
 created for their respective adapter type.
 
 Usage:
-    from arize_tracing import setup_arize, instrument_litellm
+    from backend.utils.arize_tracing import setup_arize, instrument_litellm
 
     tracer_provider = setup_arize(project_name="skilled-agent")
     instrument_litellm(tracer_provider)   # no-op after first call

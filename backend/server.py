@@ -26,7 +26,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
-from skills import build_skill_registry
+from backend.skills.skills import build_skill_registry
 
 load_dotenv()
 
@@ -214,7 +214,7 @@ async def chat(request: Request) -> StreamingResponse:
 
     def _run() -> None:
         """Run the agent in a background thread, pushing events into the queue."""
-        import dspy_agent  # local import so .env is already loaded
+        import backend.dspy_agent as dspy_agent  # local import so .env is already loaded
 
         read_index_paths: list[str] = []
 

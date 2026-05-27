@@ -2,7 +2,7 @@ import textwrap
 import pytest
 from pathlib import Path
 from unittest.mock import MagicMock, patch
-from enrich_knowledge import (
+from backend.knowledge.enrich_knowledge import (
     parse_frontmatter,
     write_frontmatter,
     generate_summary_for_dir,
@@ -163,7 +163,7 @@ def test_should_not_skip_index_md() -> None:
     assert _should_skip(Path("knowledge/business/index.md")) is False
 
 
-@patch("enrich_knowledge.complete")
+@patch("backend.knowledge.enrich_knowledge.complete")
 def test_enrich_file_skips_already_enriched(mock_complete: MagicMock, tmp_path: Path) -> None:
     p = tmp_path / "index.md"
     p.write_text(
@@ -175,7 +175,7 @@ def test_enrich_file_skips_already_enriched(mock_complete: MagicMock, tmp_path: 
     mock_complete.assert_not_called()
 
 
-@patch("enrich_knowledge.complete")
+@patch("backend.knowledge.enrich_knowledge.complete")
 def test_enrich_file_calls_claude_and_writes_fields(mock_complete: MagicMock, tmp_path: Path) -> None:
     p = tmp_path / "index.md"
     p.write_text("---\ntitle: Test Page\n---\nSome content about insurance.")
@@ -201,7 +201,7 @@ def test_enrich_file_calls_claude_and_writes_fields(mock_complete: MagicMock, tm
     assert "cover" in fm["keywords"]
 
 
-@patch("enrich_knowledge.complete")
+@patch("backend.knowledge.enrich_knowledge.complete")
 def test_enrich_file_strips_markdown_code_fences(mock_complete: MagicMock, tmp_path: Path) -> None:
     p = tmp_path / "index.md"
     p.write_text("---\ntitle: Test Page\n---\nSome content.")
@@ -227,7 +227,7 @@ def test_enrich_file_strips_markdown_code_fences(mock_complete: MagicMock, tmp_p
     assert "insurance" in fm["topics"]
 
 
-@patch("enrich_knowledge.complete")
+@patch("backend.knowledge.enrich_knowledge.complete")
 def test_enrich_file_dry_run_does_not_write(mock_complete: MagicMock, tmp_path: Path) -> None:
     p = tmp_path / "index.md"
     original = "---\ntitle: Test\n---\nContent."
@@ -239,7 +239,7 @@ def test_enrich_file_dry_run_does_not_write(mock_complete: MagicMock, tmp_path: 
 
 
 def test_run_phase3_creates_graph(tmp_path: Path) -> None:
-    from enrich_knowledge import run_phase3
+    from backend.knowledge.enrich_knowledge import run_phase3
 
     root = tmp_path / "knowledge"
     root.mkdir()
@@ -255,7 +255,7 @@ def test_run_phase3_creates_graph(tmp_path: Path) -> None:
 
 
 def test_run_phase3_dry_run_does_not_create_graph(tmp_path: Path) -> None:
-    from enrich_knowledge import run_phase3
+    from backend.knowledge.enrich_knowledge import run_phase3
 
     root = tmp_path / "knowledge"
     root.mkdir()
@@ -268,8 +268,8 @@ def test_run_phase3_dry_run_does_not_create_graph(tmp_path: Path) -> None:
 
 
 def test_run_phase3_populates_searchable_nodes(tmp_path: Path) -> None:
-    from enrich_knowledge import run_phase3
-    from knowledge_graph import KnowledgeGraph
+    from backend.knowledge.enrich_knowledge import run_phase3
+    from backend.knowledge.knowledge_graph import KnowledgeGraph
 
     root = tmp_path / "knowledge"
     root.mkdir()

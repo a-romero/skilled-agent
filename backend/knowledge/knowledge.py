@@ -3,7 +3,7 @@
 import json
 from pathlib import Path
 
-from knowledge_graph import KnowledgeGraph
+from backend.knowledge.knowledge_graph import KnowledgeGraph
 
 KNOWLEDGE_ROOT = Path(__file__).parent / "knowledge"
 

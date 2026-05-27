@@ -24,10 +24,10 @@ load_dotenv()
 
 import dspy
 
-from knowledge import KNOWLEDGE_ROOT, build_source_registry, read_knowledge
-from arize_tracing import setup_arize, instrument_dspy, get_tracer
-from skills import build_skill_registry, list_skills, read_skill
-from knowledge_graph import KnowledgeGraph as _KGClass
+from backend.knowledge.knowledge import KNOWLEDGE_ROOT, build_source_registry, read_knowledge
+from backend.utils.arize_tracing import setup_arize, instrument_dspy, get_tracer
+from backend.skills.skills import build_skill_registry, list_skills, read_skill
+from backend.knowledge.knowledge_graph import KnowledgeGraph as _KGClass
 
 
 SKILLS_ROOT = Path("./skills")
