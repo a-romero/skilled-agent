@@ -6,7 +6,7 @@ from pathlib import Path
 import kuzu
 from rank_bm25 import BM25Okapi
 
-GRAPH_ROOT = Path(__file__).parent / "knowledge_graph"
+GRAPH_ROOT = Path(__file__).parent.parent.parent / "knowledge_graph"
 
 
 def _create_schema(conn: kuzu.Connection) -> None:
