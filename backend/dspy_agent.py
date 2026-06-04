@@ -15,6 +15,7 @@ Usage:
     uv run python dspy_agent.py "What is group life insurance?"
 """
 
+import logging
 import os
 import threading
 from typing import Callable
@@ -23,6 +24,10 @@ from pathlib import Path
 load_dotenv()
 
 import dspy
+
+from backend.utils.config import validate_llm_config
+
+logger = logging.getLogger(__name__)
 
 from backend.knowledge.knowledge import KNOWLEDGE_ROOT, build_source_registry, read_knowledge
 from backend.utils.arize_tracing import setup_arize, instrument_dspy, get_tracer
@@ -205,13 +210,12 @@ def search_knowledge_graph_tool(query: str, section: str = "") -> str:
 
 def _build_lm() -> dspy.LM:
     """Build a DSPy LM from environment variables."""
-    provider = os.environ.get("LLM_PROVIDER", "")
-    model = os.environ.get("LLM_MODEL", "")
-
-    if not provider:
-        raise ValueError("LLM_PROVIDER env var not set")
-    if not model:
-        raise ValueError("LLM_MODEL env var not set")
+    # Get configuration
+    try:
+        provider, model, _ = validate_llm_config()
+    except ValueError as e:
+        logger.error(f"Configuration error: {e}")
+        raise
 
     if provider == "anthropic":
         api_key = os.environ.get("ANTHROPIC_API_KEY", "")
@@ -364,7 +368,7 @@ def run_agent(
     )
 
     if verbose:
-        print(f"Task: {task}\n")
+        logger.info(f"Task: {task}")
 
     # Use dspy.context so each background thread gets its own LM config
     # rather than mutating global settings (which DSPy restricts to the
@@ -392,7 +396,7 @@ def run_agent(
                 raise
 
     if verbose:
-        print(f"\n{'='*60}\nFinal answer:\n{answer}")
+        logger.info(f"Final answer: {answer}")
 
     return answer
 
