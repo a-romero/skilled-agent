@@ -13,6 +13,7 @@ Run with:
 
 import asyncio
 import json
+import logging
 import os
 import queue
 import re
@@ -31,6 +32,16 @@ from backend.knowledge.knowledge import read_knowledge_file
 from backend.skills.skills import build_skill_registry
 
 load_dotenv()
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler()
+    ]
+)
+logger = logging.getLogger(__name__)
 
 _HERE = Path(__file__).parent
 KNOWLEDGE_ROOT = (_HERE / ".." / "knowledge").resolve()
