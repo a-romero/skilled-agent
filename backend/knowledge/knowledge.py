@@ -1,34 +1,18 @@
 """Knowledge base retrieval tools for the skilled agent."""
 
 import json
+import logging
 from pathlib import Path
 from typing import Any
 
-import yaml
-
 from backend.knowledge.knowledge_graph import KnowledgeGraph
+from backend.utils.file_io import safe_read_text
+from backend.utils.path_security import validate_safe_path
+from backend.utils.yaml_parser import parse_index_md
+
+logger = logging.getLogger(__name__)
 
 KNOWLEDGE_ROOT = (Path(__file__).parent / ".." / ".." / "knowledge").resolve()
-
-
-def _parse_index_md(path: Path) -> dict[str, Any]:
-    """Return { frontmatter: dict, body: str } from an index.md file."""
-    try:
-        text = path.read_text(encoding="utf-8")
-    except Exception:
-        return {"frontmatter": {}, "body": ""}
-
-    if text.startswith("---"):
-        end = text.find("---", 3)
-        if end != -1:
-            fm_raw = text[3:end]
-            body = text[end + 3:].strip()
-            try:
-                fm = yaml.safe_load(fm_raw) or {}
-            except Exception:
-                fm = {}
-            return {"frontmatter": fm, "body": body}
-    return {"frontmatter": {}, "body": text}
 
 
 def read_knowledge_file(rel_path: str, knowledge_root: Path | None = None) -> dict[str, Any]:
@@ -45,14 +29,15 @@ def read_knowledge_file(rel_path: str, knowledge_root: Path | None = None) -> di
         FileNotFoundError: If the file doesn't exist or path is invalid
     """
     if knowledge_root is None:
-        # Default to project root knowledge directory
-        knowledge_root = (Path(__file__).parent / ".." / ".." / "knowledge").resolve()
+        knowledge_root = KNOWLEDGE_ROOT
     
     resolved_root = knowledge_root.resolve()
     target = (knowledge_root / rel_path).resolve()
     
-    # Security check: ensure path is within knowledge root
-    if resolved_root not in target.parents and target != resolved_root:
+    # Security check using utility
+    try:
+        validate_safe_path(target, resolved_root)
+    except ValueError:
         raise FileNotFoundError(f"Path '{rel_path}' is outside the knowledge root")
     
     if not target.exists():
@@ -61,7 +46,7 @@ def read_knowledge_file(rel_path: str, knowledge_root: Path | None = None) -> di
     if not target.is_file():
         raise FileNotFoundError(f"Path '{rel_path}' is not a file")
     
-    parsed = _parse_index_md(target)
+    parsed = parse_index_md(target)
     
     return {
         "path": rel_path,
@@ -73,7 +58,13 @@ def read_knowledge_file(rel_path: str, knowledge_root: Path | None = None) -> di
 def build_source_registry(readme: Path) -> dict[str, dict]:
     """Parse knowledge/README.md table into {relative_path: {url, title}}."""
     registry: dict[str, dict] = {}
-    for line in readme.read_text(encoding="utf-8").splitlines():
+    try:
+        content = safe_read_text(readme)
+    except Exception as e:
+        logger.error(f"Failed to read README.md: {e}")
+        return registry
+    
+    for line in content.splitlines():
         if not line.startswith("|"):
             continue
         cells = [c.strip() for c in line.strip("|").split("|")]
