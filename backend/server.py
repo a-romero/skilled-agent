@@ -46,6 +46,19 @@ logger = logging.getLogger(__name__)
 
 _HERE = Path(__file__).parent
 KNOWLEDGE_ROOT = (_HERE / ".." / "knowledge").resolve()
+
+
+def _sanitize_error(error: Exception) -> str:
+    """Sanitize error message before sending to client."""
+    error_str = str(error)
+    # Remove absolute paths
+    error_str = error_str.replace(str(_HERE.parent), "[PROJECT_ROOT]")
+    # Remove potentially sensitive stack trace info
+    if "Traceback" in error_str:
+        # Just return the error message, not full trace
+        lines = error_str.split("\n")
+        return lines[-1] if lines else "An error occurred"
+    return error_str
 # HTML_FILE moved to archive/ - frontend now runs separately on Vite
 
 
@@ -217,7 +230,11 @@ async def knowledge_file(
     try:
         return read_knowledge_file(path, knowledge_root=KNOWLEDGE_ROOT)
     except FileNotFoundError as e:
-        raise HTTPException(status_code=404, detail=str(e))
+        logger.error(f"Knowledge file not found: {path} - {e}")
+        raise HTTPException(status_code=404, detail=_sanitize_error(e))
+    except Exception as e:
+        logger.error(f"Error reading knowledge file {path}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Failed to read knowledge file")
 
 
 @app.get("/api/skills")
@@ -284,7 +301,9 @@ async def chat(request: Request) -> StreamingResponse:
             if read_index_paths:
                 event_q.put({"kind": "sources", "paths": read_index_paths})
         except Exception as exc:
-            event_q.put({"kind": "error", "text": str(exc)})
+            logger.error(f"Chat error: {exc}", exc_info=True)
+            error_msg = _sanitize_error(exc)
+            event_q.put({"kind": "error", "text": error_msg})
         finally:
             event_q.put(None)  # sentinel
 
