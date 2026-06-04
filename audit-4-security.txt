@@ -1,0 +1,62 @@
+SECURITY AUDIT FINDINGS
+=======================
+
+## COMMITTED SECRETS
+
+- [HIGH] Committed .env.development file with API base URL — frontend/.env.development:1
+  File is tracked in git (commit c4f8a46c) and contains configuration. While current value is non-sensitive localhost URL, this pattern risks future secret commits.
+
+## HARDCODED SECRETS IN .ENV (NOT COMMITTED)
+
+- [HIGH] Active API key exposed in .env file — .env:4,5
+  LITELLM_API_KEY=sk-778ef6be-1ebc-469d-98be-1733a5dd9874 (uncommented line 5)
+  
+- [HIGH] Active API key exposed in .env file — .env:8,9
+  ARIZE_API_KEY=ak-a05664c9-c1d7-4bd9-a10a-e2650e715939-5nLxK-8uCL6rckpUn8_cHzziR-GsZUNd (uncommented line 9)
+
+- [MEDIUM] Commented-out secrets still visible in .env — .env:4,8
+  Old API keys visible in comments (lines 4, 8). Should be removed entirely, not commented.
+
+## ENV VALIDATION GAPS
+
+- [HIGH] No centralized config validation layer — backend/utils/llm.py:61-81, backend/dspy_agent.py:208-224
+  Environment variables accessed directly via os.environ.get() throughout codebase without type checking or validation schema. Spread across 19 call sites.
+
+- [MEDIUM] Direct env access in multiple modules — backend/server.py:42,201-204
+  CORS_ORIGINS, LLM_MODEL, LLM_PROVIDER, OVA_USER, OVA_ORG read directly without validation.
+
+- [MEDIUM] No validation for API keys before use — backend/utils/llm.py:73-81
+  API keys retrieved from environment but only checked for None, not validated for format or length.
+
+## GITIGNORE GAPS
+
+- [MEDIUM] Missing .env* wildcard pattern in frontend/.gitignore — frontend/.gitignore
+  Frontend .gitignore does not include .env or .env* patterns. Only root .gitignore has .env entry.
+
+- [LOW] Missing credential file patterns — .gitignore
+  No patterns for *.pem, *.key, *credentials.json, service-account*.json, or common cloud provider credential files.
+
+- [LOW] Missing IDE config patterns that may contain secrets — .gitignore
+  No .vscode/settings.json or .idea/ patterns (though .DS_Store is present).
+
+## SECRET EXPOSURE IN ERROR HANDLING
+
+- [MEDIUM] Exception messages sent to client — backend/server.py:228, backend/server.py:298
+  HTTPException(detail=str(e)) exposes raw exception text. FileNotFoundError paths may leak directory structure.
+  
+- [MEDIUM] Stack traces in event stream — backend/server.py:298
+  event_q.put({"kind":"error","text":str(exc)}) sends raw exception text to frontend SSE stream, potentially exposing internal details.
+
+## CONFIGURATION EXPOSURE
+
+- [LOW] Runtime config endpoint exposes provider details — backend/server.py:201-204
+  /api/config returns LLM_MODEL, LLM_PROVIDER, OVA_USER, OVA_ORG. While not secrets, this reveals internal architecture.
+
+## POSITIVE FINDINGS
+
+✓ No hardcoded secrets in source files (*.py, *.ts, *.tsx)
+✓ No URLs with embedded credentials (user:pass@host)
+✓ No SQL injection vectors (no database layer detected)
+✓ .env file properly gitignored at root level
+✓ Test files use mock credentials only (tests/test_llm.py:118)
+✓ CORS configuration allows explicit origins only

@@ -1,0 +1,54 @@
+CODING STANDARDS & CONSISTENCY AUDIT
+====================================
+
+## PATTERNS - Component Declaration Inconsistency
+
+- [HIGH] Inconsistent React component export patterns — 7 files use `export const Component: React.FC<Props>` pattern (Icon.tsx, MarkdownRenderer.tsx, FilePreview.tsx, KnowledgePane.tsx, KnowledgeTree.tsx, ConversationHistory.tsx, SkillsPanel.tsx) while 8 files use `export function Component(props: Props)` pattern (ChatPane.tsx, MessageList.tsx, MessageBubble.tsx, ReasoningTrace.tsx, ChatInput.tsx, CitationList.tsx, useChat.ts, useKnowledge.ts)
+
+## STYLE - Async/Promise Pattern Inconsistency
+
+- [HIGH] Inconsistent async patterns in hooks — useChat.ts uses async/await (line 24) while useKnowledge.ts, useSkills.ts, useConfig.ts use .then()/.catch() chains (useKnowledge.ts:15-23, useSkills.ts:13-24, useConfig.ts:20-23, 30-37)
+
+- [MEDIUM] Missing .finally() in some promise chains — useKnowledge.ts and useConfig.ts don't use .finally() to set loading state, but useSkills.ts does (line 24)
+
+## ERROR HANDLING - Inconsistent Error Return Patterns
+
+- [MEDIUM] Mixed error handling in backend tools — backend/knowledge/knowledge.py returns formatted error strings (lines 104, 106, 108, 134) while backend/skills/skills.py also returns error strings (lines 61, 64), but read_knowledge_file() raises FileNotFoundError exceptions (lines 56, 59, 62)
+
+- [MEDIUM] Inconsistent HTTP error handling in frontend — useKnowledge.ts throws error for HTTP failures (line 16) while useSkills.ts checks res.ok and throws (line 14-17), but useConfig.ts silently catches and logs errors (lines 23, 37)
+
+## ERROR HANDLING - Silent Error Swallowing
+
+- [LOW] Silent exception suppression in backend — backend/server.py swallows exceptions with bare `except Exception:` and returns empty strings/dicts in _parse_summary_md (line 78), _parse_index_md (lines 87, 97) without logging
+
+- [LOW] Silent exception handling in skills.py — backend/skills/skills.py catches OSError and ValueError (lines 28, 33) in _extract_description() and returns fallback strings without logging the error
+
+## NAMING - Private Function Naming Inconsistency
+
+- [LOW] Inconsistent private function prefix — backend uses underscore prefix for private functions (_parse_index_md, _build_tree, _get_cors_origins) but knowledge_graph.py has public function _create_schema (line 12) with underscore prefix
+
+- [LOW] Inconsistent camelCase in backend variable names — backend/knowledge/enrich_knowledge.py uses `default_flow_style` and `allow_unicode` (line 41) which are library parameters, but generally backend follows snake_case convention consistently
+
+## STYLE - Import Ordering
+
+- [LOW] No consistent import ordering pattern — App.tsx groups React imports first, then components, then hooks (lines 1-8), but other files don't follow a clear pattern. No enforced ordering for type imports vs regular imports
+
+## PATTERNS - Error Message Format Inconsistency
+
+- [MEDIUM] Inconsistent error message format — backend/knowledge/knowledge.py prefixes with "Error: " (lines 104, 106, 108) while backend/skills/skills.py prefixes with "Error: " (lines 61, 64), but dspy_agent.py returns f"Error: {exc}" (line 388) with different capitalization context
+
+## ERROR HANDLING - Try/Except Scope Inconsistency
+
+- [LOW] Backend has no try/except blocks in main files — grep shows 0 try blocks in backend/*.py and backend/**/*.py, all error handling done via if checks or bare except in helper functions. Frontend hooks use try/catch in useChat.ts (line 94) but not in other hooks
+
+## PATTERNS - Props Interface Naming
+
+- [LOW] Inconsistent Props interface scope — All component files define local `interface ComponentNameProps` but CitationList.tsx defines it inline (line 1) instead of above the component like others
+
+## STYLE - useState Hook Pattern
+
+- [LOW] Inconsistent useState initialization — SkillsPanel.tsx uses React.useState (line 16) with namespace prefix while other components use direct import and call useState without prefix
+
+## PATTERNS - Loading State Pattern
+
+- [MEDIUM] Inconsistent loading state management — useKnowledge.ts and useSkills.ts track loading state and return it (lines 7, 8 in useKnowledge.ts, lines 8, 24 in useSkills.ts), but useChat.ts tracks loading separately from messages state (line 19) and useConversations.ts has no loading state

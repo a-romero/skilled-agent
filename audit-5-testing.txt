@@ -1,0 +1,35 @@
+TEST QUALITY & COVERAGE AUDIT
+
+=== COVERAGE GAPS ===
+
+- [HIGH] backend/utils/arize_tracing.py — no test file
+- [HIGH] frontend/src/hooks/useConfig.ts — no test file  
+- [HIGH] frontend/src/hooks/useConversations.ts — no test file
+- [HIGH] frontend/src/hooks/useSkills.ts — no test file
+- [HIGH] frontend/src/components/chat/*.tsx (6 files) — no test files
+- [HIGH] frontend/src/components/knowledge/*.tsx (3 files) — no test files for KnowledgePane.tsx, KnowledgeTree.tsx, FilePreview.tsx
+- [MEDIUM] frontend/src/components/history/ConversationHistory.tsx — no test file
+- [MEDIUM] frontend/src/components/skills/SkillsPanel.tsx — no test file
+- [MEDIUM] frontend/src/App.tsx — no test file
+- [MEDIUM] frontend/src/utils/knowledge.ts — no test file
+- [MEDIUM] frontend/src/types/api.ts — type-only file, may not need dedicated tests but should validate type guards if any exist
+
+=== SUPERFLUOUS TESTS ===
+
+- [HIGH] frontend/src/components/__tests__/MarkdownRenderer.test.tsx:39-45 + 46-52 — duplicate "renders headings" tests with identical assertions (lines 39, 46)
+- [MEDIUM] frontend/src/components/__tests__/MarkdownRenderer.test.tsx:60-66 + 117-122 — duplicate paragraph rendering tests with trivially different assertions
+- [LOW] tests/test_server.py:9-12 + 14-17 — test_skills_endpoint_returns_200 and test_skills_endpoint_returns_list could be merged; both fetch same endpoint
+- [LOW] tests/test_llm.py — heavy mocking throughout means tests primarily validate mock wiring, not actual LLM client behavior
+
+=== MISSING EDGE CASES ===
+
+- [HIGH] frontend/src/hooks/useChat.test.ts — no tests for SSE parsing errors, malformed JSON chunks, connection drops mid-stream
+- [HIGH] frontend/src/hooks/useKnowledge.test.ts — no tests for malformed tree response, missing required fields
+- [MEDIUM] tests/test_knowledge.py — no tests for unicode/special chars in paths, very long file content
+- [MEDIUM] tests/test_server.py — no tests for invalid JSON bodies, missing required fields in POST /api/chat
+- [MEDIUM] tests/test_dspy_agent_history.py — only tests valid history formats; missing tests for malformed history, non-dict entries
+
+=== FRAGILE TESTS ===
+
+- [MEDIUM] frontend/src/components/__tests__/Icon.test.tsx:36-51 — iterates over hardcoded icon names; will break when icons added/removed from Icon.tsx
+- [MEDIUM] tests/test_server.py:26-29 — hardcoded skill names "python-coder" and "summariser" tightly coupled to skills directory contents

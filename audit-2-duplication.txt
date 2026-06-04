@@ -1,0 +1,31 @@
+## Code Duplication Findings
+
+- [HIGH] Identical `_parse_index_md` function — backend/server.py:80-95 and backend/knowledge/knowledge.py:14-29 (16 lines, handles YAML frontmatter parsing with identical logic)
+
+- [HIGH] Identical environment variable validation pattern — backend/utils/llm.py:61-75 and backend/dspy_agent.py:208-220 (provider/model/api_key validation with same error messages)
+
+- [HIGH] Repeated API_BASE constant definition — frontend/src/hooks/useChat.ts:4, frontend/src/hooks/useKnowledge.ts:4, frontend/src/hooks/useSkills.ts:4, frontend/src/hooks/useConfig.ts:4, frontend/src/components/knowledge/FilePreview.tsx:7 (5 files, identical `import.meta.env.VITE_API_BASE_URL || "http://localhost:8000"`)
+
+- [HIGH] Repeated loading/error state management pattern — frontend/src/hooks/useKnowledge.ts:10-11, frontend/src/hooks/useSkills.ts:8-9, frontend/src/components/knowledge/FilePreview.tsx:100-101 (identical `useState<boolean>` and `useState<string | null>` setup with `setLoading/setError` pattern)
+
+- [MEDIUM] Duplicate fetch-then-catch chains — frontend/src/hooks/useKnowledge.ts:14-28, frontend/src/hooks/useSkills.ts:12-24, frontend/src/hooks/useConfig.ts:20-23 (similar pattern: fetch → res.ok check → json() → catch with error logging)
+
+- [MEDIUM] Duplicated frontmatter parsing logic — backend/knowledge/enrich_knowledge.py:16-35 and backend/server.py:80-95 (both parse "---" delimited YAML, with slight variations in error handling)
+
+- [MEDIUM] Repeated path security validation — backend/knowledge/knowledge.py:51-55 and backend/knowledge/knowledge.py:101-105 (identical resolve() + parent check for path traversal protection, appears in two functions)
+
+- [MEDIUM] Repeated `.read_text(encoding="utf-8")` calls without error handling — backend/server.py:73, backend/server.py:83, backend/knowledge/knowledge.py:17, backend/knowledge/enrich_knowledge.py:140, backend/skills/skills.py:34 (12+ occurrences, no shared wrapper)
+
+- [MEDIUM] Duplicated instrument_* function structure — backend/utils/arize_tracing.py:97-111, :113-131, :133-149, :151-167 (4 nearly-identical functions with same try/except ImportError pattern and global flag checks)
+
+- [MEDIUM] Repeated try/except Exception blocks returning empty defaults — backend/server.py:73-78, backend/server.py:83-100, backend/knowledge/knowledge.py:17-30 (identical pattern: try read_text → except Exception → return empty dict/string)
+
+- [LOW] Repeated list comprehension for skill formatting — backend/server.py:237-239 and backend/skills/skills.py:54-57 (identical `{"name": name, "description": meta["description"]}` pattern)
+
+- [LOW] Duplicated error message construction — backend/knowledge/knowledge.py:56-62 (3 consecutive FileNotFoundError raises with similar f-string format)
+
+- [LOW] Repeated path.resolve() pattern without caching — backend/server.py:36, backend/knowledge/knowledge.py:11, backend/knowledge/knowledge.py:49, backend/knowledge/knowledge.py:51 (multiple `.resolve()` calls on same paths)
+
+- [LOW] Identical relative time calculation duplicated — frontend/src/hooks/useConversations.ts:40-49 (getRelativeTime function could be extracted to shared utils)
+
+- [LOW] Repeated JSON.parse in try/catch for SSE parsing — frontend/src/hooks/useChat.ts:105-109 (pattern could be extracted to helper function)
