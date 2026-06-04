@@ -2,12 +2,17 @@
 from __future__ import annotations
 
 import json
+import logging
 import os
 from dataclasses import dataclass, field
 from typing import Any
 
 import anthropic
 import litellm
+
+from backend.utils.config import validate_llm_config
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -58,33 +63,18 @@ def create_client(
     api_key: str | None = None,
 ) -> LLMClient:
     """Construct the appropriate SDK client and return an LLMClient."""
-    provider = provider or os.environ.get("LLM_PROVIDER")
-    if not provider:
-        raise ValueError(
-            "LLM_PROVIDER env var not set and no explicit provider passed"
-        )
-    model = model or os.environ.get("LLM_MODEL")
-    if not model:
-        raise ValueError(
-            "LLM_MODEL env var not set and no explicit model passed"
-        )
+    provider, model, api_key = validate_llm_config(provider, model, api_key)
 
     if provider == "anthropic":
-        key = api_key or os.environ.get("ANTHROPIC_API_KEY")
-        if not key:
-            raise ValueError(
-                "ANTHROPIC_API_KEY env var not set and no explicit api_key passed"
-            )
-        raw: Any = anthropic.Anthropic(api_key=key)
+        raw: Any = anthropic.Anthropic(api_key=api_key)
     elif provider == "litellm":
         base_url = base_url or os.environ.get("LITELLM_BASE_URL")
-        key = api_key or os.environ.get("LITELLM_API_KEY")
-        raw = {"api_base": base_url, "api_key": key}
+        raw = {"api_base": base_url, "api_key": api_key}
     else:
-        raise ValueError(
-            f"Unknown provider: {provider!r}. Must be 'anthropic' or 'litellm'"
-        )
+        # This shouldn't happen since validate_llm_config checks provider
+        raise ValueError(f"Unknown provider: {provider!r}")
 
+    logger.info(f"Created LLM client: provider={provider}, model={model}")
     return LLMClient(provider=provider, model=model, _raw=raw)
 
 
