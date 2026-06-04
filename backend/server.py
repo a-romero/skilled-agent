@@ -99,7 +99,7 @@ def _build_tree(directory: Path, rel_prefix: str = "") -> list[dict]:
     # index.md in this directory — comes first as a direct file child
     index_path = directory / "index.md"
     if index_path.exists():
-        parsed = _parse_index_md(index_path)
+        parsed = parse_index_md(index_path)
         fm = parsed["frontmatter"]
         nodes.append({
             "type": "file",
