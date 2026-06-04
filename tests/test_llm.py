@@ -5,7 +5,7 @@ import pytest
 import anthropic
 import openai
 
-from llm import (
+from backend.utils.llm import (
     LLMClient,
     LLMResponse,
     ToolCall,
@@ -191,7 +191,7 @@ def test_complete_anthropic_model_override() -> None:
     assert call_kwargs["model"] == "claude-override"
 
 
-@patch("llm.litellm.completion")
+@patch("backend.utils.llm.litellm.completion")
 def test_complete_litellm_done(mock_completion: MagicMock) -> None:
     client = _make_litellm_client()
     mock_message = MagicMock()
@@ -211,7 +211,7 @@ def test_complete_litellm_done(mock_completion: MagicMock) -> None:
     assert response.tool_calls == []
 
 
-@patch("llm.litellm.completion")
+@patch("backend.utils.llm.litellm.completion")
 def test_complete_litellm_tool_call(mock_completion: MagicMock) -> None:
     client = _make_litellm_client()
     mock_tc = MagicMock()
@@ -237,7 +237,7 @@ def test_complete_litellm_tool_call(mock_completion: MagicMock) -> None:
     assert response.tool_calls[0].input == {"query": "hello"}
 
 
-@patch("llm.litellm.completion")
+@patch("backend.utils.llm.litellm.completion")
 def test_complete_litellm_converts_tools(mock_completion: MagicMock) -> None:
     client = _make_litellm_client()
     mock_message = MagicMock()
@@ -259,7 +259,7 @@ def test_complete_litellm_converts_tools(mock_completion: MagicMock) -> None:
     assert "input_schema" not in call_kwargs["tools"][0]["function"]
 
 
-@patch("llm.litellm.completion")
+@patch("backend.utils.llm.litellm.completion")
 def test_complete_litellm_prepends_system_prompt(mock_completion: MagicMock) -> None:
     client = _make_litellm_client()
     mock_message = MagicMock()

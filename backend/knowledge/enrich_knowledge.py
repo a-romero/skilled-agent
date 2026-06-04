@@ -5,7 +5,7 @@ import sys
 from pathlib import Path
 
 import yaml
-from llm import LLMClient, create_client, complete
+from backend.utils.llm import LLMClient, create_client, complete
 
 # Files to skip during enrichment and SUMMARY.MD generation
 _SKIP_NAMES: frozenset[str] = frozenset({"SUMMARY.MD", "README.md"})
@@ -216,7 +216,7 @@ def run_phase3(
     graph_dir: Path | None = None,
 ) -> None:
     """Populate knowledge graph from enriched index.md files."""
-    from knowledge_graph import populate, GRAPH_ROOT
+    from backend.knowledge.knowledge_graph import populate, GRAPH_ROOT
 
     _graph_dir = graph_dir or GRAPH_ROOT
     files = sorted(p for p in knowledge_root.rglob("index.md") if not _should_skip(p))

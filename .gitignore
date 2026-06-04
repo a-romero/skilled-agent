@@ -1,13 +1,9 @@
 .venv*
 __pycache__/
+archive
 data/
-data.bkp/
+docs
 *node_modules/
-**/.old_node_modules/
-.next/
-data/*.json                             
-data/*.csv                                                                                                                                                               
-data/*.jsonl
 .env
 secret.key
 .DS_Store
@@ -15,15 +11,11 @@ logs
 *.log
 *.orig
 commit-with-dates.sh
-mp
-wandb/
 .tmp/
 *.egg-info/
 .claude/
 knowledge*/
-Skilled Agent-handoff/
 output/
 *.zip
-.superpowers/
 knowledge_graph
 retirement_knowledge/

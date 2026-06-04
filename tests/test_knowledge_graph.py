@@ -46,13 +46,13 @@ def three_nodes() -> list[dict]:
 
 
 def test_populate_creates_graph_directory(graph_dir: Path, three_nodes: list[dict]) -> None:
-    from knowledge_graph import populate
+    from backend.knowledge.knowledge_graph import populate
     populate(three_nodes, graph_dir)
     assert graph_dir.exists()
 
 
 def test_populate_is_idempotent(graph_dir: Path, three_nodes: list[dict]) -> None:
-    from knowledge_graph import populate, KnowledgeGraph
+    from backend.knowledge.knowledge_graph import populate, KnowledgeGraph
     populate(three_nodes, graph_dir)
     populate(three_nodes, graph_dir)  # second run must not raise
     kg = KnowledgeGraph(graph_dir)
@@ -60,7 +60,7 @@ def test_populate_is_idempotent(graph_dir: Path, three_nodes: list[dict]) -> Non
 
 
 def test_search_returns_relevant_result(graph_dir: Path, three_nodes: list[dict]) -> None:
-    from knowledge_graph import populate, KnowledgeGraph
+    from backend.knowledge.knowledge_graph import populate, KnowledgeGraph
     populate(three_nodes, graph_dir)
     kg = KnowledgeGraph(graph_dir)
     results = kg.search("home contents insurance")
@@ -69,7 +69,7 @@ def test_search_returns_relevant_result(graph_dir: Path, three_nodes: list[dict]
 
 
 def test_search_with_section_scopes_results(graph_dir: Path, three_nodes: list[dict]) -> None:
-    from knowledge_graph import populate, KnowledgeGraph
+    from backend.knowledge.knowledge_graph import populate, KnowledgeGraph
     populate(three_nodes, graph_dir)
     kg = KnowledgeGraph(graph_dir)
     results = kg.search("pension annuity", section="business")
@@ -77,7 +77,7 @@ def test_search_with_section_scopes_results(graph_dir: Path, three_nodes: list[d
 
 
 def test_search_section_excludes_wrong_section(graph_dir: Path, three_nodes: list[dict]) -> None:
-    from knowledge_graph import populate, KnowledgeGraph
+    from backend.knowledge.knowledge_graph import populate, KnowledgeGraph
     populate(three_nodes, graph_dir)
     kg = KnowledgeGraph(graph_dir)
     # Searching business section for home insurance should return nothing
@@ -86,13 +86,13 @@ def test_search_section_excludes_wrong_section(graph_dir: Path, three_nodes: lis
 
 
 def test_search_returns_empty_when_graph_missing(tmp_path: Path) -> None:
-    from knowledge_graph import KnowledgeGraph
+    from backend.knowledge.knowledge_graph import KnowledgeGraph
     kg = KnowledgeGraph(tmp_path / "nonexistent")
     assert kg.search("anything") == []
 
 
 def test_search_result_has_required_keys(graph_dir: Path, three_nodes: list[dict]) -> None:
-    from knowledge_graph import populate, KnowledgeGraph
+    from backend.knowledge.knowledge_graph import populate, KnowledgeGraph
     populate(three_nodes, graph_dir)
     kg = KnowledgeGraph(graph_dir)
     results = kg.search("insurance")
@@ -101,7 +101,7 @@ def test_search_result_has_required_keys(graph_dir: Path, three_nodes: list[dict
 
 
 def test_search_respects_top_k(graph_dir: Path, three_nodes: list[dict]) -> None:
-    from knowledge_graph import populate, KnowledgeGraph
+    from backend.knowledge.knowledge_graph import populate, KnowledgeGraph
     populate(three_nodes, graph_dir)
     kg = KnowledgeGraph(graph_dir)
     results = kg.search("insurance pension home annuity", top_k=1)

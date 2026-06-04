@@ -1,7 +1,7 @@
 import pytest
 import dspy
 
-from dspy_agent import _format_history, DSPyKnowledgeAgent
+from backend.dspy_agent import _format_history, DSPyKnowledgeAgent
 
 
 def test_format_history_empty_returns_empty_string() -> None:

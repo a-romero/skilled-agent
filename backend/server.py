@@ -8,11 +8,12 @@ Serves the frontend and provides two API endpoints:
   POST /api/chat             — SSE stream: runs dspy_agent and emits events
 
 Run with:
-    uv run uvicorn server:app --reload --port 8000
+    uv run uvicorn backend.server:app --reload --port 8000
 """
 
 import asyncio
 import json
+import os
 import queue
 import re
 import threading
@@ -21,27 +22,43 @@ from typing import Any
 
 import yaml
 from dotenv import load_dotenv
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, HTMLResponse, StreamingResponse
+from fastapi.responses import StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
-from skills import build_skill_registry
+from backend.knowledge.knowledge import read_knowledge_file
+from backend.skills.skills import build_skill_registry
 
 load_dotenv()
 
 _HERE = Path(__file__).parent
-KNOWLEDGE_ROOT = _HERE / "knowledge"
-HTML_FILE = _HERE / "Open Virtual Assistant.html"
+KNOWLEDGE_ROOT = (_HERE / ".." / "knowledge").resolve()
+# HTML_FILE moved to archive/ - frontend now runs separately on Vite
+
+
+def _get_cors_origins() -> list[str]:
+    """Get CORS allowed origins from environment or return sensible defaults."""
+    raw = os.getenv("CORS_ORIGINS")
+    if not raw:
+        # Default for local dev: frontend on 5173/5174 (Vite), backend on 8000
+        return [
+            "http://localhost:5173",
+            "http://localhost:5174",
+            "http://localhost:8000",
+        ]
+    return [o.strip() for o in raw.split(",") if o.strip()]
+
 
 app = FastAPI(title="Meridian Assistant")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=_get_cors_origins(),
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-app.mount("/static", StaticFiles(directory=_HERE / "static"), name="static")
+app.mount("/static", StaticFiles(directory=(_HERE / ".." / "static").resolve()), name="static")
 
 
 # ---------------------------------------------------------------------------
@@ -165,10 +182,15 @@ def _extract_sources(answer: str) -> tuple[str, list[str]]:
 # API routes
 # ---------------------------------------------------------------------------
 
-@app.get("/", response_class=HTMLResponse)
-async def serve_frontend() -> FileResponse:
-    """Serve the single-file frontend."""
-    return FileResponse(str(HTML_FILE), media_type="text/html")
+@app.get("/")
+async def root() -> dict[str, str]:
+    """Backend API root - frontend runs separately on Vite (default: http://localhost:5173)."""
+    return {
+        "service": "Meridian Assistant API",
+        "frontend": "http://localhost:5173",
+        "docs": "/docs",
+        "health": "/api/health",
+    }
 
 
 @app.get("/api/config")
@@ -183,16 +205,33 @@ async def config() -> dict:
     }
 
 
+@app.get("/api/health")
+async def health() -> dict:
+    """Simple healthcheck endpoint for frontend and monitoring."""
+    return {"status": "ok"}
+
+
 @app.get("/api/knowledge/tree")
 async def knowledge_tree() -> dict:
     """Return the real knowledge directory as a JSON tree."""
     return build_knowledge_tree()
 
 
+@app.get("/api/knowledge/file")
+async def knowledge_file(
+    path: str = Query(..., description="Knowledge-relative path, e.g. 'business/group-life/index.md'")
+) -> dict:
+    """Return a specific knowledge file's parsed contents with frontmatter and body."""
+    try:
+        return read_knowledge_file(path, knowledge_root=KNOWLEDGE_ROOT)
+    except FileNotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+
+
 @app.get("/api/skills")
 async def skills_list() -> list[dict]:
     """Return all available skills with their one-line descriptions."""
-    registry = build_skill_registry(_HERE / "skills")
+    registry = build_skill_registry((_HERE / ".." / "skills").resolve())
     return [
         {"name": name, "description": meta["description"]}
         for name, meta in registry.items()
@@ -205,6 +244,8 @@ async def chat(request: Request) -> StreamingResponse:
     body = await request.json()
     question: str = body.get("question", "").strip()
     history: list[dict] = body.get("history", [])[-6:]
+    config: dict = body.get("config", {})
+    selected_skills: list[str] | None = config.get("skills")
     if not question:
         async def _empty():
             yield 'data: {"kind":"error","text":"No question provided."}\n\n'
@@ -214,7 +255,7 @@ async def chat(request: Request) -> StreamingResponse:
 
     def _run() -> None:
         """Run the agent in a background thread, pushing events into the queue."""
-        import dspy_agent  # local import so .env is already loaded
+        import backend.dspy_agent as dspy_agent  # local import so .env is already loaded
 
         read_index_paths: list[str] = []
 
@@ -230,6 +271,7 @@ async def chat(request: Request) -> StreamingResponse:
                 verbose=False,
                 event_callback=on_event,
                 history=history,
+                selected_skills=selected_skills,
             )
             # Strip the "## Sources" section from the answer body
             body_text, _ = _extract_sources(answer)

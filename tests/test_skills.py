@@ -2,7 +2,7 @@ import json
 import textwrap
 import pytest
 from pathlib import Path
-from skills import build_skill_registry, list_skills, read_skill
+from backend.skills.skills import build_skill_registry, list_skills, read_skill
 
 
 SKILL_MD = textwrap.dedent("""\

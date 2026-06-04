@@ -27,7 +27,7 @@ def skills_root(tmp_path: Path) -> Path:
 
 def test_list_skills_closure_returns_json(tmp_path: Path) -> None:
     """Closure built from a real registry returns valid JSON skill list."""
-    from skills import build_skill_registry, list_skills
+    from backend.skills.skills import build_skill_registry, list_skills
 
     registry = build_skill_registry(tmp_path)  # empty root — returns []
 
@@ -40,7 +40,7 @@ def test_list_skills_closure_returns_json(tmp_path: Path) -> None:
 
 def test_list_skills_closure_finds_skill(skills_root: Path) -> None:
     """Closure built from a populated registry lists the available skill."""
-    from skills import build_skill_registry, list_skills
+    from backend.skills.skills import build_skill_registry, list_skills
 
     registry = build_skill_registry(skills_root)
 
@@ -54,7 +54,7 @@ def test_list_skills_closure_finds_skill(skills_root: Path) -> None:
 
 def test_read_skill_closure_returns_content_and_errors(skills_root: Path) -> None:
     """Closure built from registry returns content for known, error for unknown."""
-    from skills import build_skill_registry, read_skill
+    from backend.skills.skills import build_skill_registry, read_skill
 
     registry = build_skill_registry(skills_root)
 
@@ -67,7 +67,7 @@ def test_read_skill_closure_returns_content_and_errors(skills_root: Path) -> Non
 
 def test_dspy_agent_has_skills_root_constant() -> None:
     """dspy_agent must expose a SKILLS_ROOT Path constant."""
-    import dspy_agent
+    import backend.dspy_agent as dspy_agent
     assert hasattr(dspy_agent, "SKILLS_ROOT")
     from pathlib import Path
     assert isinstance(dspy_agent.SKILLS_ROOT, Path)
@@ -75,7 +75,7 @@ def test_dspy_agent_has_skills_root_constant() -> None:
 
 def test_dspy_knowledge_agent_accepts_extra_tools() -> None:
     """DSPyKnowledgeAgent must accept a tools list and pass them to ReAct."""
-    from dspy_agent import DSPyKnowledgeAgent
+    from backend.dspy_agent import DSPyKnowledgeAgent
     import dspy
 
     def fake_list_skills() -> str:
@@ -99,8 +99,8 @@ def test_dspy_knowledge_agent_accepts_extra_tools() -> None:
 
 def test_make_skill_tools_list_emits_skill_list_event(skills_root: Path) -> None:
     """list_skills_tool fires {"kind": "skill_list"} before returning."""
-    from dspy_agent import _make_skill_tools
-    from skills import build_skill_registry
+    from backend.dspy_agent import _make_skill_tools
+    from backend.skills.skills import build_skill_registry
 
     registry = build_skill_registry(skills_root)
     events: list[dict] = []
@@ -111,8 +111,8 @@ def test_make_skill_tools_list_emits_skill_list_event(skills_root: Path) -> None
 
 def test_make_skill_tools_read_emits_skill_read_event(skills_root: Path) -> None:
     """read_skill_tool fires {"kind": "skill_read", ...} before returning."""
-    from dspy_agent import _make_skill_tools
-    from skills import build_skill_registry
+    from backend.dspy_agent import _make_skill_tools
+    from backend.skills.skills import build_skill_registry
 
     registry = build_skill_registry(skills_root)
     events: list[dict] = []
@@ -126,8 +126,8 @@ def test_make_skill_tools_read_emits_skill_read_event(skills_root: Path) -> None
 
 def test_make_skill_tools_no_callback_does_not_raise(skills_root: Path) -> None:
     """Factory works without a callback — no event_callback provided."""
-    from dspy_agent import _make_skill_tools
-    from skills import build_skill_registry
+    from backend.dspy_agent import _make_skill_tools
+    from backend.skills.skills import build_skill_registry
 
     registry = build_skill_registry(skills_root)
     list_skills_tool, read_skill_tool = _make_skill_tools(registry)
@@ -138,8 +138,8 @@ def test_make_skill_tools_no_callback_does_not_raise(skills_root: Path) -> None:
 def test_make_skill_tools_list_returns_json(skills_root: Path) -> None:
     """list_skills_tool still returns valid JSON skill list."""
     import json
-    from dspy_agent import _make_skill_tools
-    from skills import build_skill_registry
+    from backend.dspy_agent import _make_skill_tools
+    from backend.skills.skills import build_skill_registry
 
     registry = build_skill_registry(skills_root)
     list_skills_tool, _ = _make_skill_tools(registry)
@@ -151,13 +151,13 @@ def test_search_knowledge_graph_tool_returns_empty_when_graph_unavailable() -> N
     """search_knowledge_graph_tool returns '[]' when graph is not populated."""
     import json
     from unittest.mock import patch, MagicMock
-    from dspy_agent import search_knowledge_graph_tool
-    from knowledge_graph import KnowledgeGraph
+    from backend.dspy_agent import search_knowledge_graph_tool
+    from backend.knowledge.knowledge_graph import KnowledgeGraph
 
     mock_kg = MagicMock(spec=KnowledgeGraph)
     mock_kg.available = False
 
-    with patch("dspy_agent._get_knowledge_graph", return_value=mock_kg):
+    with patch("backend.dspy_agent._get_knowledge_graph", return_value=mock_kg):
         result = search_knowledge_graph_tool("home insurance")
     assert json.loads(result) == []
 
@@ -166,8 +166,8 @@ def test_search_knowledge_graph_tool_calls_kg_search() -> None:
     """search_knowledge_graph_tool delegates to KnowledgeGraph.search()."""
     import json
     from unittest.mock import patch, MagicMock
-    from dspy_agent import search_knowledge_graph_tool
-    from knowledge_graph import KnowledgeGraph
+    from backend.dspy_agent import search_knowledge_graph_tool
+    from backend.knowledge.knowledge_graph import KnowledgeGraph
 
     mock_kg = MagicMock(spec=KnowledgeGraph)
     mock_kg.available = True
@@ -175,7 +175,7 @@ def test_search_knowledge_graph_tool_calls_kg_search() -> None:
         {"path": "insurance/home/index.md", "title": "Home Insurance", "summary": "Covers your home."}
     ]
 
-    with patch("dspy_agent._get_knowledge_graph", return_value=mock_kg):
+    with patch("backend.dspy_agent._get_knowledge_graph", return_value=mock_kg):
         result = search_knowledge_graph_tool("home insurance", section="insurance")
 
     mock_kg.search.assert_called_once_with("home insurance", section="insurance")
@@ -187,14 +187,14 @@ def test_search_knowledge_graph_tool_passes_none_for_empty_section() -> None:
     """Empty section string is converted to None before calling kg.search()."""
     import json
     from unittest.mock import patch, MagicMock
-    from dspy_agent import search_knowledge_graph_tool
-    from knowledge_graph import KnowledgeGraph
+    from backend.dspy_agent import search_knowledge_graph_tool
+    from backend.knowledge.knowledge_graph import KnowledgeGraph
 
     mock_kg = MagicMock(spec=KnowledgeGraph)
     mock_kg.available = True
     mock_kg.search.return_value = []
 
-    with patch("dspy_agent._get_knowledge_graph", return_value=mock_kg):
+    with patch("backend.dspy_agent._get_knowledge_graph", return_value=mock_kg):
         search_knowledge_graph_tool("pension plans", section="")
 
     mock_kg.search.assert_called_once_with("pension plans", section=None)
