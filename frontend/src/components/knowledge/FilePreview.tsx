@@ -2,8 +2,9 @@ import React, { useState, useEffect } from "react";
 import { MarkdownRenderer } from "../shared/MarkdownRenderer";
 import { Icon } from "../shared/Icon";
 import type { Frontmatter, KnowledgeNode, KnowledgeTree } from "../../types/api";
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
+import { API_BASE } from "../../config/api";
+import { logger } from "../../utils/logger";
+import { useApiState } from "../../hooks/useApiState";
 
 interface FileData {
   path: string;
@@ -97,8 +98,7 @@ const FrontmatterView: React.FC<{ fm: Frontmatter }> = ({ fm }) => {
 
 export const FilePreview: React.FC<FilePreviewProps> = ({ path, tree, onBack }) => {
   const [file, setFile] = useState<FileData | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { loading, error, setLoading, setError } = useApiState();
 
   useEffect(() => {
     if (!path) {
@@ -132,7 +132,7 @@ export const FilePreview: React.FC<FilePreviewProps> = ({ path, tree, onBack }) 
         setLoading(false);
       })
       .catch((err) => {
-        console.error("Error loading file:", err);
+        logger.error("Failed to load file content", err);
         setError(err.message);
         setLoading(false);
       });
