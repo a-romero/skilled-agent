@@ -21,7 +21,7 @@ export function useSkills() {
       .finally(() => {
         setLoading(false);
       });
-  }, []);
+  }, [setLoading, setError]);
 
   return { skills, loading, error };
 }

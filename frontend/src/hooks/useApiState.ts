@@ -1,7 +1,7 @@
 /**
  * Reusable loading/error state management for API calls
  */
-import { useState } from "react";
+import { useState, useCallback } from "react";
 
 interface ApiState {
   loading: boolean;
@@ -20,7 +20,7 @@ export function useApiState(): ApiState {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  const resetError = () => setError(null);
+  const resetError = useCallback(() => setError(null), []);
 
   return {
     loading,

@@ -23,7 +23,7 @@ export function useKnowledge() {
       .finally(() => {
         setLoading(false);
       });
-  }, []);
+  }, [setLoading, setError]);
 
   const toggleFolder = (path: string) => {
     setExpanded((prev) => {

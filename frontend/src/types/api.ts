@@ -38,6 +38,9 @@ export interface Skill {
 
 export interface Config {
   skills?: string[];
+  llmModel: string;
+  llmProvider: string;
+  thinkingEnabled: boolean;
 }
 
 export interface ChatHistoryTurn {
