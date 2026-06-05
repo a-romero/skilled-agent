@@ -37,7 +37,7 @@ export function useKnowledge() {
     });
   };
 
-  const selectFile = (path: string) => {
+  const selectFile = (path: string | null) => {
     setSelectedPath(path);
   };
 
