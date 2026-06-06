@@ -27,6 +27,7 @@ def read_knowledge_file(rel_path: str, knowledge_root: Path | None = None) -> di
     
     Raises:
         FileNotFoundError: If the file doesn't exist or path is invalid
+        IOError: If the file cannot be read
     """
     if knowledge_root is None:
         knowledge_root = KNOWLEDGE_ROOT
@@ -87,16 +88,27 @@ def read_knowledge(
     source_registry: dict,
     knowledge_root: Path = KNOWLEDGE_ROOT,
 ) -> str:
-    """Read a knowledge file; prepend source header for index.md content pages."""
+    """Read a knowledge file; prepend source header for index.md content pages.
+    
+    Raises:
+        FileNotFoundError: If file doesn't exist or path is invalid
+    """
     rel_path = inp.get("path", "").strip()
     resolved_root = knowledge_root.resolve()
     target = (knowledge_root / rel_path).resolve()
-    if resolved_root not in target.parents and target != resolved_root:
-        return f"Error: path '{rel_path}' is outside the knowledge root"
+    
+    # Use validate_safe_path for consistent security checking
+    try:
+        validate_safe_path(target, resolved_root)
+    except ValueError:
+        raise FileNotFoundError(f"Path '{rel_path}' is outside the knowledge root")
+    
     if not target.exists():
-        return f"Error: '{rel_path}' not found in knowledge base"
+        raise FileNotFoundError(f"'{rel_path}' not found in knowledge base")
+    
     if not target.is_file():
-        return f"Error: '{rel_path}' is not a readable file"
+        raise FileNotFoundError(f"'{rel_path}' is not a readable file")
+    
     content = target.read_text(encoding="utf-8")
     if rel_path.endswith("index.md") and rel_path in source_registry:
         source = source_registry[rel_path]
@@ -113,7 +125,10 @@ def handle_knowledge_tool(
 ) -> str:
     """Dispatch knowledge tool calls."""
     if name == "read_knowledge":
-        return read_knowledge(inp, source_registry, knowledge_root)
+        try:
+            return read_knowledge(inp, source_registry, knowledge_root)
+        except FileNotFoundError as e:
+            return f"Error: {e}"
     if name == "search_knowledge_graph":
         if knowledge_graph is None or not knowledge_graph.available:
             return json.dumps([])

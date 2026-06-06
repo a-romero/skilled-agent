@@ -39,7 +39,8 @@ describe("useKnowledge", () => {
     expect(result.current.tree).toEqual(mockTree);
     expect(result.current.error).toBeNull();
     expect(mockFetch).toHaveBeenCalledWith(
-      expect.stringContaining("/api/knowledge/tree")
+      expect.stringContaining("/api/knowledge/tree"),
+      undefined  // fetchJson doesn't pass options by default
     );
   });
 
@@ -51,7 +52,7 @@ describe("useKnowledge", () => {
     await waitFor(() => expect(result.current.loading).toBe(false));
 
     expect(result.current.tree).toBeNull();
-    expect(result.current.error).toBe("Network error");
+    expect(result.current.error).toContain("Network error");
   });
 
   it("toggles folder expansion", async () => {

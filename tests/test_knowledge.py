@@ -104,26 +104,29 @@ def test_read_knowledge_no_header_for_summary_md(
 def test_read_knowledge_error_on_missing_file(
     knowledge_root: Path, registry_for_root: dict
 ) -> None:
-    result = read_knowledge(
-        {"path": "nonexistent/index.md"}, registry_for_root, knowledge_root
-    )
-    assert result.startswith("Error:")
+    """read_knowledge raises FileNotFoundError for missing files."""
+    with pytest.raises(FileNotFoundError, match="not found in knowledge base"):
+        read_knowledge(
+            {"path": "nonexistent/index.md"}, registry_for_root, knowledge_root
+        )
 
 
 def test_read_knowledge_prevents_traversal(
     knowledge_root: Path, registry_for_root: dict
 ) -> None:
-    result = read_knowledge(
-        {"path": "../../etc/passwd"}, registry_for_root, knowledge_root
-    )
-    assert result.startswith("Error:")
+    """read_knowledge raises FileNotFoundError for path traversal attempts."""
+    with pytest.raises(FileNotFoundError, match="outside the knowledge root"):
+        read_knowledge(
+            {"path": "../../etc/passwd"}, registry_for_root, knowledge_root
+        )
 
 
 def test_read_knowledge_error_on_directory_path(
     knowledge_root: Path, registry_for_root: dict
 ) -> None:
-    result = read_knowledge({"path": ""}, registry_for_root, knowledge_root)
-    assert result.startswith("Error:")
+    """read_knowledge raises FileNotFoundError when path is a directory."""
+    with pytest.raises(FileNotFoundError, match="not a readable file"):
+        read_knowledge({"path": ""}, registry_for_root, knowledge_root)
 
 
 def test_handle_knowledge_tool_dispatches(
@@ -214,3 +217,31 @@ def test_handle_knowledge_tool_search_returns_empty_when_kg_none(
     )
     import json
     assert json.loads(result) == []
+
+
+def test_handle_knowledge_tool_returns_error_for_missing_file(
+    knowledge_root: Path, registry_for_root: dict
+) -> None:
+    """handle_knowledge_tool catches FileNotFoundError and returns error string."""
+    result = handle_knowledge_tool(
+        "read_knowledge",
+        {"path": "nonexistent/index.md"},
+        registry_for_root,
+        knowledge_root,
+    )
+    assert result.startswith("Error:")
+    assert "not found" in result
+
+
+def test_handle_knowledge_tool_returns_error_for_path_traversal(
+    knowledge_root: Path, registry_for_root: dict
+) -> None:
+    """handle_knowledge_tool catches path traversal and returns error string."""
+    result = handle_knowledge_tool(
+        "read_knowledge",
+        {"path": "../../etc/passwd"},
+        registry_for_root,
+        knowledge_root,
+    )
+    assert result.startswith("Error:")
+    assert "outside" in result

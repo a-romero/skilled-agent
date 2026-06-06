@@ -35,7 +35,7 @@ def test_skills_endpoint_returns_known_skills() -> None:
 
 def test_chat_accepts_history_field() -> None:
     """POST /api/chat with a history list returns 200."""
-    with patch("dspy_agent.run_agent", return_value="Test answer."):
+    with patch("backend.dspy_agent.run_agent", return_value="Test answer."):
         resp = client.post("/api/chat", json={
             "question": "follow-up question",
             "history": [
@@ -48,7 +48,7 @@ def test_chat_accepts_history_field() -> None:
 
 def test_chat_backward_compatible_without_history() -> None:
     """POST /api/chat without history field still returns 200."""
-    with patch("dspy_agent.run_agent", return_value="Test answer."):
+    with patch("backend.dspy_agent.run_agent", return_value="Test answer."):
         resp = client.post("/api/chat", json={"question": "standalone question"})
     assert resp.status_code == 200
 
@@ -56,7 +56,7 @@ def test_chat_backward_compatible_without_history() -> None:
 def test_chat_passes_history_to_run_agent() -> None:
     """Server passes the received history to run_agent."""
     mock_run = MagicMock(return_value="Answer.")
-    with patch("dspy_agent.run_agent", mock_run):
+    with patch("backend.dspy_agent.run_agent", mock_run):
         client.post("/api/chat", json={
             "question": "follow-up",
             "history": [
@@ -79,7 +79,7 @@ def test_chat_caps_history_at_six_turns() -> None:
         {"role": "user" if i % 2 == 0 else "assistant", "text": f"turn {i}"}
         for i in range(10)
     ]
-    with patch("dspy_agent.run_agent", mock_run):
+    with patch("backend.dspy_agent.run_agent", mock_run):
         client.post("/api/chat", json={"question": "q", "history": long_history})
     mock_run.assert_called_once()
     kwargs = mock_run.call_args.kwargs

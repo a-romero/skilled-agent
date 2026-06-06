@@ -112,20 +112,24 @@ def _build_tree(directory: Path, rel_prefix: str = "") -> list[dict]:
     # index.md in this directory — comes first as a direct file child
     index_path = directory / "index.md"
     if index_path.exists():
-        parsed = parse_index_md(index_path)
-        fm = parsed["frontmatter"]
-        nodes.append({
-            "type": "file",
-            "name": "index.md",
-            "frontmatter": {
-                "url":      fm.get("url", ""),
-                "title":    fm.get("title", index_path.parent.name),
-                "summary":  fm.get("summary", ""),
-                "topics":   fm.get("topics") or [],
-                "keywords": fm.get("keywords") or [],
-            },
-            "body": parsed["body"],
-        })
+        try:
+            parsed = parse_index_md(index_path)
+            fm = parsed["frontmatter"]
+            nodes.append({
+                "type": "file",
+                "name": "index.md",
+                "frontmatter": {
+                    "url":      fm.get("url", ""),
+                    "title":    fm.get("title", index_path.parent.name),
+                    "summary":  fm.get("summary", ""),
+                    "topics":   fm.get("topics") or [],
+                    "keywords": fm.get("keywords") or [],
+                },
+                "body": parsed["body"],
+            })
+        except (FileNotFoundError, IOError) as e:
+            logger.error(f"Failed to parse {index_path}: {e}", exc_info=True)
+            # Skip this index.md if it can't be read
 
     # Sub-directories
     for child in sorted(directory.iterdir()):

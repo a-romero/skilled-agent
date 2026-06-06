@@ -174,7 +174,10 @@ def read_knowledge_tool(path: str) -> str:
     Returns:
         File content, prefixed with source metadata for index.md pages.
     """
-    return read_knowledge({"path": path}, _get_source_registry(), KNOWLEDGE_ROOT)
+    try:
+        return read_knowledge({"path": path}, _get_source_registry(), KNOWLEDGE_ROOT)
+    except FileNotFoundError as e:
+        return f"Error: {e}"
 
 
 def search_knowledge_graph_tool(query: str, section: str = "") -> str:

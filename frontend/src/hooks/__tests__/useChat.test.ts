@@ -147,9 +147,10 @@ describe("useChat", () => {
     );
 
     const callBody = JSON.parse(mockFetch.mock.calls[0][1].body);
-    expect(callBody.config.model).toBe(mockConfig.model);
-    expect(callBody.config.temperature).toBe(mockConfig.temperature);
     expect(callBody.config.skills).toEqual(mockConfig.skills);
+    // Only skills are sent, not model or temperature
+    expect(callBody.config.model).toBeUndefined();
+    expect(callBody.config.temperature).toBeUndefined();
   });
 
   it("trims whitespace from messages", async () => {

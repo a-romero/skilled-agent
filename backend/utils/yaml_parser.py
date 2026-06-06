@@ -18,12 +18,19 @@ def parse_index_md(path: Path) -> dict[str, Any]:
     
     Returns:
         Dict with 'frontmatter' (dict) and 'body' (str) keys
+    
+    Raises:
+        FileNotFoundError: If file doesn't exist
+        IOError: If file cannot be read
     """
     try:
         text = safe_read_text(path)
-    except Exception as e:
-        logger.warning(f"Failed to read {path}: {e}")
-        return {"frontmatter": {}, "body": ""}
+    except FileNotFoundError:
+        logger.error(f"File not found: {path}")
+        raise
+    except IOError as e:
+        logger.error(f"Failed to read {path}: {e}", exc_info=True)
+        raise
 
     # Check for YAML frontmatter (--- at start)
     if not text.startswith("---"):
@@ -40,7 +47,7 @@ def parse_index_md(path: Path) -> dict[str, Any]:
     
     try:
         fm = yaml.safe_load(fm_raw) or {}
-    except Exception as e:
+    except yaml.YAMLError as e:
         logger.warning(f"Failed to parse YAML frontmatter in {path}: {e}")
         fm = {}
     
