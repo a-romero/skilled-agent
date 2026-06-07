@@ -1,0 +1,42 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: skilled-agent-backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./.env:/app/.env:ro
+      - ./knowledge:/app/knowledge:ro
+      - ./skills:/app/skills:ro
+      - ./knowledge_graph:/app/knowledge_graph
+      - ./backend:/app/backend
+    environment:
+      - PYTHONUNBUFFERED=1
+      - CORS_ORIGINS=http://localhost:3000,http://localhost:5173,http://localhost:5174,http://localhost:8000
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: skilled-agent-frontend
+    ports:
+      - "3000:5173"
+    volumes:
+      - ./frontend/src:/app/src
+      - ./frontend/public:/app/public
+    environment:
+      - VITE_API_BASE_URL=http://backend:8000
+    networks:
+      - app-network
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+networks:
+  app-network:
+    driver: bridge
