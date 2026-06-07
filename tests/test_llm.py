@@ -91,7 +91,7 @@ def test_create_client_raises_if_model_missing(monkeypatch: pytest.MonkeyPatch) 
 def test_create_client_raises_on_unknown_provider(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("LLM_PROVIDER", "bogus")
     monkeypatch.setenv("LLM_MODEL", "some-model")
-    with pytest.raises(ValueError, match="Unknown provider"):
+    with pytest.raises(ValueError, match="Invalid LLM_PROVIDER"):
         create_client()
 
 

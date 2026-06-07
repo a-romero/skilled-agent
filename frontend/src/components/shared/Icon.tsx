@@ -20,9 +20,10 @@ export type IconName =
 interface IconProps {
   name: IconName;
   size?: number;
+  style?: React.CSSProperties;
 }
 
-export const Icon: React.FC<IconProps> = ({ name, size = 14 }) => {
+export const Icon: React.FC<IconProps> = ({ name, size = 14, style }) => {
   const s: React.SVGProps<SVGSVGElement> = {
     width: size,
     height: size,
@@ -31,7 +32,7 @@ export const Icon: React.FC<IconProps> = ({ name, size = 14 }) => {
     strokeWidth: 1.6,
     strokeLinecap: "round",
     strokeLinejoin: "round",
-    style: { display: "inline-block", verticalAlign: "middle" },
+    style: { display: "inline-block", verticalAlign: "middle", ...style },
   };
 
   switch (name) {

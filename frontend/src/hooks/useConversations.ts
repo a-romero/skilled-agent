@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import type { Message } from "../types/api";
+import { logger } from "../utils/logger";
 
 export interface Conversation {
   id: string;
@@ -23,7 +24,7 @@ function loadFromStorage(): ConversationsState {
       return JSON.parse(raw);
     }
   } catch (e) {
-    console.error("Failed to load conversations:", e);
+    logger.error("Failed to load conversations", e);
   }
   
   // Default: one empty conversation
@@ -46,7 +47,7 @@ function saveToStorage(state: ConversationsState) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   } catch (e) {
-    console.error("Failed to save conversations:", e);
+    logger.error("Failed to delete conversation", e);
   }
 }
 

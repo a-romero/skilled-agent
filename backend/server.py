@@ -13,6 +13,7 @@ Run with:
 
 import asyncio
 import json
+import logging
 import os
 import queue
 import re
@@ -20,7 +21,6 @@ import threading
 from pathlib import Path
 from typing import Any
 
-import yaml
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -29,11 +29,36 @@ from fastapi.staticfiles import StaticFiles
 
 from backend.knowledge.knowledge import read_knowledge_file
 from backend.skills.skills import build_skill_registry
+from backend.utils.yaml_parser import parse_index_md
+from backend.utils.file_io import safe_read_text
 
 load_dotenv()
 
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler()
+    ]
+)
+logger = logging.getLogger(__name__)
+
 _HERE = Path(__file__).parent
 KNOWLEDGE_ROOT = (_HERE / ".." / "knowledge").resolve()
+
+
+def _sanitize_error(error: Exception) -> str:
+    """Sanitize error message before sending to client."""
+    error_str = str(error)
+    # Remove absolute paths
+    error_str = error_str.replace(str(_HERE.parent), "[PROJECT_ROOT]")
+    # Remove potentially sensitive stack trace info
+    if "Traceback" in error_str:
+        # Just return the error message, not full trace
+        lines = error_str.split("\n")
+        return lines[-1] if lines else "An error occurred"
+    return error_str
 # HTML_FILE moved to archive/ - frontend now runs separately on Vite
 
 
@@ -68,36 +93,16 @@ app.mount("/static", StaticFiles(directory=(_HERE / ".." / "static").resolve()),
 def _parse_summary_md(path: Path) -> str:
     """Return the one-paragraph description from a SUMMARY.MD file."""
     try:
-        text = path.read_text(encoding="utf-8")
+        text = safe_read_text(path)
         # First non-heading, non-empty paragraph after the title
         lines = text.splitlines()
         for i, line in enumerate(lines):
             stripped = line.strip()
             if stripped and not stripped.startswith("#"):
                 return stripped
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning(f"Failed to parse SUMMARY.MD at {path}: {e}")
     return ""
-
-
-def _parse_index_md(path: Path) -> dict[str, Any]:
-    """Return { frontmatter: dict, body: str } from an index.md file."""
-    try:
-        text = path.read_text(encoding="utf-8")
-    except Exception:
-        return {"frontmatter": {}, "body": ""}
-
-    if text.startswith("---"):
-        end = text.find("---", 3)
-        if end != -1:
-            fm_raw = text[3:end]
-            body = text[end + 3:].strip()
-            try:
-                fm = yaml.safe_load(fm_raw) or {}
-            except Exception:
-                fm = {}
-            return {"frontmatter": fm, "body": body}
-    return {"frontmatter": {}, "body": text}
 
 
 def _build_tree(directory: Path, rel_prefix: str = "") -> list[dict]:
@@ -107,20 +112,24 @@ def _build_tree(directory: Path, rel_prefix: str = "") -> list[dict]:
     # index.md in this directory — comes first as a direct file child
     index_path = directory / "index.md"
     if index_path.exists():
-        parsed = _parse_index_md(index_path)
-        fm = parsed["frontmatter"]
-        nodes.append({
-            "type": "file",
-            "name": "index.md",
-            "frontmatter": {
-                "url":      fm.get("url", ""),
-                "title":    fm.get("title", index_path.parent.name),
-                "summary":  fm.get("summary", ""),
-                "topics":   fm.get("topics") or [],
-                "keywords": fm.get("keywords") or [],
-            },
-            "body": parsed["body"],
-        })
+        try:
+            parsed = parse_index_md(index_path)
+            fm = parsed["frontmatter"]
+            nodes.append({
+                "type": "file",
+                "name": "index.md",
+                "frontmatter": {
+                    "url":      fm.get("url", ""),
+                    "title":    fm.get("title", index_path.parent.name),
+                    "summary":  fm.get("summary", ""),
+                    "topics":   fm.get("topics") or [],
+                    "keywords": fm.get("keywords") or [],
+                },
+                "body": parsed["body"],
+            })
+        except (FileNotFoundError, IOError) as e:
+            logger.error(f"Failed to parse {index_path}: {e}", exc_info=True)
+            # Skip this index.md if it can't be read
 
     # Sub-directories
     for child in sorted(directory.iterdir()):
@@ -225,7 +234,11 @@ async def knowledge_file(
     try:
         return read_knowledge_file(path, knowledge_root=KNOWLEDGE_ROOT)
     except FileNotFoundError as e:
-        raise HTTPException(status_code=404, detail=str(e))
+        logger.error(f"Knowledge file not found: {path} - {e}")
+        raise HTTPException(status_code=404, detail=_sanitize_error(e))
+    except Exception as e:
+        logger.error(f"Error reading knowledge file {path}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Failed to read knowledge file")
 
 
 @app.get("/api/skills")
@@ -292,7 +305,9 @@ async def chat(request: Request) -> StreamingResponse:
             if read_index_paths:
                 event_q.put({"kind": "sources", "paths": read_index_paths})
         except Exception as exc:
-            event_q.put({"kind": "error", "text": str(exc)})
+            logger.error(f"Chat error: {exc}", exc_info=True)
+            error_msg = _sanitize_error(exc)
+            event_q.put({"kind": "error", "text": error_msg})
         finally:
             event_q.put(None)  # sentinel
 

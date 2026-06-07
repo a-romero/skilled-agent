@@ -1,31 +1,29 @@
 import { useState, useEffect } from "react";
 import type { KnowledgeTree } from "../types/api";
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
+import { fetchJson } from "../utils/api";
+import { useApiState } from "./useApiState";
 
 export function useKnowledge() {
   const [tree, setTree] = useState<KnowledgeTree | null>(null);
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [selectedPath, setSelectedPath] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { loading, error, setLoading, setError } = useApiState();
 
   useEffect(() => {
-    fetch(`${API_BASE}/api/knowledge/tree`)
-      .then((res) => {
-        if (!res.ok) throw new Error(`Failed to load knowledge tree: ${res.statusText}`);
-        return res.json();
-      })
+    setLoading(true);
+    setError(null);
+
+    fetchJson<KnowledgeTree>("/api/knowledge/tree")
       .then((data) => {
         setTree(data);
-        setLoading(false);
       })
       .catch((err) => {
-        console.error("Failed to load knowledge tree:", err);
         setError(err.message);
+      })
+      .finally(() => {
         setLoading(false);
       });
-  }, []);
+  }, [setLoading, setError]);
 
   const toggleFolder = (path: string) => {
     setExpanded((prev) => {
@@ -39,7 +37,7 @@ export function useKnowledge() {
     });
   };
 
-  const selectFile = (path: string) => {
+  const selectFile = (path: string | null) => {
     setSelectedPath(path);
   };
 

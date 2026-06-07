@@ -1,7 +1,10 @@
 """Skill-registry utilities shared by agent.py and dspy_agent.py."""
 
 import json
+import logging
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 
 def build_skill_registry(root: Path) -> dict[str, dict]:
@@ -25,7 +28,8 @@ def _extract_description(path: Path) -> str:
     """Pull the `description` value out of YAML-ish frontmatter."""
     try:
         text = path.read_text(encoding="utf-8")
-    except OSError:
+    except OSError as e:
+        logger.warning(f"Failed to read {path}: {e}")
         return "(no description)"
     if text.startswith("---"):
         try:
@@ -62,4 +66,9 @@ def read_skill(input_: dict, registry: dict) -> str:
     path = Path(registry[name]["path"])
     if not path.exists():
         return f"Error: skill '{name}' file not found"
-    return path.read_text(encoding="utf-8")
+    
+    try:
+        return path.read_text(encoding="utf-8")
+    except Exception as e:
+        logger.error(f"Failed to read skill file {name}: {e}", exc_info=True)
+        return f"Error: Failed to read file - {str(e)}"

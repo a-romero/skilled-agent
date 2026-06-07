@@ -1,7 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import type { Message, ChatEvent, Config } from "../types/api";
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
+import { API_BASE } from "../config/api";
 
 export function useChat(config: Config, conversationId: string, initialMessages: Message[] = []) {
   const [messages, setMessages] = useState<Message[]>(initialMessages);

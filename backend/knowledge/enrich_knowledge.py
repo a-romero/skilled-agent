@@ -1,11 +1,16 @@
 """Enrich knowledge base frontmatter and generate SUMMARY.MD navigation files."""
 
 import argparse
+import logging
 import sys
 from pathlib import Path
 
 import yaml
 from backend.utils.llm import LLMClient, create_client, complete
+from backend.utils.yaml_parser import parse_index_md
+from backend.utils.file_io import safe_read_text
+
+logger = logging.getLogger(__name__)
 
 # Files to skip during enrichment and SUMMARY.MD generation
 _SKIP_NAMES: frozenset[str] = frozenset({"SUMMARY.MD", "README.md"})
@@ -135,7 +140,7 @@ def enrich_file(
     path: Path, client: LLMClient | None, dry_run: bool = False
 ) -> bool:
     """Enrich a file's frontmatter with summary/topics/keywords. Returns True if modified."""
-    text = path.read_text(encoding="utf-8")
+    text = safe_read_text(path)
     fm, body = parse_frontmatter(text)
 
     if not _needs_enrichment(fm):
@@ -199,15 +204,15 @@ def run_phase1(knowledge_root: Path, dry_run: bool = False) -> None:
         try:
             modified = enrich_file(path, client, dry_run)
             status = "enriched" if modified else "skipped"
-            print(f"  {status}: {path.relative_to(knowledge_root)}")
+            logger.info("%s: %s", status, path.relative_to(knowledge_root))
         except Exception as exc:
-            print(f"  Error: {path} — {exc}")
+            logger.error("Error processing %s: %s", path, exc)
             failed.append(path)
 
     if failed:
-        print(f"\nFailed ({len(failed)}):")
+        logger.warning("Failed to process %d files:", len(failed))
         for p in failed:
-            print(f"  {p}")
+            logger.warning("  %s", p)
 
 
 def run_phase3(
@@ -239,14 +244,14 @@ def run_phase3(
             "section": section,
             "depth": depth,
         })
-        print(f"  collected: {rel}")
+        logger.info("collected: %s", rel)
 
     if dry_run:
         print(f"[dry-run] Would populate graph with {len(nodes)} nodes at {_graph_dir}")
         return
 
     populate(nodes, _graph_dir)
-    print(f"Graph populated: {len(nodes)} nodes at {_graph_dir}")
+    logger.info("Graph populated: %d nodes at %s", len(nodes), _graph_dir)
 
 
 def main() -> None:
@@ -286,18 +291,18 @@ def main() -> None:
     run_phase3_flag = not args.phase1_only and not args.phase2_only
 
     if run_phase1_flag:
-        print("Phase 1: Enriching frontmatter...")
+        logger.info("Phase 1: Enriching frontmatter...")
         run_phase1(knowledge_root, dry_run=args.dry_run)
 
     if run_phase2_flag:
-        print("\nPhase 2: Generating SUMMARY.MD files...")
+        logger.info("Phase 2: Generating SUMMARY.MD files...")
         generate_all_summaries(knowledge_root, dry_run=args.dry_run)
 
     if run_phase3_flag:
-        print("\nPhase 3: Populating knowledge graph...")
+        logger.info("Phase 3: Populating knowledge graph...")
         run_phase3(knowledge_root, dry_run=args.dry_run)
 
-    print("\nDone.")
+    logger.info("Done.")
 
 
 if __name__ == "__main__":
