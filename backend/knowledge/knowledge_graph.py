@@ -1,10 +1,27 @@
-"""Knowledge graph backed by Kuzu with BM25 search over enriched knowledge pages."""
+"""Knowledge graph population plus a pluggable retrieval facade.
 
+``populate()`` still builds the local Kuzu graph from enriched pages (used by the
+enrichment pipeline). ``KnowledgeGraph`` is now a thin facade that delegates search
+to a backend selected at runtime — the local Kuzu/BM25 backend by default, or the
+remote semantic-fabric service when ``RETRIEVAL_BACKEND=fabric``. Its public shape
+(``available`` and ``search(query, section, top_k) -> list[dict]``) is unchanged, so
+existing callers and tests are unaffected.
+"""
+
+import logging
+import os
 import shutil
 from pathlib import Path
 
 import kuzu
-from rank_bm25 import BM25Okapi
+
+from backend.knowledge.backends import (
+    KuzuBM25Backend,
+    RemoteFabricBackend,
+    RetrievalBackend,
+)
+
+logger = logging.getLogger(__name__)
 
 GRAPH_ROOT = Path(__file__).parent.parent.parent / "knowledge_graph"
 
@@ -73,82 +90,44 @@ def populate(nodes: list[dict], graph_dir: Path = GRAPH_ROOT) -> None:
             parent = parent.parent
 
 
-class KnowledgeGraph:
-    """Runtime interface: loads all Page nodes into memory and provides BM25 search."""
+def _select_backend(graph_dir: Path) -> RetrievalBackend:
+    """Choose a retrieval backend from RETRIEVAL_BACKEND (default 'kuzu').
 
-    def __init__(self, graph_dir: Path = GRAPH_ROOT) -> None:
-        self._docs: list[dict] = []
-        self._bm25: BM25Okapi | None = None
-        if not graph_dir.exists():
-            return
-        db = kuzu.Database(str(graph_dir))
-        conn = kuzu.Connection(db)
-        self._load(conn)
-
-    def _load(self, conn: kuzu.Connection) -> None:
-        result = conn.execute(
-            "MATCH (p:Page) "
-            "RETURN p.path, p.title, p.summary, p.topics, p.keywords, p.section"
+    'fabric' uses the remote semantic-fabric service; if it is unreachable (or
+    fabric-client is not installed), we fall back to the local Kuzu backend so the
+    agent keeps working standalone.
+    """
+    choice = os.getenv("RETRIEVAL_BACKEND", "kuzu").strip().lower()
+    if choice == "fabric":
+        remote = RemoteFabricBackend(
+            base_url=os.getenv("FABRIC_URL", "http://localhost:8080"),
+            token=os.getenv("FABRIC_TOKEN") or None,
         )
-        rows: list[dict] = []
-        while result.has_next():
-            r = result.get_next()
-            rows.append({
-                "path": r[0],
-                "title": r[1] or "",
-                "summary": r[2] or "",
-                "topics": r[3] or [],
-                "keywords": r[4] or [],
-                "section": r[5] or "",
-            })
-        self._docs = rows
-        if rows:
-            corpus = [self._text(d).split() for d in rows]
-            self._bm25 = BM25Okapi(corpus)
+        if remote.available:
+            logger.info("Retrieval backend: semantic-fabric")
+            return remote
+        logger.warning("semantic-fabric unavailable; falling back to Kuzu/BM25.")
+    return KuzuBM25Backend(graph_dir)
 
-    def _text(self, doc: dict) -> str:
-        topics = " ".join(doc["topics"])
-        keywords = " ".join(doc["keywords"])
-        return f"{doc['title']} {doc['summary']} {topics} {keywords}".lower()
+
+class KnowledgeGraph:
+    """Retrieval facade. Delegates to a Kuzu/BM25 or remote-fabric backend.
+
+    Public shape is unchanged: ``available`` and ``search(query, section, top_k)``
+    returning ``list[dict]`` with keys path, title, summary.
+    """
+
+    def __init__(self, graph_dir: Path = GRAPH_ROOT, backend: RetrievalBackend | None = None) -> None:
+        self._backend: RetrievalBackend = backend if backend is not None else _select_backend(graph_dir)
 
     @property
     def available(self) -> bool:
-        """True if the graph was loaded and contains nodes."""
-        return bool(self._docs)
+        """True if the active backend has data / a reachable service."""
+        return self._backend.available
 
-    def search(
-        self,
-        query: str,
-        section: str | None = None,
-        top_k: int = 5,
-    ) -> list[dict]:
-        """Return up to top_k pages ranked by BM25 relevance.
+    def search(self, query: str, section: str | None = None, top_k: int = 5) -> list[dict]:
+        """Return up to top_k results (path, title, summary) from the active backend.
 
-        Each result is a dict with keys: path, title, summary.
-        Returns [] if the graph is unavailable or no results score above zero.
+        Returns [] if the backend is unavailable or nothing matches.
         """
-        if not self.available:
-            return []
-
-        candidates = (
-            [d for d in self._docs if d["section"] == section]
-            if section
-            else self._docs
-        )
-        if not candidates:
-            return []
-
-        if section:
-            bm25: BM25Okapi = BM25Okapi([self._text(c).split() for c in candidates])
-        else:
-            bm25 = self._bm25
-        if bm25 is None:
-            return []
-
-        scores = bm25.get_scores(query.lower().split())
-        ranked = sorted(zip(scores, candidates), key=lambda x: x[0], reverse=True)
-        return [
-            {"path": d["path"], "title": d["title"], "summary": d["summary"]}
-            for score, d in ranked[:top_k]
-            if score > 0
-        ]
+        return self._backend.search(query, section=section, top_k=top_k)
