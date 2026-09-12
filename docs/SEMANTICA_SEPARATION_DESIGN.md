@@ -199,6 +199,21 @@ The separation buys three distinct shapes from the same code:
    front-ends (skilled-agent, other agents, IDE tools via MCP). The fabric is an
    org-wide context/semantic layer; skilled-agent is one consumer.
 
+### Infrastructure choices (decided)
+
+All self-hostable (regulated posture) and behind semantica's abstractions, so each is
+swappable by config rather than rewrite.
+
+| Layer | Choice | Notes |
+|---|---|---|
+| Vector store | **Qdrant** | Purpose-built ANN; scales past pgvector for large corpora / high QPS. `VECTOR_STORE=qdrant`, `QDRANT_URL`. |
+| Embeddings | **BGE-M3, self-hosted** | Data stays in the boundary; dense+sparse for hybrid; 8k context. `EMBEDDING_MODEL`, pinned with its dimension — re-embedding on change is expensive, so version the embedding namespace. Hosted (Voyage/OpenAI) only for non-sensitive tenants. |
+| Graph store | **LPG now (Kuzu) → RDF later (Oxigraph)** | Kuzu gets GraphRAG traversal working fastest; adopt Oxigraph (SPARQL + OWL/SHACL + PROV-O) when Phase 3 reasoning arrives. `GRAPH_STORE=lpg\|rdf`. |
+| Object store | **MinIO** | S3-compatible, self-hosted; original files + chart images. `OBJECT_STORE_URI`. |
+
+Config keys the service reads: `VECTOR_STORE`, `QDRANT_URL`, `EMBEDDING_MODEL`,
+`GRAPH_STORE`, `OBJECT_STORE_URI`, `ENABLE_REASONING`.
+
 ---
 
 ## 7. Security boundary (a bonus of separating)
