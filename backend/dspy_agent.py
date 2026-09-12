@@ -207,6 +207,31 @@ def search_knowledge_graph_tool(query: str, section: str = "") -> str:
     return json.dumps(results, indent=2)
 
 
+def graph_expand_tool(seed: str, hops: int = 1) -> str:
+    """Expand from a page or topic to related pages via the knowledge graph (GraphRAG).
+
+    Use this AFTER search, to pull in pages connected to a strong hit that keyword/
+    semantic search alone would miss — e.g. sibling products under the same section,
+    or pages sharing a topic. Seed with a page path returned by search (such as
+    'investments/isas/index.md') or a topic/keyword.
+
+    Only the semantic-fabric backend provides graph expansion; with the local backend
+    this returns "[]". Follow up with read_knowledge on any related page worth reading.
+
+    Args:
+        seed: A page path from a prior search result, or a topic/keyword.
+        hops: How many relationship hops to traverse (default 1).
+
+    Returns:
+        JSON list of related pages, each with path, title, and summary. "[]" if the
+        graph is unavailable or nothing is connected.
+    """
+    import json
+    kg = _get_knowledge_graph()
+    results = kg.graph_expand(seed, hops=hops)
+    return json.dumps(results, indent=2)
+
+
 # ---------------------------------------------------------------------------
 # DSPy configuration
 # ---------------------------------------------------------------------------
@@ -264,8 +289,11 @@ class KnowledgeAgentSignature(dspy.Signature):
        - Call it with the user's query and a section if the domain is clear.
        - Review the returned titles and summaries to pick the 1-2 most relevant pages.
        - Call read_knowledge to retrieve full content from those paths.
-    5. Only fall back to SUMMARY.MD navigation via read_knowledge if search returns no results.
-    6. Always cite sources (title and URL) at the end of your answer.
+    5. Optionally call graph_expand with a strong result's page path (or a topic) to
+       pull in related pages — siblings under the same section, or pages sharing a
+       topic — that keyword search alone would miss, then read any worth reading.
+    6. Only fall back to SUMMARY.MD navigation via read_knowledge if search returns no results.
+    7. Always cite sources (title and URL) at the end of your answer.
 
     Format your sources section as:
     ## Sources
@@ -365,9 +393,22 @@ def run_agent(
 
     _instrumented_search.__doc__ = search_knowledge_graph_tool.__doc__
 
+    def _instrumented_graph_expand(seed: str, hops: int = 1) -> str:
+        if event_callback:
+            event_callback({"kind": "graph", "seed": seed, "hops": hops})
+        return graph_expand_tool(seed, hops)
+
+    _instrumented_graph_expand.__doc__ = graph_expand_tool.__doc__
+
     agent = DSPyKnowledgeAgent(
         max_iters=10,
-        tools=[list_skills_tool, read_skill_tool, _instrumented_search, _instrumented_read],
+        tools=[
+            list_skills_tool,
+            read_skill_tool,
+            _instrumented_search,
+            _instrumented_graph_expand,
+            _instrumented_read,
+        ],
     )
 
     if verbose:

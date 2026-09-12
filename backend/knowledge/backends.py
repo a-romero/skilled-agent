@@ -38,6 +38,14 @@ class RetrievalBackend(Protocol):
         """Return up to top_k results, each a dict with keys path, title, summary."""
         ...
 
+    def graph_expand(self, seed: str, hops: int = 1) -> list[dict]:
+        """Expand from a seed entity/page to connected results (GraphRAG).
+
+        Returns dicts with keys path, title, summary. Backends without a graph
+        return an empty list.
+        """
+        ...
+
 
 class KuzuBM25Backend:
     """Local Kuzu-backed graph with BM25 search over enriched pages.
@@ -116,6 +124,11 @@ class KuzuBM25Backend:
             if score > 0
         ]
 
+    def graph_expand(self, seed: str, hops: int = 1) -> list[dict]:
+        # Local graph traversal is not wired for the Kuzu backend; graph expansion
+        # is provided by the semantic-fabric backend.
+        return []
+
 
 class RemoteFabricBackend:
     """Retrieval via the semantic-fabric service (HTTP), through fabric-client.
@@ -156,4 +169,14 @@ class RemoteFabricBackend:
             return [u.to_legacy() for u in units]
         except Exception as exc:
             logger.warning("fabric search failed (%s); returning no results.", exc)
+            return []
+
+    def graph_expand(self, seed: str, hops: int = 1) -> list[dict]:
+        if not self._available or self._client is None:
+            return []
+        try:
+            units = self._client.graph_expand(seed, hops=hops)
+            return [u.to_legacy() for u in units]
+        except Exception as exc:
+            logger.warning("fabric graph_expand failed (%s); returning no results.", exc)
             return []

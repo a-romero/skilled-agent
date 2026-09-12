@@ -131,3 +131,13 @@ class KnowledgeGraph:
         Returns [] if the backend is unavailable or nothing matches.
         """
         return self._backend.search(query, section=section, top_k=top_k)
+
+    def graph_expand(self, seed: str, hops: int = 1) -> list[dict]:
+        """Expand from a seed entity/page to connected results (GraphRAG).
+
+        Returns [] for backends without a graph (e.g. local Kuzu/BM25).
+        """
+        expand = getattr(self._backend, "graph_expand", None)
+        if expand is None:
+            return []
+        return expand(seed, hops=hops)

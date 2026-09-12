@@ -46,3 +46,26 @@ def test_default_backend_is_kuzu(monkeypatch, tmp_path: Path) -> None:
     kg = KnowledgeGraph(tmp_path / "nonexistent")
     # No graph present -> unavailable, but the default path is Kuzu and does not raise.
     assert kg.available is False
+
+
+def test_graph_expand_empty_on_kuzu_backend(tmp_path: Path) -> None:
+    # Local Kuzu backend has no traversal wired -> graph_expand returns [].
+    kg = KnowledgeGraph(tmp_path / "nonexistent")
+    assert kg.graph_expand("investments/isas/index.md") == []
+
+
+def test_graph_expand_fallback_for_backend_without_method(tmp_path: Path) -> None:
+    class _StubBackend:
+        available = True
+
+        def search(self, query, section=None, top_k=5):
+            return []
+
+    # A backend that predates graph_expand must not break the facade.
+    kg = KnowledgeGraph(tmp_path, backend=_StubBackend())
+    assert kg.graph_expand("anything") == []
+
+
+def test_remote_fabric_graph_expand_unreachable() -> None:
+    be = RemoteFabricBackend("http://127.0.0.1:1", token=None)
+    assert be.graph_expand("investments/isas/index.md") == []
