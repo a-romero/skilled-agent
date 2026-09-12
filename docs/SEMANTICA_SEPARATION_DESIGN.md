@@ -92,10 +92,12 @@ package.**
         depends on ──────────────►  fabric-client / contracts  ◄────────── published by
 ```
 
-- **`fabric-client`** (published from `semantic-fabric`, or a third `contracts` repo
-  if you prefer strict neutrality): contract types (the `EvidenceUnit` schema) + an
-  HTTP/MCP client. Tiny dependency surface (`httpx`, `pydantic`). skilled-agent
-  depends on **this only** — never on `semantica`.
+- **`fabric-client`** lives **in the `semantic-fabric` repo** and is published from
+  it (`client/`): contract types (the `EvidenceUnit` schema, generated from
+  `contracts/`) + an HTTP/MCP client. Tiny dependency surface (`httpx`, `pydantic`),
+  no `semantica`. skilled-agent depends on **this package only**. Keeping the client
+  in the same repo as the API means the contract and its client version together in
+  one CI pipeline — no third repo to keep in sync.
 - The wire contract **is** the `RetrievalBackend` protocol from the earlier spec,
   serialized. `search()` still returns `{path, title, summary}` to legacy callers;
   richer evidence units ride the wire for callers that opt in.
@@ -125,29 +127,62 @@ Small and stable. Everything is also exposed as MCP tools, so skilled-agent's ag
 | Hybrid retrieval | `POST /search` | `fabric.search` | evidence units |
 | Graph expansion | `POST /graph/expand` | `fabric.graph_query` | evidence units (facts) |
 | Fetch detail | `GET /chunk/{ref}` | `fabric.get_chunk` | chunk content |
+| Read a KB page | `GET /kb/{namespace}/{path}` | `fabric.read_page` | Markdown (authored or generated) |
+| Browse a namespace | `GET /kb/{namespace}/tree` | `fabric.list_kb` | tree of pages |
 | Deterministic reasoning | `POST /reason` | `fabric.reason` | answer + rule trace |
-| Ingest a source | `POST /ingest` (async) | `fabric.ingest` | job id |
+| **Push a source to ingest** | `POST /ingest` (async) | `fabric.ingest` | job id |
 | Job status | `GET /jobs/{id}` | — | status |
 | Record / trace decision | `POST /decisions`, `GET /decisions/{id}/chain` | `fabric.record_decision` | decision + provenance |
+
+**`/ingest` is the push entry point.** Anyone — skilled-agent, a CI job, a human
+running a CLI, another service — can push a source (a Markdown tree, a batch of
+PDFs, a connector descriptor) to `/ingest` from anywhere. The fabric owns what
+happens next; the caller only needs the endpoint and a token. `GET /kb/...` reads
+back both KB namespaces (below) as Markdown, so skilled-agent's browser and agent
+consume authored and generated pages through one uniform read path.
 
 ---
 
 ## 5. Data ownership — who stores what
 
-| Data | Owner repo/service | Notes |
+| Data | Owner | Notes |
 |---|---|---|
-| Markdown KB (curated, authored) | **skilled-agent** (Git) | The editorial plane stays authoritative here. |
-| Context Graph, facts, ontology | **semantic-fabric** | Derived semantic plane. |
+| **Authored KB** (curated Markdown) | its own repo/filesystem *(for now: lives in skilled-agent)* | The human-authored editorial plane. **Pushed to `/ingest`.** |
+| **Generated KB** (`generated/` namespace) | **semantic-fabric** | Machine-produced Markdown from the ingestion pipeline (see below). |
+| Context Graph, facts, ontology | semantic-fabric | Derived semantic plane. |
 | Vector index | semantic-fabric | pgvector / Qdrant behind semantica. |
 | Original files + chart images | semantic-fabric | Object store (S3/MinIO). |
 | Provenance + decisions | semantic-fabric | PROV-O lineage. |
 | Enterprise credentials | semantic-fabric | Never in skilled-agent. |
 
-**The Markdown KB is a *source the fabric ingests*, not something it owns.** The
-fabric pulls the KB via a Git connector (or a webhook on push) and extracts it into
-the semantic plane. Downward-projected Markdown ("living documentation" from graph
-slices) flows back either as **PRs into the KB repo** or served under a separate
-`generated/` namespace — the human-authored tree is never silently overwritten.
+### Two KB namespaces, one read path
+
+The KB is **not one thing** — there are two namespaces, and separating them is what
+keeps human and machine content from colliding:
+
+- **`authored/`** — the curated Markdown. Humans write it; it is authoritative for
+  what it covers. Its long-term home is **its own repo/filesystem**; until that
+  exists it stays in skilled-agent. Either way it reaches the fabric the same way:
+  **pushed to `POST /ingest`** — by skilled-agent, a CI job, or a human running a
+  CLI, from anywhere. The fabric treats it as a *source it ingests*, never something
+  it owns or edits.
+
+- **`generated/` — owned and served by the fabric.** The ingestion and semantic
+  pipeline doesn't only build the graph; it *emits human-readable Markdown* as a
+  by-product. A dense PDF becomes a doc/section/chunk **summary tree** (the
+  "Markdown-shaped projection" from the vision doc); a graph slice becomes a
+  **downward-projected page** of living documentation. All of this fabric-produced
+  content lands in the `generated/` namespace, addressable and served over
+  `GET /kb/generated/...`, each page carrying provenance back to its source.
+
+**Why this answers "where does fabric-generated content go?"** — into `generated/`,
+which the fabric persists (object store or a content store) and serves. It is a
+*materialized read-view* of the semantic plane, **not re-ingested** (that would
+create a feedback loop): the graph and vector index remain the source of truth;
+`generated/` is the readable face of them. skilled-agent's browser and agent read
+`authored/` and `generated/` through the **same** `GET /kb/...` path, so a dense-PDF
+summary is as cheap to read on the fly as a hand-written page — while the authored
+tree is never silently overwritten by machine output.
 
 ---
 
@@ -194,25 +229,39 @@ The separation buys three distinct shapes from the same code:
   `client/` + an `api/` skeleton returning stub evidence units. In skilled-agent,
   add `RemoteFabricBackend` + config; prove `RETRIEVAL_BACKEND=fabric` round-trips
   against the stub and falls back to `kuzu` when the service is down.
-- **Phase 1 — Real retrieval.** Implement hybrid search + graph expansion in the
-  fabric over the ingested Markdown KB; reach parity with today's results on a
-  golden query set.
+- **Phase 1 — Real retrieval.** Push the authored KB to `/ingest`; implement hybrid
+  search + graph expansion over it; reach parity with today's results on a golden
+  query set.
 - **Phase 2 — Dense sources.** Add the PDF ingestion pipeline (incl. the figure/VLM
-  branch) and one enterprise connector; downward-project Markdown back to the KB.
+  branch) and one enterprise connector; emit the `generated/` namespace (summary
+  trees + downward-projected pages) and serve it over `GET /kb/...`.
 - **Phase 3 — Reasoning & decisions.** Enable `/reason` guardrails and decision
   recording; wire the agent's citations to provenance chains.
 - **Phase 4 — Platform.** Point a second consumer at the fabric over MCP.
 
 ---
 
-## 10. Open questions
+## 10. Decisions & remaining questions
 
-1. **Contract home** — publish `fabric-client` from the `semantic-fabric` repo, or
-   split a neutral third `contracts` repo? (Default: from `semantic-fabric` for
-   fewer moving parts.)
-2. **KB sync direction** — does the fabric pull the KB (Git connector/webhook), or
-   does skilled-agent push changes to `/ingest`? (Default: pull, so the fabric owns
-   its ingestion cadence.)
-3. **Downward projection** — PRs into the KB repo vs. a served `generated/`
-   namespace? Affects human review workflow.
-4. **Repo name** — `semantic-fabric`, `context-layer`, `knowledge-fabric`?
+**Decided:**
+
+1. **Repo name** — **`semantic-fabric`**.
+2. **Contract home** — `fabric-client` lives **in the `semantic-fabric` repo**
+   (`client/`), published from it; no separate contracts repo.
+3. **KB ingestion** — **push to `POST /ingest`** from anywhere. (The earlier
+   pull-via-connector option is deferred; a connector can be added later for
+   sources the fabric should poll itself.)
+4. **Authored KB home** — its own repo/filesystem eventually; **for now it stays in
+   skilled-agent** and is pushed to `/ingest`.
+5. **Fabric-generated content** — lives in the fabric-owned **`generated/`
+   namespace**, served over `GET /kb/generated/...`; it is a materialized read-view,
+   never re-ingested and never written back over the authored tree.
+
+**Still open:**
+
+- **Ingest cadence** — on every authored-KB change (a push hook), on a schedule, or
+  both? Affects freshness vs. cost.
+- **`generated/` staleness** — regenerate a page eagerly when its underlying facts
+  change, or lazily on read? (Leaning eager for hot pages, lazy otherwise.)
+- **Auth model** — service token vs. mTLS, and how per-caller source scopes are
+  expressed.
