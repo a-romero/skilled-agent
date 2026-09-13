@@ -141,3 +141,12 @@ class KnowledgeGraph:
         if expand is None:
             return []
         return expand(seed, hops=hops)
+
+    def record_decision(
+        self, scenario: str, outcome: str, reasoning: str = "", evidence: list[str] | None = None
+    ) -> dict | None:
+        """Record an answer as an auditable decision. None for backends without provenance."""
+        record = getattr(self._backend, "record_decision", None)
+        if record is None:
+            return None
+        return record(scenario, outcome, reasoning=reasoning, evidence=evidence)

@@ -46,6 +46,15 @@ class RetrievalBackend(Protocol):
         """
         ...
 
+    def record_decision(
+        self, scenario: str, outcome: str, reasoning: str = "", evidence: list[str] | None = None
+    ) -> dict | None:
+        """Record an answer as an auditable decision derived from its evidence.
+
+        Returns the store's response, or None for backends without provenance.
+        """
+        ...
+
 
 class KuzuBM25Backend:
     """Local Kuzu-backed graph with BM25 search over enriched pages.
@@ -129,6 +138,13 @@ class KuzuBM25Backend:
         # is provided by the semantic-fabric backend.
         return []
 
+    def record_decision(
+        self, scenario: str, outcome: str, reasoning: str = "", evidence: list[str] | None = None
+    ) -> dict | None:
+        # The local backend has no provenance store; decisions are recorded by the
+        # semantic-fabric backend.
+        return None
+
 
 class RemoteFabricBackend:
     """Retrieval via the semantic-fabric service (HTTP), through fabric-client.
@@ -180,3 +196,21 @@ class RemoteFabricBackend:
         except Exception as exc:
             logger.warning("fabric graph_expand failed (%s); returning no results.", exc)
             return []
+
+    def record_decision(
+        self, scenario: str, outcome: str, reasoning: str = "", evidence: list[str] | None = None
+    ) -> dict | None:
+        if not self._available or self._client is None:
+            return None
+        try:
+            from fabric_client import Decision
+
+            return self._client.record_decision(
+                Decision(
+                    scenario=scenario, outcome=outcome, reasoning=reasoning,
+                    evidence=list(evidence or []),
+                )
+            )
+        except Exception as exc:  # best-effort: never break the answer
+            logger.warning("fabric record_decision failed (%s); decision not recorded.", exc)
+            return None

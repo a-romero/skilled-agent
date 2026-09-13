@@ -378,10 +378,15 @@ def run_agent(
     instrument_dspy(tracer_provider)
     tracer = get_tracer(tracer_provider, __name__)
 
+    # Pages the agent actually read — used as the decision's evidence (Option A;
+    # see TODO.md for chunk-level evidence-unit ids).
+    read_paths: list[str] = []
+
     # Build instrumented tools that fire events before each call
     def _instrumented_read(path: str) -> str:
         if event_callback:
             event_callback({"kind": "read", "path": path})
+        read_paths.append(path)
         return read_knowledge_tool(path)
 
     _instrumented_read.__doc__ = read_knowledge_tool.__doc__
@@ -417,6 +422,7 @@ def run_agent(
     # Use dspy.context so each background thread gets its own LM config
     # rather than mutating global settings (which DSPy restricts to the
     # thread that first called dspy.configure).
+    result = None
     with dspy.context(lm=lm), tracer.start_as_current_span("agent") as agent_span:
         from opentelemetry.trace import Status, StatusCode
 
@@ -438,6 +444,30 @@ def run_agent(
             agent_span.set_status(Status(StatusCode.ERROR, str(exc)))
             if verbose:
                 raise
+
+    # Record the answer as an auditable decision in the semantic layer (best-effort;
+    # off by default, no-op unless the fabric backend is active). See TODO.md.
+    if (
+        os.getenv("RECORD_DECISIONS", "false").strip().lower() in {"1", "true", "yes"}
+        and result is not None
+        and not answer.startswith("Error:")
+    ):
+        try:
+            evidence = sorted(set(read_paths))
+            rec = _get_knowledge_graph().record_decision(
+                scenario=task,
+                outcome=answer,
+                reasoning=str(getattr(result, "reasoning", "") or ""),
+                evidence=evidence,
+            )
+            if rec and event_callback:
+                event_callback({
+                    "kind": "decision",
+                    "decision_id": rec.get("decision_id"),
+                    "evidence": evidence,
+                })
+        except Exception as exc:  # never let auditing break the answer
+            logger.warning("record_decision hook failed (%s); continuing.", exc)
 
     if verbose:
         logger.info(f"Final answer: {answer}")
